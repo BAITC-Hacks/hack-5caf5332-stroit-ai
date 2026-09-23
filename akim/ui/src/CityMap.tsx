@@ -135,7 +135,23 @@ export default function CityMap(props: Props) {
     const ctx = overlay.getContext("2d")!,
       sprites = new Image();
     sprites.src = "/residents.png";
+    // Residents parked at home/work idle-wander a small loop so the map never
+    // freezes; the selected resident stands still so the card stays readable.
+    const locate = (p: Resident, minutes: number, now: number) => {
+      const s = snapshot.current,
+        state = s.mobility
+          ? mobilityState(p, minutes, s.mobility.trips[p.id])
+          : residentState(p, minutes, s.stayInside);
+      if (state.moving || s.residentId === p.id) return state;
+      const a = now / 4000 + p.id * 2.39;
+      return {
+        ...state,
+        point: [state.point[0] + 2 * Math.sin(a), state.point[1] + Math.sin(2 * a)] as typeof state.point,
+        moving: true,
+      };
+    };
     const draw = () => {
+      const now = performance.now();
       // Never latch visibility to zoomstart: interrupted flyTo/zoom animations
       // need not finish in the same order as they started.
       overlay.style.opacity = "1";
@@ -156,7 +172,7 @@ export default function CityMap(props: Props) {
       ctx.imageSmoothingEnabled = false;
       function* screenResidents() {
         for (const p of population) {
-          const state = s.mobility ? mobilityState(p, s.minutes, s.mobility.trips[p.id]) : residentState(p, s.minutes, s.stayInside),
+          const state = locate(p, s.minutes, now),
             point = map.latLngToContainerPoint(toLatLng(state.point));
           if (
             point.x < -12 ||
@@ -211,16 +227,12 @@ export default function CityMap(props: Props) {
           ctx.arc(snap(point.x), snap(point.y), snap(halo), 0, Math.PI * 2);
           ctx.fill();
         }
-        const next = (
-            s.mobility
-              ? mobilityState(p, s.minutes + 0.2, s.mobility.trips[p.id])
-              : residentState(p, s.minutes + 0.2, s.stayInside)
-          ).point,
+        const next = locate(p, s.minutes + 0.2, now + 200).point,
           dx = next[0] - state.point[0],
           dy = next[1] - state.point[1],
           direction =
             Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 1) : dy < 0 ? 3 : 0,
-          frame = state.moving ? Math.floor(s.minutes * 4 + p.id) % 3 : 1;
+          frame = state.moving ? Math.floor(now / 150 + p.id) % 3 : 1;
         if (sprites.complete && sprites.naturalWidth)
           ctx.drawImage(
             sprites,
@@ -361,20 +373,7 @@ export default function CityMap(props: Props) {
         distance = 8;
       for (const p of population) {
         const pixel = map.latLngToContainerPoint(
-          toLatLng(
-            (snapshot.current.mobility
-              ? mobilityState(
-                  p,
-                  snapshot.current.minutes,
-                  snapshot.current.mobility.trips[p.id],
-                )
-              : residentState(
-                  p,
-                  snapshot.current.minutes,
-                  snapshot.current.stayInside,
-                )
-            ).point,
-          ),
+          toLatLng(locate(p, snapshot.current.minutes, performance.now()).point),
         );
         const d = pixel.distanceTo(clickPoint);
         if (d < distance) {
