@@ -5,10 +5,11 @@ import express from "express";
 import { localStore } from "./local-store";
 import { getCityData } from "./city-data";
 import { createLlm, PublicError, publicMessage } from "./llm";
-import { askRequest, akimRequest } from "./schemas";
+import { askRequest, akimRequest, explainRequest } from "./schemas";
 import { askWithEvidence } from "./ask";
 import { ingestThreads } from "./threads";
 import { threadsRequest } from "./schemas";
+import { explainPlan } from "./explain";
 import { runAkim } from "./akim";
 config({
   path: fileURLToPath(new URL("../.env", import.meta.url)),
@@ -138,6 +139,32 @@ app.post("/api/threads/ingest", async (req, res) => {
       res
         .status(e instanceof PublicError ? e.status : 502)
         .json({ error: publicMessage(e) });
+  }
+});
+app.post("/api/explain", async (req, res) => {
+  const parsed = explainRequest.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Некорректный план для разбора." });
+    return;
+  }
+  const abort = new AbortController();
+  res.once("close", () => {
+    if (!res.writableEnded) abort.abort();
+  });
+  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(60_000)]);
+  try {
+    const brief = await explainPlan(
+      llm,
+      parsed.data.plan,
+      parsed.data.priorities,
+      signal,
+    );
+    res.json({ brief });
+  } catch (error) {
+    if (!res.destroyed)
+      res
+        .status(error instanceof PublicError ? error.status : 502)
+        .json({ error: publicMessage(error) });
   }
 });
 app.post("/api/akim", async (req, res) => {

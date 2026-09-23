@@ -294,7 +294,7 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
                     <strong>{current ? fmt(current.score) : "—"}</strong>
                     <span>
                       {current
-                        ? `${money(budget(plan))} млн ₸`
+                        ? `${money(budget(plan))} у.е.`
                         : "Ещё не собран"}
                     </span>
                   </div>
@@ -305,7 +305,7 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
                     </small>
                     <strong>{fmt(projection.score)}</strong>
                     <span>
-                      {money(budget(proposed))} млн ₸{" "}
+                      {money(budget(proposed))} у.е.{" "}
                       {current &&
                         `· ${projection.score - current.score >= 0 ? "+" : ""}${fmt(projection.score - current.score)}`}
                     </span>

@@ -80,8 +80,21 @@ export const narrativeSchema = z.object({
   risks: z.string(),
   why: z.string(),
 });
-
 export const threadsRequest = z.object({
   question: z.string().trim().min(3).max(1000),
   plan: planSchema,
+});
+export const explainRequest = z
+  .object({
+    plan: planSchema,
+    priorities: z
+      .array(z.enum(["Транспорт", "Экология", "Соцсфера", "Безопасность", "Сервисы"]))
+      .max(2)
+      .default([]),
+  })
+  .strict();
+export const planBriefSchema = z.object({
+  summary: z.string(),
+  tradeoff: z.string(),
+  nextStep: z.string(),
 });

@@ -126,7 +126,7 @@ export default function PlanBuilder({
           <span>Бюджет</span>
           <strong>
             {money(spent)}
-            <span> / {money(BUDGET_LIMIT)} млн ₸</span>
+            <span> / {money(BUDGET_LIMIT)} у.е.</span>
           </strong>
           <small>Осталось {money(BUDGET_LIMIT - spent)}</small>
         </div>
@@ -178,8 +178,7 @@ export default function PlanBuilder({
             <span>
               <b>Начните с готового сценария</b>
               <small>
-                Школы, здоровье и безопасность · {money(budget(samplePlan))} млн
-                ₸
+                Школы, здоровье и безопасность · {money(budget(samplePlan))} у.е.
               </small>
             </span>
             <ArrowUpRight size={20} />
@@ -286,7 +285,7 @@ export default function PlanBuilder({
                           Старт: {m.lag} кв.
                         </span>
                         <strong>
-                          {money(m.cost)} <small>млн ₸</small>
+                          {money(m.cost)} <small>у.е.</small>
                         </strong>
                       </div>
                       <h4>{m.name}</h4>
@@ -296,7 +295,10 @@ export default function PlanBuilder({
                             ? "Цена по ориентиру"
                             : "Оценка стоимости"}
                         </summary>
-                        <p>{costs[m.id].basis}</p>
+                        <p>
+                          Справочно: ~{money(costs[m.id].referenceMln)} млн ₸.{" "}
+                          {costs[m.id].basis}
+                        </p>
                         {costs[m.id].source && (
                           <a
                             href={costs[m.id].source}

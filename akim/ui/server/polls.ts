@@ -106,7 +106,7 @@ export async function liveProposal(
         {
           proposal: stablePlan(plan),
           costMln: budget(plan),
-          budgetMln: BUDGET_LIMIT,
+          budgetUnits: BUDGET_LIMIT,
           impact: projectEffects(plan).districts,
           profiles: profiles.map((p, id) => ({ id, ...p })),
           districts: districts.map((d) => ({

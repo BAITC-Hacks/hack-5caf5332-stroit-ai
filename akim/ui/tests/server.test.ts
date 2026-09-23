@@ -57,7 +57,7 @@ test("LLM cohort probabilities aggregate to actual resident votes and reject fab
     poll.approval,
     poll.cohorts!.reduce((n, c) => n + c.yes, 0) / 20,
   );
-  assert.equal(poll.cost, 20700);
+  assert.equal(poll.cost, 95);
   for (const mutate of [
     (c: typeof valid) => c.cohorts.pop(),
     (c: typeof valid) => (c.cohorts[1] = c.cohorts[0]),

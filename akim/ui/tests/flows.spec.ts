@@ -46,7 +46,7 @@ test("explore, build five choices, poll, advisor swap, and autopilot", async ({
     .getByLabel("Район для M5", { exact: true })
     .selectOption("saryarka");
   await page.getByRole("button", { name: "Добавить M5", exact: true }).click();
-  await expect(page.locator(".budget-line")).toContainText("20 700");
+  await expect(page.locator(".budget-line")).toContainText("95");
   await expect(page.locator(".plan-result")).toContainText("56,54");
   await expect(
     page.getByRole("button", { name: "Добавить M14", exact: true }),
@@ -90,9 +90,9 @@ test("explore, build five choices, poll, advisor swap, and autopilot", async ({
   await page
     .getByRole("button", { name: "Применить план", exact: true })
     .click();
-  await expect(page.locator(".score-value")).toContainText("57,35");
+  await expect(page.locator(".score-value")).toContainText("57,21");
   await page.reload();
-  await expect(page.locator(".score-value")).toContainText("57,35");
+  await expect(page.locator(".score-value")).toContainText("57,21");
   expect(errors).toEqual([]);
   expect(
     await page.evaluate(
@@ -114,11 +114,15 @@ test("demo path, real budget block, local conflict, unsupported question and com
   await page.getByLabel("Район для M3", { exact: true }).selectOption("esil");
   await page.getByRole("button", { name: "Добавить M3", exact: true }).click();
   await page.getByLabel("Район для M13", { exact: true }).selectOption("nura");
+  await page.getByRole("button", { name: "Добавить M13", exact: true }).click();
+  await page.getByLabel("Район для M5", { exact: true }).selectOption("saryarka");
+  await page.getByRole("button", { name: "Добавить M5", exact: true }).click();
+  await page.getByLabel("Район для M7", { exact: true }).selectOption("almaty");
   await expect(
-    page.getByRole("button", { name: "Добавить M13", exact: true }),
+    page.getByRole("button", { name: "Добавить M7", exact: true }),
   ).toBeDisabled();
-  await expect(page.getByTestId("measure-M13")).toContainText(
-    "Бюджет превышен на 8 000",
+  await expect(page.getByTestId("measure-M7")).toContainText(
+    "Бюджет превышен на 7",
   );
   await page.getByRole("button", { name: "Сбросить", exact: true }).click();
   await page.getByLabel("Район для M4", { exact: true }).selectOption("nura");

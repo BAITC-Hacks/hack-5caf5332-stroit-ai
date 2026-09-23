@@ -102,7 +102,7 @@ export default function CityDataPanel({ onClose }: { onClose: () => void }) {
           <h3>Бюджет в миллионах тенге</h3>
           <strong>
             {money(BUDGET_LIMIT)}
-            <small>млн ₸ · сценарный инвестиционный лимит</small>
+            <small>у.е. · общий бюджет задания, одинаковый для всех команд</small>
           </strong>
           <p>
             Лимит выбран для игры. Годовые затраты города по бюджету 2026:{" "}

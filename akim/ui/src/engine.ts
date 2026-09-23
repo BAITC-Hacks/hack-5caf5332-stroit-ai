@@ -25,7 +25,7 @@ export function validate(plan: Choice[], draft = false): string[] {
     errors.push("Меры не должны повторяться.");
   if (budget(plan) > BUDGET_LIMIT)
     errors.push(
-      `Бюджет превышен на ${money(budget(plan) - BUDGET_LIMIT)} млн ₸.`,
+      `Бюджет превышен на ${money(budget(plan) - BUDGET_LIMIT)} у.е.`,
     );
   const counts: Record<string, number> = {};
   for (const c of plan) {

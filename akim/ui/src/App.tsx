@@ -273,7 +273,7 @@ export default function App() {
             будете <em>вы?</em>
           </h1>
           <p>
-            Пять решений. {money(BUDGET_LIMIT)} млн ₸.
+            Пять решений. Бюджет {money(BUDGET_LIMIT)} у.е.
             <br />И целый город, который почувствует
             <br />
             каждый ваш выбор.
@@ -285,7 +285,7 @@ export default function App() {
             className="sample-link"
             onClick={() => {
               changePlan(samplePlan.map((c) => ({ ...c })));
-              setToast("Сценарий применён: 5 решений, 20 700 млн ₸.");
+              setToast("Сценарий применён: 5 решений, 95 у.е.");
             }}
           >
             Попробовать готовый сценарий <ChevronRight size={13} />
@@ -469,7 +469,7 @@ export default function App() {
           </div>
           <p>
             Вы — аким на пять решений. Соберите план до {money(BUDGET_LIMIT)}{" "}
-            млн ₸ и посмотрите, что изменится за 8 кварталов.
+            у.е. и посмотрите, что изменится за 8 кварталов.
           </p>
           <div className="about-steps">
             <span>01 · Исследуйте районы</span>

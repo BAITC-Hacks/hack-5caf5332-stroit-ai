@@ -204,10 +204,10 @@ export default function AskPanel({
               <b>Сравнение двух отдельных предложений</b>
               <p>
                 {poll.primaryLabel || "Школа + поликлиника в Нуре"}:{" "}
-                {fmt(poll.approval, 2)}% за · {money(poll.cost)} млн ₸
+                {fmt(poll.approval, 2)}% за · {money(poll.cost)} у.е.
                 <br />
                 {poll.comparison.title}: {fmt(poll.comparison.approval, 2)}% за
-                · {money(poll.comparison.cost ?? 0)} млн ₸
+                · {money(poll.comparison.cost ?? 0)} у.е.
               </p>
               <small>
                 На карте — реакции на первое предложение. Это не голосование
