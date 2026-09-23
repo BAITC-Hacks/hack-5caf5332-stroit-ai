@@ -188,22 +188,24 @@ app.post("/api/akim", async (req, res) => {
     if (!res.destroyed) res.write(JSON.stringify(event) + "\n");
   };
   try {
+    const local = parsed.data.mode === "goal" && !process.env.OPENAI_API_KEY;
     send({
       type: "activity",
       event: {
-        label: "Загрузка данных города",
-        detail: "Чтение доступных источников и дат наблюдения.",
+        label: local ? "Локальная цель" : "Загрузка данных города",
+        detail: local ? "Поиск без OpenAI и внешних источников." : "Чтение доступных источников и дат наблюдения.",
         at: new Date().toISOString(),
       },
     });
-    const context = await getCityData(store);
+    const context = local ? null : await getCityData(store);
     const result = await runAkim(
-      llm,
+      local ? null : llm,
       parsed.data.mode,
       parsed.data.plan,
       context,
       (event) => send({ type: "activity", event }),
       signal,
+      parsed.data,
     );
     send({ type: "result", result });
   } catch (error) {

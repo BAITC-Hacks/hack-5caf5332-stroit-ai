@@ -194,21 +194,23 @@ export default {
       };
       const task = (async () => {
         try {
+          const local = parsed.data.mode === "goal" && !env.OPENAI_API_KEY;
           send({
             type: "activity",
             event: {
-              label: "Загрузка данных города",
-              detail: "Читаем датированные источники.",
+              label: local ? "Локальная цель" : "Загрузка данных города",
+              detail: local ? "Поиск без OpenAI и внешних источников." : "Читаем датированные источники.",
               at: new Date().toISOString(),
             },
           });
           const result = await runAkim(
-            llm,
+            local ? null : llm,
             parsed.data.mode,
             parsed.data.plan,
-            await getCityData(store),
+            local ? null : await getCityData(store),
             (event) => send({ type: "activity", event }),
             signal,
+            parsed.data,
           );
           send({ type: "result", result });
         } catch (e) {
