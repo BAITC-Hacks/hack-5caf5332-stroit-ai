@@ -627,6 +627,123 @@
   padding-top: 8px;
 }
 
+/* Saved scenarios and deterministic comparison, within the existing report. */
+.variants-dialog {
+  width: 660px;
+  max-width: calc(100% - 48px);
+  max-height: calc(100dvh - 80px);
+  margin: auto;
+  padding: 24px;
+  overflow: auto;
+  color: var(--g-ink);
+  background: #f3f5f6;
+  border: 1px solid var(--g-line);
+  border-radius: 18px;
+  box-shadow: 0 24px 80px #0c202a55;
+}
+.variants-dialog::backdrop {
+  background: #12262e88;
+}
+.variants-heading,
+.comparison-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.variants-heading h2,
+.comparison-heading h2 {
+  margin: 0;
+}
+.variants-dialog p {
+  color: var(--g-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.variants-list {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+.variants-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 16px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--g-line);
+  border-radius: 10px;
+}
+.variants-list input {
+  min-width: 0;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--g-line);
+  border-radius: 6px;
+  color: var(--g-ink);
+  background: #fff;
+  font: inherit;
+  font-weight: 600;
+}
+.variants-list li > span {
+  grid-column: 1;
+  padding-left: 8px;
+  color: var(--g-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.variants-actions {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.game .variants-dialog :focus-visible,
+.game .comparison-heading button:focus-visible {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 3px;
+}
+.game .variants-actions button:disabled,
+.game .sheet-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.game .comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.game .comparison-table caption {
+  text-align: left;
+  padding: 12px 0;
+  color: var(--g-muted);
+}
+.game .comparison-table th,
+.game .comparison-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--g-line);
+  text-align: right;
+}
+.game .comparison-table th:first-child {
+  text-align: left;
+}
+.game .comparison-table thead {
+  background: var(--g-accent-soft);
+  color: var(--g-ink);
+}
+.game .comparison-table tbody th {
+  font-weight: 500;
+}
+.comparison-conclusion {
+  padding: 14px 16px;
+  border-left: 3px solid var(--g-accent);
+  background: #fff;
+  line-height: 1.5;
+}
+
 /* Quiet basemap: street labels stay legible on zoom but stop competing with the model. */
 .game .leaflet-tile-pane {
   filter: saturate(0.35) brightness(1.03) contrast(0.92);

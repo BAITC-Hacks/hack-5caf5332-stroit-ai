@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, HelpCircle, Link2, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, HelpCircle, Link2, Save, Sparkles, X } from "lucide-react";
 import CityMap, { type Marker } from "../CityMap";
 import AskPanel from "../AskPanel";
 import AkimPanel from "../AkimPanel";
@@ -11,6 +11,7 @@ import { examples, pollProposal, type Poll } from "../residents";
 import { population, type Resident } from "../population";
 import { useServices } from "../services";
 import Report from "../planner/Report";
+import { type ComparisonTarget } from "../planner/Comparison";
 import {
   criticalCells,
   decodePlan,
@@ -24,12 +25,14 @@ import {
 import { indicatorNames } from "../data";
 import DistrictPanel from "./DistrictPanel";
 import Tray from "./Tray";
+import Variants from "./VariantsDialog";
+import { parseVariants, serializeVariants, VARIANT_IDS, VARIANTS_STORAGE, type Variant } from "./variants";
 import { reaction, shortNames } from "./labels";
 import "../planner/planner-sheet.css";
 import "./game.css";
 
 type Stage = "intro" | "brief" | "turn" | "report";
-type Dialog = "ask" | "akim" | "about" | "data" | null;
+type Dialog = "ask" | "akim" | "about" | "data" | "variants" | null;
 
 const STORAGE = "sim-astana-game-v1";
 
@@ -51,13 +54,17 @@ function readInitial() {
       /* Storage unavailable; start clean. */
     }
   }
+  const versus = decodePlan(params.get("vs"));
+  const comparison: ComparisonTarget | null = versus.length === 5 && !validate(versus).length
+    ? { name: "Вариант из ссылки", plan: versus }
+    : null;
   const stage: Stage =
-    params.get("step") === "report" && plan.length === 5 && validate(plan).length === 0
+    (params.get("step") === "report" || !!comparison) && plan.length === 5 && validate(plan).length === 0
       ? "report"
       : plan.length
         ? "turn"
         : "intro";
-  return { plan, priorities, stage };
+  return { plan, priorities, stage, comparison };
 }
 
 export default function Game() {
@@ -74,6 +81,14 @@ export default function Game() {
   const [toast, setToast] = useState("");
   const [minutes, setMinutes] = useState(540);
   const [copied, setCopied] = useState(false);
+  const [comparison, setComparison] = useState<ComparisonTarget | null>(initial.comparison);
+  const [variants, setVariants] = useState<Variant[]>(() => {
+    try {
+      return parseVariants(localStorage.getItem(VARIANTS_STORAGE));
+    } catch {
+      return [];
+    }
+  });
 
   // The city keeps moving at a fixed, unobtrusive pace; there are no clock controls.
   useEffect(() => {
@@ -92,6 +107,7 @@ export default function Game() {
   useEffect(() => {
     const params = new URLSearchParams();
     if (plan.length) params.set("plan", encodePlan(plan));
+    if (comparison) params.set("vs", encodePlan(comparison.plan));
     if (priorities.length) params.set("focus", priorities.join(","));
     if (stage === "report") params.set("step", "report");
     const query = params.toString();
@@ -101,7 +117,7 @@ export default function Game() {
     } catch {
       /* Storage unavailable; the URL still carries the scenario. */
     }
-  }, [plan, priorities, stage]);
+  }, [plan, priorities, stage, comparison]);
 
   useEffect(() => {
     if (!toast) return;
@@ -146,6 +162,30 @@ export default function Game() {
     setToast(reaction(choice, gain));
   };
   const remove = (measureId: string) => changePlan(plan.filter((c) => c.measureId !== measureId));
+  const persistVariants = (next: Variant[]) => {
+    try {
+      localStorage.setItem(VARIANTS_STORAGE, serializeVariants(next));
+      setVariants(next);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const compareVariant = (variant: Variant) => {
+    setComparison({ name: variant.name, plan: variant.plan, variantId: variant.id });
+  };
+  const saveVariant = () => {
+    if (!result) return;
+    const id = VARIANT_IDS.find((key) => !variants.some((v) => v.id === key));
+    if (!id) return;
+    const variant: Variant = { id, name: `Вариант ${id}`, plan: plan.map((c) => ({ ...c })) };
+    if (!persistVariants([...variants, variant])) {
+      setToast("Не удалось сохранить вариант: хранилище браузера недоступно.");
+      return;
+    }
+    compareVariant(variant);
+    setToast(`Сохранён как ${variant.name}`);
+  };
   const start = () => {
     setStage("turn");
     setSelected(null);
@@ -208,6 +248,9 @@ export default function Game() {
           </div>
         )}
         <div className="game-tools">
+          <button type="button" className="text-button" onClick={() => setDialog("variants")}>
+            Варианты ({fmt(variants.length, 0)})
+          </button>
           <button type="button" className="text-button" onClick={() => setDialog("data")}>
             Данные города
           </button>
@@ -335,6 +378,12 @@ export default function Game() {
           >
             <div className="sheet-bar">
               <div className="sheet-actions">
+                <button type="button" className="secondary" onClick={saveVariant} disabled={variants.length >= 3} title={variants.length >= 3 ? "Сохранено максимум 3 варианта" : undefined}>
+                  <Save size={15} /> Сохранить как вариант
+                </button>
+                <button type="button" className="secondary" onClick={() => setDialog("variants")}>
+                  Варианты ({fmt(variants.length, 0)})
+                </button>
                 <button type="button" className="secondary" onClick={() => openAsk(examples[2])}>
                   Спросить жителей
                 </button>
@@ -352,6 +401,8 @@ export default function Game() {
             <Report
               plan={plan}
               priorities={priorities}
+              comparison={comparison}
+              onCompare={setComparison}
               onApply={(next) => {
                 changePlan(next);
                 setToast("Замена применена. Карта и жители обновлены.");
@@ -360,6 +411,32 @@ export default function Game() {
             />
           </section>
         </div>
+      )}
+
+      {dialog === "variants" && (
+        <Variants
+          variants={variants}
+          canCompare={!!result}
+          onClose={() => setDialog(null)}
+          onLoad={(variant) => {
+            changePlan(variant.plan.map((c) => ({ ...c })));
+            setSelected(null);
+            setResident(null);
+            setStage("turn");
+            setDialog(null);
+            setToast(`Загружен ${variant.name}`);
+          }}
+          onCompare={(variant) => {
+            compareVariant(variant);
+            setStage("report");
+            setDialog(null);
+          }}
+          onRename={(id, name) => {
+            if (!persistVariants(variants.map((v) => v.id === id ? { ...v, name } : v))) return false;
+            if (comparison?.variantId === id) setComparison({ ...comparison, name });
+            return true;
+          }}
+        />
       )}
 
       {dialog === "ask" && (

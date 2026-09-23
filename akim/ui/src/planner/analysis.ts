@@ -309,3 +309,69 @@ export function signed(value: number, digits = 2) {
   const rounded = Number(value.toFixed(digits));
   return `${rounded > 0 ? "+" : rounded < 0 ? "−" : ""}${fmt(Math.abs(rounded), digits)}`;
 }
+
+export interface ComparisonValue {
+  current: number;
+  variant: number;
+  delta: number;
+}
+
+/** Deltas are current minus variant. Compare only complete, valid scenarios.
+ * Both plans share the same goals; directions are unweighted indicator means.
+ */
+export function comparePlans(a: Choice[], b: Choice[], priorities: Direction[] = []) {
+  for (const plan of [a, b]) {
+    const errors = validate(plan);
+    if (errors.length) throw new Error(`Нельзя сравнить план: ${errors.join(" ")}`);
+  }
+  const current = projectEffects(a);
+  const variant = projectEffects(b);
+  const pair = (x: number, y: number): ComparisonValue => ({
+    current: x, variant: y, delta: Math.abs(x - y) < 1e-9 ? 0 : x - y,
+  });
+  const minimum = (p: Projection) => Math.min(...p.districts.flatMap((r) => indicators.map((k) => r.values[k])));
+  const metrics = {
+    score: pair(current.score, variant.score),
+    budget: pair(budget(a), budget(b)),
+    goals: pair(goals(a, priorities).filter((g) => g.met).length, goals(b, priorities).filter((g) => g.met).length),
+    support: pair(pollProposal(a, "").approval, pollProposal(b, "").approval),
+    minimum: pair(minimum(current), minimum(variant)),
+  };
+  const rows = current.districts.map((row, i) => ({
+    district: row.id,
+    score: pair(row.score, variant.districts[i].score),
+    directions: directions.map((direction) => {
+      const keys = indicators.filter((k) => directionOf[k] === direction);
+      return {
+        direction,
+        ...pair(
+          keys.reduce((sum, k) => sum + row.values[k], 0) / keys.length,
+          keys.reduce((sum, k) => sum + variant.districts[i].values[k], 0) / keys.length,
+        ),
+      };
+    }),
+  }));
+  const cells = rows.flatMap((row) => row.directions.map((d) => ({ ...d, district: row.district })));
+  // Stable data order breaks ties, so the same plans always produce the same text.
+  const strongest = cells.filter((c) => c.delta > 0).sort((x, y) => y.delta - x.delta)[0];
+  const weakest = cells.filter((c) => c.delta < 0).sort((x, y) => x.delta - y.delta)[0];
+  const where: Record<Direction, string> = {
+    Транспорт: "в транспорте", Экология: "в экологии", Соцсфера: "в соцсфере",
+    Безопасность: "в безопасности", Сервисы: "в сервисах",
+  };
+  const districtGenitive: Record<DistrictId, string> = {
+    esil: "Есиля", almaty: "района Алматы", saryarka: "Сарыарки", baikonur: "Байконура", nura: "Нуры",
+  };
+  const details = [
+    strongest && `сильнее ${where[strongest.direction]} ${districtGenitive[strongest.district]}`,
+    weakest && `слабее ${where[weakest.direction]} ${districtGenitive[weakest.district]}`,
+  ].filter(Boolean);
+  const delta = metrics.score.delta;
+  const lead = Math.abs(delta) < 0.005
+    ? "Балл планов одинаков при округлении до сотых"
+    : delta > 0
+      ? `Текущий план лучше на ${signed(delta)}`
+      : `Текущий план хуже на ${fmt(-delta)} (${signed(delta)} к баллу)`;
+  const conclusion = `${lead}${details.length ? `: ${details.join(", ")}` : "; показатели районов совпадают"}.`;
+  return { metrics, districts: rows, goalCount: goals(a, priorities).length, conclusion };
+}

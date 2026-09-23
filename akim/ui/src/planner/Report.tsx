@@ -6,6 +6,7 @@ import { pollProposal } from "../residents";
 import { useServices } from "../services";
 import Matrix from "./Matrix";
 import ScoreGauge from "./ScoreGauge";
+import Comparison, { type ComparisonTarget } from "./Comparison";
 import { contributions, explain, fmt, goals, signed } from "./analysis";
 
 interface AiBrief {
@@ -21,11 +22,15 @@ export default function Report({
   priorities,
   onApply,
   onEdit,
+  comparison,
+  onCompare,
 }: {
   plan: Choice[];
   priorities: Direction[];
   onApply: (plan: Choice[]) => void;
   onEdit: () => void;
+  comparison?: ComparisonTarget | null;
+  onCompare?: (target: ComparisonTarget) => void;
 }) {
   const result = simulate(plan).result!;
   const checklist = goals(plan, priorities);
@@ -35,7 +40,10 @@ export default function Report({
   const maxPart = Math.max(...parts.map((p) => Math.abs(p.gain)), 0.01);
   const poll = useMemo(() => pollProposal(plan, "Мой план"), [plan]);
   const alternative = useMemo(() => advise(plan), [plan]);
-  const benchmark = useMemo(() => simulate(autopilot()).result!, []);
+  const benchmarkPlan = useMemo(() => autopilot(), []);
+  const benchmark = useMemo(() => simulate(benchmarkPlan).result!, [benchmarkPlan]);
+  const [localComparison, setLocalComparison] = useState<ComparisonTarget | null>(null);
+  const target = comparison === undefined ? localComparison : comparison;
   const [copied, setCopied] = useState(false);
 
   const copyLink = async () => {
@@ -85,6 +93,18 @@ export default function Report({
             </button>
           </div>
         </div>
+      </section>
+
+      <section className="report-section" aria-labelledby="comparison-title">
+        <div className="comparison-heading">
+          <h2 id="comparison-title">Сравнить сценарии</h2>
+          <button type="button" className="secondary" onClick={() => (onCompare ?? setLocalComparison)({ name: "Эталон автопилота", plan: benchmarkPlan })}>
+            Сравнить с эталоном автопилота
+          </button>
+        </div>
+        {target ? <Comparison plan={plan} target={target} priorities={priorities} /> : (
+          <p className="section-note">Сохраните план как вариант, измените решения и сравните результат. Или выберите эталон автопилота.</p>
+        )}
       </section>
 
       <section className="report-section" aria-labelledby="parts-title">
@@ -276,4 +296,3 @@ function AiExplain({ plan, priorities }: { plan: Choice[]; priorities: Direction
     </div>
   );
 }
-
