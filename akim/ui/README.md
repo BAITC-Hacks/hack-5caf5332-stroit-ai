@@ -73,16 +73,16 @@ npm run deploy
 npx tsc --noEmit
 npm test
 npm run build
-npx playwright test --project=desktop
+npx playwright test --project=desktop --reporter=line
 ```
 
-`npm test` запускает 37 тестов движка, серверной логики, населения и анализа плана. Для трёх актуальных игровых сценариев:
+`npm test`: 55 из 55 тестов движка, серверной логики, населения, анализа, сравнения и стресс-сценариев. Полный прогон Playwright: 15 из 15 тестов только на десктопе 1440 px. TypeScript (`--noEmit` и `-b --noEmit`) и сборка проходят. Для игровых сценариев и зума жителей:
 
 ```sh
 npx playwright test tests/flows.spec.ts --project=desktop --reporter=line
 ```
 
-Playwright сам запускает Vite на порту 5178. Нужен установленный Chromium: при первом запуске используйте `npx playwright install chromium`. Сценарии `flows.spec.ts` подменяют API и тайлы карты, ключ OpenAI не нужен. Полный desktop-прогон также включает `tests/live-ui.spec.ts`: в нём остались проверки элементов прежнего интерфейса, поэтому его нужно отдельно актуализировать.
+Playwright сам запускает Vite на порту 5178. Нужен установленный Chromium: при первом запуске используйте `npx playwright install chromium`. Сценарии `flows.spec.ts` подменяют API и тайлы карты, ключ OpenAI не нужен. Полный desktop-прогон включает актуальные `live-ui.spec.ts`, сравнение вариантов и итоговый отчёт: диалоги, стресс-тест и PDF на одном листе. Мобильные форматы в этом прогоне не проверяются.
 
 ## Правила движка
 
