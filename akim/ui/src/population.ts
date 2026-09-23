@@ -1,7 +1,7 @@
 import streetGraphs from "./astana-roads.json" with { type: "json" };
 import { districts, type DistrictId } from "./data";
-export type Point = [number, number];
-export function seeded(seed: number) {
+type Point = [number, number];
+function seeded(seed: number) {
   return () => {
     seed |= 0;
     seed = (seed + 0x6d2b79f5) | 0;
@@ -123,7 +123,7 @@ export function generatePopulation(seed = 711): Resident[] {
   });
 }
 export const population = generatePopulation();
-export function walk(path: Point[], progress: number): Point {
+function walk(path: Point[], progress: number): Point {
   if (path.length === 1) return path[0];
   const t = Math.max(0, Math.min(1, progress)) * (path.length - 1);
   const a = path[Math.floor(t)],

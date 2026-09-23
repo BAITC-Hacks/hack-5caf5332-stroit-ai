@@ -50,7 +50,7 @@ export function validate(plan: Choice[], draft = false): string[] {
   }
   return errors;
 }
-export interface DistrictResult {
+interface DistrictResult {
   id: DistrictId;
   values: Values;
   delta: Values;

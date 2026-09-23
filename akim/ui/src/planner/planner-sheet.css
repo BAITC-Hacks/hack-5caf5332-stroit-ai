@@ -1,4 +1,5 @@
-/* Generated from planner.css: the same report styles scoped under .sheet for the map overlay. */
+/* Стили отчёта на карте. Единственный источник: редактируйте этот файл напрямую.
+   Переменные заданы на .sheet; селекторы изолированы префиксом .sheet. */
 .sheet {
   --bg: #f3f5f6;
   --surface: #ffffff;

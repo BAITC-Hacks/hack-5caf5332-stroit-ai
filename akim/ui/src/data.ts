@@ -49,7 +49,7 @@ export const indicatorNames: Record<Indicator, string> = {
 };
 const values = (v: number[]): Values =>
   Object.fromEntries(indicators.map((k, i) => [k, v[i]])) as Values;
-export interface District {
+interface District {
   id: DistrictId;
   name: string;
   population: number;
@@ -219,7 +219,7 @@ for (const district of districts) {
   district.center = toWorld(lng, lat);
 }
 
-export interface Measure {
+interface Measure {
   id: string;
   direction: Direction;
   name: string;
@@ -394,7 +394,7 @@ export const conflicts = [
   },
 ];
 export const measureById = (id: string) => measures.find((m) => m.id === id)!;
-export const districtById = (id: DistrictId) =>
+const districtById = (id: DistrictId) =>
   districts.find((d) => d.id === id)!;
 export const choiceLabel = (c: Choice) =>
   `${measureById(c.measureId).name} · ${c.districtId ? districtById(c.districtId).name : "Весь город"}`;
