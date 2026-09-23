@@ -41,3 +41,23 @@ test("stress events change the projection, preserve the plan and reject inflatio
   await expect(page.locator(".gauge-number strong")).toHaveText("56,54");
   await page.screenshot({ path: info.outputPath("stress.png"), scale: "css" });
 });
+
+test("leadership memo invokes print and fits one A4 page with all five decisions", async ({ page }, info) => {
+  await page.addInitScript(() => { window.print = () => { document.documentElement.dataset.printCalled = "true"; }; });
+  await page.goto(`/?plan=${example}&step=report&focus=Соцсфера,Транспорт`);
+  await page.getByRole("button", { name: "Скачать записку", exact: true }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-print-called", "true");
+  await expect(page.locator(".leadership-memo")).toBeHidden();
+  await page.emulateMedia({ media: "print" });
+  const memo = page.getByRole("article", { name: "Записка руководству" });
+  await expect(memo).toBeVisible();
+  await expect(page.locator("#root")).toBeHidden();
+  await expect(memo.locator("table").first().locator("tbody tr")).toHaveCount(5);
+  await expect(memo).toContainText("56,54");
+  await expect(memo).toContainText("95 / 100 у.е.");
+  await expect(memo).toContainText("Не реальный опрос");
+  await expect(memo.locator(".memo-goals li")).toHaveCount(6);
+  await page.evaluate(() => document.fonts.ready);
+  const pdf = await page.pdf({ path: info.outputPath("memo.pdf"), format: "A4", printBackground: true, preferCSSPageSize: true });
+  expect(pdf.toString("latin1").match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+});

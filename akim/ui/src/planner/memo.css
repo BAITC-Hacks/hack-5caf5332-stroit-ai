@@ -1,0 +1,28 @@
+.leadership-memo { display: none; }
+@page { size: A4 portrait; margin: 12mm; }
+@media print {
+  html, body { width: auto !important; height: auto !important; min-height: 0 !important; overflow: visible !important; background: white !important; }
+  body > :not(.leadership-memo) { display: none !important; }
+  .leadership-memo { display: block; color: #14222c; font: 10pt/1.32 "Golos Text", sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .leadership-memo * { box-sizing: border-box; }
+  .leadership-memo h1 { font-size: 20pt; line-height: 1.15; margin: 2mm 0; }
+  .leadership-memo h2 { font-size: 11pt; margin: 0 0 2mm; }
+  .leadership-memo p { margin: 0 0 2mm; }
+  .leadership-memo header { border-bottom: 1pt solid #14222c; padding-bottom: 3mm; margin-bottom: 4mm; }
+  .leadership-memo header p { color: #5a6873; font-size: 9pt; }
+  .memo-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5mm; margin-bottom: 5mm; }
+  .memo-metrics strong, .memo-metrics span, .memo-metrics small { display: block; }
+  .memo-metrics strong { font-size: 19pt; line-height: 1.4; font-variant-numeric: tabular-nums; }
+  .memo-metrics span, .memo-metrics small { font-size: 8.5pt; }
+  .leadership-memo section { margin-bottom: 4mm; break-inside: avoid; }
+  .leadership-memo table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  .leadership-memo th, .leadership-memo td { padding: 1.5mm 2mm; text-align: left; border-bottom: 0.3pt solid #d8dfe3; }
+  .leadership-memo th { background: #eef2f3; font-weight: 600; }
+  .leadership-memo td:not(:first-child) { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .leadership-memo ul { margin: 0; padding-left: 4mm; }
+  .leadership-memo li { margin-bottom: 1.5mm; }
+  .memo-goals { font-size: 9pt; }
+  .memo-goals span { color: #5a6873; }
+  .memo-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; font-size: 9pt; }
+  .leadership-memo footer { margin-top: 2mm; padding-top: 3mm; border-top: 0.5pt solid #b9c4ca; color: #5a6873; font-size: 8pt; }
+}

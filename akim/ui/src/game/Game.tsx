@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, HelpCircle, Link2, Save, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, FileDown, HelpCircle, Link2, Save, Sparkles, X } from "lucide-react";
 import CityMap, { type Marker } from "../CityMap";
 import AskPanel from "../AskPanel";
 import AkimPanel from "../AkimPanel";
@@ -11,6 +11,7 @@ import { examples, pollProposal, type Poll } from "../residents";
 import { population, type Resident } from "../population";
 import { useServices } from "../services";
 import Report from "../planner/Report";
+import LeadershipMemo from "../planner/LeadershipMemo";
 import { type ComparisonTarget } from "../planner/Comparison";
 import {
   criticalCells,
@@ -367,6 +368,8 @@ export default function Game() {
         />
       )}
 
+      {result && <LeadershipMemo plan={plan} priorities={priorities} />}
+
       {stage === "report" && result && (
         <div className="sheet-backdrop" hidden={!!dialog} onClick={() => setStage("turn")}>
           <section
@@ -386,6 +389,9 @@ export default function Game() {
                 </button>
                 <button type="button" className="secondary" onClick={() => setDialog("akim")}>
                   <Sparkles size={15} /> AI-аким
+                </button>
+                <button type="button" className="secondary" onClick={() => window.print()} title="Откроется печать: выберите «Сохранить как PDF»">
+                  <FileDown size={15} /> Скачать записку
                 </button>
                 <button type="button" className="secondary" onClick={copyLink}>
                   <Link2 size={15} /> {copied ? "Скопировано" : "Ссылка на сценарий"}
