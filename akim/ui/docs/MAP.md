@@ -33,7 +33,7 @@ The preprocessing filters the response to the three street classes above and cli
 npx tsx scripts/prepare-gazetteer.ts /path/to/overpass-roads.json
 ```
 
-`server/locations.ts` matches aliases and common inflections before Jev chooses among at most eight candidates plus “unlocated”. District candidates use the bundled district centers. A pin represents an approximate point on the named street or district, not the precise complaint location. Unknown or ambiguous places remain unlocated. The source bounding box is incomplete for the wider city.
+`server/locations.ts` first merges nearby street entries (within 2 km) sharing an identical full alias, then matches aliases and common inflections before Jev chooses among at most eight candidates plus “unlocated”. District candidates use the bundled district centers. A pin represents an approximate point on the named street or district, not the precise complaint location. Unknown or ambiguous places remain unlocated. The source bounding box is incomplete for the wider city.
 
 ## Mobility assumptions
 

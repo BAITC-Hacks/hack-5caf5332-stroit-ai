@@ -15,6 +15,10 @@ const stop = new Set([
   "проспект",
   "пр",
   "переулок",
+  "проезд",
+  "бульвар",
+  "шоссе",
+  "набережная",
   "площадь",
   "даңғылы",
   "көшесі",
@@ -26,7 +30,36 @@ const stop = new Set([
   "сакена",
   "сәкен",
 ]);
-const index = places.map((p, i) => ({
+// OSM ways can carry different Russian inflections but the same Kazakh name.
+// Collapse nearby entries with an identical full alias before offering choices.
+type PlaceEntry = { place: (typeof places)[number]; id: number };
+const byAlias = new Map<string, PlaceEntry[]>();
+const unique: PlaceEntry[] = [];
+places.forEach((place, id) => {
+  const aliases = [...new Set(place.aliases.map(normalizePlace))];
+  const duplicate = aliases
+    .flatMap((a) => byAlias.get(a) ?? [])
+    .find(
+      ({ place: other }) =>
+        Math.hypot(
+          (place.point[0] - other.point[0]) * 111,
+          (place.point[1] - other.point[1]) * 70,
+        ) < 2,
+    );
+  const entry = duplicate ?? { place, id };
+  if (duplicate)
+    entry.place = {
+      ...entry.place,
+      aliases: [...new Set([...entry.place.aliases, ...place.aliases])],
+    };
+  else unique.push(entry);
+  for (const alias of aliases) {
+    const entries = byAlias.get(alias) ?? [];
+    if (!entries.includes(entry)) entries.push(entry);
+    byAlias.set(alias, entries);
+  }
+});
+const index = unique.map(({ place: p, id: i }) => ({
   id: `street-${i}`,
   name: p.name,
   point: p.point as [number, number],

@@ -115,7 +115,7 @@ export async function ingestComplaints(
   const result = await llm.cache(
     "complaint-map",
     {
-      version: 6,
+      version: 7,
       includePress: request.includePress,
       queries,
       model: llm.model,
