@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Link2, LoaderCircle, X } from "lucide-react";
+import { Check, LoaderCircle, X } from "lucide-react";
 import { choiceLabel, districts, type Choice, type Direction } from "../data";
 import { advise, autopilot, budget, simulate } from "../engine";
 import { pollProposal } from "../residents";
@@ -45,55 +45,60 @@ export default function Report({
   const benchmark = useMemo(() => simulate(benchmarkPlan).result!, [benchmarkPlan]);
   const [localComparison, setLocalComparison] = useState<ComparisonTarget | null>(null);
   const target = comparison === undefined ? localComparison : comparison;
-  const [copied, setCopied] = useState(false);
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
-  };
 
   return (
     <div className="report">
+      <header className="report-heading">
+        <h1 id="report-title">Итог вашего плана</h1>
+        <p className="lead">{met === checklist.length
+          ? "Все цели выполнены. Проверьте риски и сравните следующий шаг."
+          : `Выполнено ${fmt(met, 0)} из ${fmt(checklist.length, 0)} целей. Начните с того, что осталось нерешённым.`}</p>
+      </header>
       <section className="report-hero" aria-labelledby="report-title">
-        <div>
-          <h1 id="report-title">Итог вашего плана</h1>
-          <p className="lead">
-            {met === checklist.length
-              ? "Все цели выполнены. Ниже видно, за счёт чего и где остались риски."
-              : `Выполнено ${met} из ${checklist.length} целей. Ниже видно, что мешает и как это исправить.`}
-          </p>
+        <div className="report-score">
+          <ScoreGauge score={result.score} benchmark={benchmark.score} />
+          <p className="report-budget">Потрачено {fmt(budget(plan), 0)} из 100 у.е.</p>
+          <p className="report-support"><b>{fmt(poll.approval, 1)}%</b> поддержки модели жителей<br /><small>Синтетическая оценка, не опрос</small></p>
+          <button type="button" className="secondary" onClick={onEdit}>Изменить план</button>
+        </div>
+        <section className="report-goals" aria-labelledby="goals-title">
+          <h2 id="goals-title">Цели: {fmt(met, 0)} из {fmt(checklist.length, 0)}</h2>
           <ul className="goal-list">
-            {checklist.map((g) => (
+            {[...checklist].sort((a, b) => Number(a.met)-Number(b.met)).map(g => (
               <li key={g.id} className={g.met ? "met" : "missed"}>
                 {g.met ? <Check size={16} aria-hidden="true" /> : <X size={16} aria-hidden="true" />}
-                <div>
-                  <b>{g.label}</b>
-                  <span>{g.detail}</span>
-                </div>
+                <div><b>{g.label}</b><span>{g.detail}</span></div>
                 <span className="visually-hidden">{g.met ? "выполнено" : "не выполнено"}</span>
               </li>
             ))}
           </ul>
-        </div>
-        <div className="report-score">
-          <ScoreGauge score={result.score} benchmark={benchmark.score} />
-          <p className="report-budget">
-            Потрачено {budget(plan)} из 100 у.е.
-          </p>
-          <div className="report-actions">
-            <button type="button" className="secondary" onClick={onEdit}>
-              Изменить план
-            </button>
-            <button type="button" className="secondary" onClick={copyLink}>
-              <Link2 size={15} aria-hidden="true" />
-              {copied ? "Ссылка скопирована" : "Ссылка на сценарий"}
+        </section>
+      <section className="report-next advice" aria-labelledby="advice-title">
+        <h2 id="advice-title">Что улучшить</h2>
+        <p className="next-priority">{checklist.find(g => !g.met)?.detail ?? brief.risks[0] ?? "Все цели выполнены. Сравните план с альтернативой и проверьте его при ЧП."}</p>
+        {alternative && alternative.improvement > 0.005 ? (
+          <div className="swap">
+            <p>
+              Одна замена даёт <b>{signed(alternative.improvement)}</b> к общему баллу.
+              Модель проверила все допустимые замены одного решения.
+            </p>
+            <div className="swap-row">
+              <span className="swap-out">{choiceLabel(alternative.removed)}</span>
+              <span aria-hidden="true">заменить на</span>
+              <span className="swap-in">{choiceLabel(alternative.added)}</span>
+            </div>
+            <button type="button" className="primary" onClick={() => onApply(alternative.plan)}>
+              Применить замену
             </button>
           </div>
-        </div>
+        ) : (
+          <p>Ни одна замена одного решения не повышает балл. План устойчив.</p>
+        )}
+        <p className="section-note">
+          Для сравнения: лучший план, найденный последовательными заменами,
+          даёт {fmt(benchmark.score)}. Это ориентир, а не доказанный максимум.
+        </p>
+      </section>
       </section>
 
       <section className="report-section" aria-labelledby="comparison-title">
@@ -177,31 +182,7 @@ export default function Report({
         </p>
       </section>
 
-      <section className="report-section advice" aria-labelledby="advice-title">
-        <h2 id="advice-title">Совет акима</h2>
-        {alternative && alternative.improvement > 0.005 ? (
-          <div className="swap">
-            <p>
-              Одна замена даёт <b>{signed(alternative.improvement)}</b> к баллу.
-              Модель проверила все допустимые замены одного решения.
-            </p>
-            <div className="swap-row">
-              <span className="swap-out">{choiceLabel(alternative.removed)}</span>
-              <span aria-hidden="true">заменить на</span>
-              <span className="swap-in">{choiceLabel(alternative.added)}</span>
-            </div>
-            <button type="button" className="primary" onClick={() => onApply(alternative.plan)}>
-              Применить замену
-            </button>
-          </div>
-        ) : (
-          <p>Ни одна замена одного решения не повышает балл. План устойчив.</p>
-        )}
-        <p className="section-note">
-          Для сравнения: лучший план, найденный последовательными заменами,
-          даёт {fmt(benchmark.score)}. Это ориентир, а не доказанный максимум.
-        </p>
-      </section>
+
     </div>
   );
 }

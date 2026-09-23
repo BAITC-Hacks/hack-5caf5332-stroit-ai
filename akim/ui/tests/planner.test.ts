@@ -124,3 +124,11 @@ test("scenario link round-trips and rejects invalid plans", () => {
   assert.deepEqual(decodePlan("M1.esil,M3.nura"), []);
   assert.deepEqual(decodePlan("M99,M12.nura"), [{ measureId: "M12" }]);
 });
+
+
+test("explanation acknowledges cross-direction effects instead of claiming missing sectors cannot improve", () => {
+  const plan = [{ measureId: "M7", districtId: "nura" }, { measureId: "M3", districtId: "nura" }, { measureId: "M2" }, { measureId: "M12" }, { measureId: "M11", districtId: "nura" }] as import("../src/data").Choice[];
+  const brief = explain(plan, ["Экология"]);
+  assert.ok(brief.consequences.some(text => text.includes("за счёт мер других направлений")));
+  assert.ok(!brief.consequences.some(text => text.includes("Эти показатели не изменятся")));
+});

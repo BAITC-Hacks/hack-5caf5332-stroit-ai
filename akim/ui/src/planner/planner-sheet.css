@@ -1186,3 +1186,30 @@
 .sheet .stress-assumptions { max-width: 76ch; }
 .sheet .stress-deficit { border-left: 3px solid var(--red); padding: 12px 16px; background: var(--red-soft); }
 .sheet .stress-measures caption { text-align: left; font-weight: 600; padding: 10px 0; }
+
+/* Desktop report: result, unmet goals and the next useful decision share the first screen. */
+@media (min-width: 801px) {
+  .sheet .report { gap: 28px; }
+  .sheet .report-heading { margin-bottom: -10px; }
+  .sheet .report-heading .lead { margin-bottom: 0; max-width: 80ch; }
+  .sheet .report-hero { grid-template-columns: 270px minmax(0, 1fr) 290px; gap: 24px; }
+  .sheet .report-goals h2, .sheet .report-next h2 { font-size: 19px; margin-bottom: 12px; }
+  .sheet .goal-list { gap: 6px; }
+  .sheet .goal-list li { padding: 9px 10px; gap: 8px; border-radius: 6px; }
+  .sheet .goal-list b { font-size: 13px; }
+  .sheet .goal-list span { font-size: 12px; line-height: 1.35; display: block; }
+  .sheet .goal-list .visually-hidden { display: none; }
+  .sheet .gauge { padding: 18px 16px; }
+  .sheet .gauge-number strong { font-size: 52px; }
+  .sheet .report-next { border-left: 1px solid var(--line-strong); padding-left: 22px; }
+  .sheet .report-next .next-priority { color: var(--red); font-size: 13px; line-height: 1.45; }
+  .sheet .report-next .swap { display: block; border: 0; background: none; padding: 0; min-width: 0; }
+  .sheet .report-next .swap p { margin: 12px 0; font-size: 14px; }
+  .sheet .report-next .swap-row { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; font-size: 13px; }
+  .sheet .report-next .primary { width: 100%; padding: 10px 12px; }
+  .sheet .report-next .section-note { margin-top: 16px; font-size: 12px; }
+  .sheet .report-support { margin: 0; font-size: 13px; }
+  .sheet .report-support b { font-size: 20px; }
+  .sheet .report-support small { color: var(--muted); }
+  .sheet .report-budget { font-size: 13px; }
+}

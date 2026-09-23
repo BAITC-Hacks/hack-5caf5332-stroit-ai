@@ -20,7 +20,7 @@ export default function ScoreGauge({
   const target = baseline.score + TARGET_GAIN;
   return (
     <figure className={`gauge ${compact ? "compact" : ""}`}>
-      <figcaption>Astana Quality of Life Score</figcaption>
+      <figcaption>Качество жизни · из 100</figcaption>
       <div className="gauge-number">
         <strong>{fmt(score)}</strong>
         {Math.abs(gain) > 0.005 && (

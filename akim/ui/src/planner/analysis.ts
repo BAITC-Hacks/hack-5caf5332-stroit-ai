@@ -265,7 +265,10 @@ export function explain(plan: Choice[], priorities: Direction[]): Brief {
   const missing = directions.filter((d) => !touched.has(d));
   if (missing.length)
     consequences.push(
-      `Без вложений остаются: ${missing.map(lower).join(", ")}. Эти показатели не изменятся.`,
+      `Без отдельных мер: ${missing.map(lower).join(", ")}. ${missing.some(direction =>
+        result.districts.some(row => indicators.some(k => directionOf[k] === direction && Math.abs(row.delta[k]) > 0.05)))
+        ? "Часть показателей меняется за счёт мер других направлений."
+        : "Показатели этих направлений не меняются."}`,
     );
   for (const direction of priorities) {
     const value = priorityGain(result, direction);
