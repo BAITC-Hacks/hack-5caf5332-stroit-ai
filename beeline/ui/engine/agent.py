@@ -174,7 +174,7 @@ class Agent:
         return {
             "version": 2, "events": [], "pilots": pilots, "candidates": candidates, "plan": plan_rows,
             "limits": totals,
-            "uncertainty": "Posterior mean and sd per hypothesis (Gaussian update with noise 0.804/sqrt(n)), shown in the units of the campaign channel. Untested cells carry prior + calibration, not pilot evidence.",
+            "uncertainty": "Оценка и погрешность: апостериорное среднее и разброс по гипотезе (гауссово обновление, шум 0,804/sqrt(n)), в единицах канала кампании. У ячеек без пилотов это история с калибровкой, а не наблюдение.",
             "calibration": {k: float(v) for k, v in calibration.items()} if isinstance(calibration, dict) else None,
             "quality": {"rows": int(len(profile)), "invalid_rows": int(profile[["current_tariff", "arpu_segment", "predicted_arpu"]].isna().any(axis=1).sum()),
                         "duplicate_ids": int(profile["ID_NUMBER"].duplicated().sum()), "missing_values": int(profile.isna().sum().sum())},

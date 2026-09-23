@@ -153,6 +153,39 @@ h1 {
   background: #fff1c2;
   color: #735000;
 }
+.history-estimate {
+  background: #f0f2f5;
+  color: #505864;
+}
+.run-notice {
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  border: 1px solid var(--yellow);
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: #fffbee;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.data-table tr.is-planned,
+.data-table tr.is-planned:hover {
+  background: #fffbee;
+}
+.is-planned .cell-status {
+  font-weight: 600;
+}
+.cell-status,
+.decision-status {
+  overflow-wrap: anywhere;
+}
+.alternative-group h4 {
+  margin: 18px 0 8px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.live-campaign .decision-status {
+  margin-top: 10px;
+}
 .review-candidates > summary {
   padding: 14px 26px;
   cursor: pointer;

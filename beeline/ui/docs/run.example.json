@@ -1,8 +1,8 @@
 {
   "mode": "organizer_mock",
-  "run_id": "ec0226ffd5d34ddca977bae1d3886e95",
+  "run_id": "eaf3c35f4a4143839a5a837602bf8ac6",
   "seed": 42,
-  "created_at": 1790160073.768703,
+  "created_at": 1790160888.077727,
   "data_hashes": {
     "customer_profile.csv": "a85e9badf4cb51b1ba8c43a868498b6fa8075509f3cd8e19ef72e1c25a6dc815",
     "data/change_tariff.csv": "c52d7dad11fccc7425afe6d36a44a1fa03c8cc148be2039ce264d0c5c100f230",
@@ -3150,9 +3150,9 @@
         "decision": "selected",
         "members": [
           "tariff_7_LOW_tariff_9",
+          "tariff_14_LOW_tariff_9",
           "tariff_8_LOW_tariff_9",
-          "tariff_1_LOW_tariff_9",
-          "tariff_14_LOW_tariff_9"
+          "tariff_1_LOW_tariff_9"
         ]
       },
       {
@@ -3174,8 +3174,8 @@
         "selected": true,
         "decision": "selected",
         "members": [
-          "tariff_1_MID_tariff_8",
-          "tariff_3_MID_tariff_8"
+          "tariff_3_MID_tariff_8",
+          "tariff_1_MID_tariff_8"
         ]
       },
       {
@@ -3208,10 +3208,10 @@
         "arpu": "MID",
         "target": "tariff_8",
         "channel": "sms",
-        "prior_rank": 0.2388246351837576,
+        "prior_rank": 0.23882463518375757,
         "history_n": 847,
         "n": 0,
-        "mean": 0.1502768869780526,
+        "mean": 0.15027688697805258,
         "se": 0.12213860823862276,
         "basis": "prior+calibration",
         "mass": 12510705.037774207,
@@ -3220,10 +3220,10 @@
         "selected": true,
         "decision": "selected",
         "members": [
-          "tariff_12_MID_tariff_8",
           "tariff_17_MID_tariff_8",
+          "tariff_4_MID_tariff_8",
           "tariff_13_MID_tariff_8",
-          "tariff_4_MID_tariff_8"
+          "tariff_12_MID_tariff_8"
         ]
       },
       {
@@ -3245,8 +3245,8 @@
         "selected": true,
         "decision": "selected",
         "members": [
-          "tariff_6_LOW_tariff_13",
-          "tariff_5_LOW_tariff_13"
+          "tariff_5_LOW_tariff_13",
+          "tariff_6_LOW_tariff_13"
         ]
       }
     ],
@@ -3437,7 +3437,7 @@
       "contacts": 15000,
       "pilots": 20
     },
-    "uncertainty": "Posterior mean and sd per hypothesis (Gaussian update with noise 0.804/sqrt(n)), shown in the units of the campaign channel. Untested cells carry prior + calibration, not pilot evidence.",
+    "uncertainty": "Оценка и погрешность: апостериорное среднее и разброс по гипотезе (гауссово обновление, шум 0,804/sqrt(n)), в единицах канала кампании. У ячеек без пилотов это история с калибровкой, а не наблюдение.",
     "calibration": {
       "bias": -0.007629424448292074,
       "sd": 0.3,
@@ -3966,7 +3966,7 @@
     },
     "low_confidence_fallback": false,
     "stop_reason": "Team agent finished its pilot loop",
-    "elapsed_seconds": 0.365310083,
+    "elapsed_seconds": 0.362136125,
     "config": {
       "agent_source": "team",
       "agent_file": "/private/tmp/claude-501/-Users-ardan-Ardan-Sync/682c3ea8-be91-4bd0-af4b-274551f5172b/scratchpad/cmp/dias/agent.py"

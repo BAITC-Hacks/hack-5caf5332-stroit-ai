@@ -7,7 +7,7 @@
     "start": "python3 server.py",
     "check": "node --check src/app.js && node --check src/workspace.js",
     "format": "prettier --write index.html styles.css src/app.js src/workspace.js",
-    "test": "python3 tests/test_agent.py && python3 tests/test_server.py"
+    "test": "node tests/test_workspace.js && python3 tests/test_agent.py && python3 tests/test_server.py"
   },
   "devDependencies": {
     "axe-core": "4.13.0",
