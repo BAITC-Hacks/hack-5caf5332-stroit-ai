@@ -12,12 +12,17 @@
     "dev:api": "tsx watch server/index.ts",
     "dev:ui": "vite --host 127.0.0.1",
     "start": "tsx server/index.ts",
-    "data:check": "tsx server/check-data.ts"
+    "data:check": "tsx server/check-data.ts",
+    "deploy": "npm run build && wrangler deploy",
+    "dev:cloud": "wrangler dev --port 8792",
+    "types:cloud": "wrangler types",
+    "check:cloud": "tsc -p tsconfig.worker.json --noEmit && wrangler deploy --dry-run --outdir worker-build --minify"
   },
   "dependencies": {
     "@fontsource/golos-text": "^5.3.0",
     "dotenv": "^18.0.3",
     "express": "^5.2.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
     "openai": "^7.23.0",
     "react": "^19.1.0",
@@ -27,6 +32,7 @@
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@types/express": "^5.0.6",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
@@ -34,6 +40,7 @@
     "concurrently": "^10.0.5",
     "tsx": "^4.20.0",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "wrangler": "^4.136.3"
   }
 }

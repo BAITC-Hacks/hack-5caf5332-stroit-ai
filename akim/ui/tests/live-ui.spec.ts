@@ -178,3 +178,105 @@ test("live advisor streams actual activity, displays verified result and applies
   await expect(page.locator(".score-value")).toContainText("57,21");
   expect(calls).toBe(1);
 });
+
+test("Threads ingestion displays cited evidence, scopes complaints and attaches context to a city question", async ({
+  page,
+}) => {
+  const evidence = {
+    question: "Новая дорога у Сейфуллина",
+    queries: ["Астана Сейфуллина пробки", "Астана новая дорога"],
+    searchedQueries: ["site:threads.com Астана Сейфуллина пробки"],
+    location: "Астана, Сейфуллина",
+    posts: [
+      {
+        url: "https://www.threads.com/@fixture/post/test123",
+        title: "Тестовая публикация",
+        summary: "Синтетическая тестовая жалоба на движение.",
+        stance: "complaint",
+        scope: "street",
+        publishedAt: null,
+      },
+    ],
+    fetchedAt: "2026-09-23T10:00:00Z",
+    cached: false,
+    provider: "OpenAI web search",
+    coverage: "Тестовый набор. Не репрезентативный опрос.",
+  };
+  await page.route("**/api/threads/ingest", (r) => {
+    expect(r.request().postDataJSON().question).toContain("Сейфуллина");
+    return r.fulfill({ json: { evidence } });
+  });
+  await page.route("**/api/ask", (r) => {
+    expect(r.request().postDataJSON().useThreads).toBe(true);
+    return r.fulfill({
+      json: {
+        poll: null,
+        evidence,
+        notice:
+          "В каталоге нет отдельной меры новой дороги. Результаты поиска доступны.",
+      },
+    });
+  });
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Спросить город", exact: true })
+    .click();
+  await page.getByLabel("Вопрос жителям").fill("Новая дорога у Сейфуллина");
+  await page
+    .getByRole("button", { name: "Ingest Threads", exact: true })
+    .click();
+  await expect(page.getByLabel("Результаты Threads")).toContainText(
+    "С явной привязкой к улице: 1",
+  );
+  await expect(
+    page.getByRole("link", { name: "Тестовая публикация" }),
+  ).toHaveAttribute("href", evidence.posts[0].url);
+  await page.getByRole("button", { name: "Отправить вопрос" }).click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Результаты поиска доступны",
+  );
+  await expect(page.getByLabel("Результаты Threads")).toContainText(
+    "Тестовая публикация",
+  );
+});
+test("empty Threads search is distinct from a provider failure", async ({
+  page,
+}) => {
+  await page.route("**/api/threads/ingest", (r) =>
+    r.fulfill({
+      json: {
+        evidence: {
+          question: "Сейфуллина",
+          queries: ["Астана Сейфуллина пробки"],
+          searchedQueries: [],
+          location: "Астана",
+          posts: [],
+          fetchedAt: "2026-09-23T10:00:00Z",
+          cached: false,
+          provider: "OpenAI web search",
+          coverage: "Неполная индексация.",
+        },
+      },
+    }),
+  );
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Спросить город", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Ingest Threads", exact: true })
+    .click();
+  await expect(page.getByLabel("Результаты Threads")).toContainText(
+    "не означает, что жители не жалуются",
+  );
+  await page.route("**/api/threads/ingest", (r) =>
+    r.fulfill({ status: 502, json: { error: "Поиск временно недоступен" } }),
+  );
+  await page
+    .getByRole("button", { name: "Ingest Threads", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Поиск временно недоступен",
+  );
+  await expect(page.getByLabel("Результаты Threads")).toHaveCount(0);
+});

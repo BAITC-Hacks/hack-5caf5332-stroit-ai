@@ -1,6 +1,8 @@
 # Sim Astana · Аким на 5 часов
 
-Russian-language city decision simulator: React, TypeScript, Canvas and a local Express API. Explore the city, choose five investments, ask simulated residents and compare AI Akim's proposals.
+Russian-language city decision simulator: React, TypeScript, Leaflet, Canvas and a Cloudflare Worker API. Explore the city, choose five investments, ask simulated residents and compare AI Akim's proposals.
+
+**Live:** https://sim-astana.diaskhalniyasov.workers.dev
 
 ## Run
 
@@ -33,11 +35,34 @@ Choose a district → create a plan or load the example → compare before/after
 | [Open-Meteo / CAMS air](https://air-quality-api.open-meteo.com/v1/air-quality?latitude=51.1694&longitude=71.4491&current=pm2_5,pm10,european_aqi&timezone=Asia%2FAlmaty)                                                                | European AQI, PM2.5 and PM10; AI context                             | Modeled grid; no claim of district-level measurements                                        |
 | [KGP ArcGIS DTP](https://gis.kgp.kz/arcgis/rest/services/KPSSU/DTP/FeatureServer/0)                                                                                                                                                     | Count of 2026 accident records within 71.2–71.65°E, 51.0–51.3°N      | Bounding box differs from the administrative city; not an official Astana total              |
 | [Bureau of National Statistics, table 6584](https://stat.gov.kz/api/iblock/element/6584/json/file/ru/)                                                                                                                                  | Latest all-population Astana series; periods sorted by date          | Latest verified observation: 1,528,703 at 2025-12-31, not a live population counter          |
-| [National Geoportal WFS](https://map.gov.kz/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=geonode:border_districts&outputFormat=application/json&propertyName=kato,name_ru&CQL_FILTER=kato%20LIKE%20%2771%25%27) | Unique district KATO registry, deduplicating multipart entries       | Six real districts include Sarayshyk; the schematic game retains its five original districts |
+| [National Geoportal WFS](https://map.gov.kz/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=geonode:border_districts&outputFormat=application/json&propertyName=kato,name_ru&CQL_FILTER=kato%20LIKE%20%2771%25%27) | Unique district KATO registry, deduplicating multipart entries       | Six real districts are shown; Sarayshyk has no synthetic score in the five-district game |
 
-Weather/air cache for 15 minutes; other sources for 24 hours. Timeouts, invalid/partial responses and upstream failures return an explicitly dated saved snapshot or `unavailable`, never invented readings. `npm run data:check` prints concise endpoint status. Cached JSON lives in ignored `.cache/sources`.
+Weather/air cache for 15 minutes; other sources for 24 hours. Timeouts, invalid/partial responses and upstream failures return an explicitly dated saved snapshot or `unavailable`, never invented readings. `npm run data:check` prints concise endpoint status. Cached JSON lives in ignored `.cache/store` locally and Cloudflare KV in production.
 
 Real data is supplied to the LLM as context. It does **not** overwrite the original synthetic quality-of-life indices, district weights or assumed policy effects. Refresh checks the server's cache policy; observation and retrieval times are shown separately.
+
+## Public Threads evidence
+
+In **Спросить город**, type a proposed decision and click **Ingest Threads**. Luna expands it into up to six searches covering the street, problem, synonyms and neutral/supportive alternatives in Russian, Kazakh and English. For a road near Seifullin, queries include `Астана Сейфуллина пробки`, `Astana Seifullin traffic` and `Астана устал от пробок`.
+
+Search uses OpenAI Responses `web_search`, restricted to public `threads.com` / `threads.net` pages. The interface displays planned and executed queries, source links, AI paraphrases, complaint/support labels, and whether each post refers to the street or Astana generally. Only post URLs present in actual search sources are accepted. Publication dates are marked unconfirmed; invented posts and profile URLs are rejected. Enable **Учитывать при опросе** to search automatically with the next city question and supply the evidence to the synthetic resident model. Unsupported policy questions still return Threads evidence with a clarification notice.
+
+This searches **web-indexed public posts**, not the complete Threads feed or a representative public survey. No matches means insufficient indexed evidence, not no complaints. Search results are reused within a 30-minute cache window. No Meta account/token is needed; no private posts or personal profiles are collected.
+
+## Cloudflare deployment
+
+The frontend and `/api/*` share one Worker origin; static assets are served by Cloudflare. `wrangler.jsonc` defines the deployment and KV/rate-limit bindings. OpenAI credentials are Worker secrets and never enter the browser bundle.
+
+```sh
+# Authenticate Wrangler to the Cloudflare account first.
+npx wrangler secret put OPENAI_API_KEY
+npx wrangler secret put SESSION_SECRET # random, high-entropy value
+npm run deploy
+```
+
+For another account, create a KV namespace with `npx wrangler kv namespace create CACHE` and replace the ID in `wrangler.jsonc`. The current deployment was uploaded through the authenticated Cloudflare API. `OPENAI_MODEL` remains `gpt-6-luna`.
+
+Local Worker preview: copy the API key and a random `SESSION_SECRET` into ignored `.dev.vars`, run `npm run build`, then `npm run dev:cloud` at **http://127.0.0.1:8792**. Run `npm run types:cloud` after binding changes and `npm run check:cloud` before publishing. The separate Express/Vite workflow above remains available.
 
 ## Million tenge, with price provenance
 
@@ -52,7 +77,7 @@ All costs and limits are **million KZT (млн ₸)**. The game uses a **50,000 
 
 `src/population.ts` creates **2,000 reproducible synthetic people**, with names, ages, six concern profiles per district, homes, work/study destinations and leisure destinations. These are fictional profiles, unrelated to personal records.
 
-Residents follow daily schedules and connected, bounded grid routes: home → work/study/errands → leisure → home. Travel uses individual departure offsets. The clock supports pause and 6/30/120 simulated minutes per second. Click a person or the resident button to inspect their profile and current activity. Rain, temperature below −10°C or wind above 40 km/h sends them home after work instead of leisure; this simple behavioral rule is a scenario assumption, using the latest available weather snapshot. Routes and district shapes are schematic, not GPS tracks or an actual street network.
+Residents follow daily schedules and connected routes along a bundled OpenStreetMap street graph: home → work/study/errands → leisure → home. Travel uses individual departure offsets. The clock supports pause and 6/30/120 simulated minutes per second. Click a person or the resident button to inspect their profile and current activity. Rain, temperature below −10°C or wind above 40 km/h sends them home after work instead of leisure; this simple behavioral rule is a scenario assumption, using the latest available weather snapshot. Destinations and journeys are fictional, with simplified timings and no one-way or access rules. The basemap uses OpenStreetMap; district geometry comes from the National Geoportal. [Map provenance and reproduction](docs/MAP.md).
 
 The routine / persona / batched-opinion design is inspired by [Sim Francisco](https://github.com/tejasprabhune/simfrancisco). Implementation is original. Character artwork is attributed and licensed separately in [ATTRIBUTION.md](docs/ATTRIBUTION.md).
 
@@ -80,16 +105,17 @@ Indicator concern starts at 1, adds 3 for district priorities and 4 for profile 
 - Fixed synergy is not reduced by lag. Each district/indicator strictly below 40 incurs a penalty.
 - Local advisor checks every valid single replacement; local autopilot follows at most eight improving replacements. It does not claim a global optimum.
 
-In live mode, Luna chooses through a bounded loop of `simulate`, `ask_residents` and `submit_plan` function calls. `ask_residents` here is an explicitly described **local analytic approximation** to compare candidates; the separate resident polling UI uses the LLM cohort survey. Submission requires both simulation and consultation for that exact plan. Advisor must replace exactly one decision. The server recalculates all scores and costs, then asks Luna for a qualitative explanation. Activity rows report tool actions, not hidden model reasoning. Cached runs are labeled.
+In live mode, Luna chooses through a bounded loop of at most eight tool requests, with explicit completion from verified candidates near the limit. It uses a sequence of `simulate`, `ask_residents` and `submit_plan` function calls. `ask_residents` here is an explicitly described **local analytic approximation** to compare candidates; the separate resident polling UI uses the LLM cohort survey. Submission requires both simulation and consultation for that exact plan. Advisor must replace exactly one decision. The server recalculates all scores and costs, then asks Luna for a qualitative explanation. Activity rows report tool actions, not hidden model reasoning. Cached runs are labeled.
 
 API routes:
 
 - `GET /api/health`: model, configured flag, local session token; never the API key.
 - `GET /api/city`: dated source records.
-- `POST /api/ask`: `{ question, plan }` → `{ poll }`.
+- `POST /api/ask`: `{ question, plan, useThreads? }` → `{ poll, evidence?, notice? }`.
+- `POST /api/threads/ingest`: `{ question, plan }` → `{ evidence }`.
 - `POST /api/akim`: `{ mode: "advisor" | "autopilot", plan }` → NDJSON activity/result/error events.
 
-POSTs require the session token and an allowed local origin. Requests have schema/body limits, cancellation/timeouts, a two-request concurrency limit and 30 requests per 15 minutes. This is a localhost prototype. Add deployment authentication and per-user quotas before public hosting. Responses API calls use `store: false`.
+POSTs require a session token and same-origin requests, with schema/body limits and cancellation/timeouts. The local Express server allows two concurrent requests and 30 requests per 15 minutes. The public Worker uses hourly IP-bound signed tokens and Cloudflare rate limits: 5 AI requests/minute per IP and 20/minute per serving location. These limits are abuse throttles, not login authentication or a global spending cap. Responses API calls use `store: false`.
 
 ## Verify
 
@@ -101,6 +127,8 @@ npm run build
 npm run data:check
 ```
 
-20 unit tests cover calculations, prices, validity, resident paths/schedules, population parsing, district deduplication, malformed cohort rejection and safe errors. 12 browser cases cover desktop/mobile plan flows, clock and profiles, source display, real-mode API contracts, streaming proposals, explicit application, failure handling, persistence and keyboard access. Browser API fixtures make tests deterministic and avoid paid calls. Screenshots/traces go to ignored `test-results/`.
+23 unit tests cover calculations, prices, validity, resident paths/schedules, population parsing, district deduplication, malformed cohort rejection and safe errors. 16 browser cases cover desktop/mobile plan flows, clock and profiles, source display, real-mode API contracts, streaming proposals, explicit application, failure handling, persistence and keyboard access. Browser API fixtures make tests deterministic and avoid paid calls. Screenshots/traces go to ignored `test-results/`.
 
 Live verification on 2026-09-23: all five city endpoints responded; `gpt-6-luna` returned valid 30-cohort school and free-text park polls and tool-based advisor/autopilot plans. Secrets are excluded from source, artifacts and browser bundles.
+
+Cloudflare verification on 2026-09-23: public desktop/mobile pages loaded without JavaScript errors, OSM tiles rendered, all five city sources were available, Seifullin Threads search executed all six queries and returned zero indexed matches, Luna produced a resident poll and a validated one-change advisor plan. 23 unit tests, 16 browser cases, TypeScript and the Worker dry-run pass.

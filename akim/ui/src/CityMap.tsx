@@ -1,205 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { districts, type DistrictId } from "./data";
 import { baseline, type Projection } from "./engine";
-import type { Poll } from "./residents";
+import { population, residentState, type Resident } from "./population";
 import {
-  population,
-  seeded,
-  inside,
-  residentState,
-  type Resident,
-} from "./population";
-const districtPaths = districts.map((d) => {
-  const p = new Path2D();
-  d.polygon.forEach(([x, y], i) => (i ? p.lineTo(x, y) : p.moveTo(x, y)));
-  p.closePath();
-  return p;
-});
-const river = new Path2D(
-  "M 176 405 C 257 370 269 428 334 414 S 398 462 442 437 S 511 403 551 430 S 662 469 711 433 S 762 381 806 413 S 856 469 920 488 S 1020 473 1100 548",
-);
-const roadLines = [
-  "M250 275 L1000 365",
-  "M290 560 L961 576",
-  "M370 171 L453 688",
-  "M525 158 L510 680",
-  "M673 100 L661 413",
-  "M846 183 L791 680",
-  "M994 309 L928 623",
-  "M256 316 L1008 417",
-  "M303 637 L900 282",
-  "M301 219 L962 625",
-];
-function buildBase() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 2400;
-  canvas.height = 1700;
-  const ctx = canvas.getContext("2d")!;
-  ctx.scale(2, 2);
-  const rand = seeded(14);
-  // A quiet, abstract green belt makes the schematic city read as one land mass.
-  ctx.save();
-  ctx.shadowColor = "#061f2a77";
-  ctx.shadowBlur = 45;
-  ctx.shadowOffsetY = 15;
-  ctx.fillStyle = "#6f9380";
-  ctx.beginPath();
-  ctx.moveTo(231, 231);
-  ctx.bezierCurveTo(320, 100, 458, 145, 554, 107);
-  ctx.bezierCurveTo(684, 23, 753, 108, 885, 159);
-  ctx.bezierCurveTo(1047, 182, 1115, 366, 1070, 467);
-  ctx.bezierCurveTo(1166, 650, 890, 759, 680, 736);
-  ctx.bezierCurveTo(480, 789, 261, 705, 208, 595);
-  ctx.bezierCurveTo(120, 477, 234, 354, 231, 231);
-  ctx.fill();
-  ctx.restore();
-  for (let i = 0; i < districts.length; i++) {
-    const d = districts[i];
-    ctx.fillStyle = d.color;
-    ctx.fill(districtPaths[i]);
-    ctx.save();
-    ctx.clip(districtPaths[i]);
-    // Fine streets and individual roofs are fixed in world coordinates.
-    ctx.strokeStyle = "#d4d5bd";
-    ctx.lineWidth = 3;
-    for (let x = 180; x < 1110; x += 21) {
-      ctx.beginPath();
-      ctx.moveTo(x, 80);
-      ctx.lineTo(x + 35, 760);
-      ctx.stroke();
-    }
-    for (let y = 90; y < 760; y += 19) {
-      ctx.beginPath();
-      ctx.moveTo(170, y);
-      ctx.lineTo(1100, y + 35);
-      ctx.stroke();
-    }
-    for (let y = 110; y < 725; y += 10)
-      for (let x = 225; x < 1060; x += 11) {
-        if (rand() < 0.22) continue;
-        const xx = x + rand() * 4,
-          yy = y + rand() * 4;
-        if (rand() < 0.13) {
-          ctx.fillStyle = "#7eab83";
-          ctx.beginPath();
-          ctx.arc(xx, yy, 3 + rand() * 3, 0, Math.PI * 2);
-          ctx.fill();
-          continue;
-        }
-        const w = 3 + rand() * 5,
-          h = 3 + rand() * 5;
-        ctx.fillStyle = "#6f81795c";
-        ctx.fillRect(xx + 2, yy + 2, w, h);
-        ctx.fillStyle = [
-          "#d6d2ba",
-          "#bac7bf",
-          "#dfdbca",
-          "#96aca5",
-          "#e6dbc0",
-          "#b0b9a8",
-        ][Math.floor(rand() * 6)];
-        ctx.fillRect(xx, yy, w, h);
-        ctx.fillStyle = "#f2eadb88";
-        ctx.fillRect(xx, yy, w, 1);
-      }
-    ctx.strokeStyle = "#92a588";
-    ctx.lineWidth = 16;
-    ctx.stroke(new Path2D(roadLines[i]));
-    ctx.strokeStyle = "#eee5c8";
-    ctx.lineWidth = 7;
-    for (const line of roadLines) ctx.stroke(new Path2D(line));
-    ctx.strokeStyle = "#f8f3dd";
-    ctx.lineWidth = 2;
-    for (const line of roadLines) ctx.stroke(new Path2D(line));
-    // Pocket parks, tree canopies, and a small sports field.
-    for (let p = 0; p < 9; p++) {
-      const x = 250 + rand() * 770,
-        y = 170 + rand() * 470;
-      ctx.fillStyle = "#82a27d";
-      ctx.fillRect(x, y, 22 + rand() * 20, 15 + rand() * 18);
-      for (let t = 0; t < 7; t++) {
-        ctx.fillStyle = t % 2 ? "#638e70" : "#75a17c";
-        ctx.beginPath();
-        ctx.arc(x + rand() * 30, y + rand() * 20, 3, 0, 7);
-        ctx.fill();
-      }
-    }
-    ctx.restore();
-  }
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "#d4d5b5";
-  ctx.lineWidth = 24;
-  ctx.stroke(river);
-  ctx.strokeStyle = "#3a7886";
-  ctx.lineWidth = 17;
-  ctx.stroke(river);
-  ctx.strokeStyle = "#689a9e";
-  ctx.lineWidth = 1;
-  ctx.stroke(river);
-  ctx.save();
-  ctx.translate(616, 450);
-  ctx.rotate(0.1);
-  ctx.fillStyle = "#d9e8df";
-  ctx.font = "italic 9px sans-serif";
-  ctx.fillText("Есіл / Ишим", 0, 0);
-  ctx.restore();
-  for (const [x, y] of [
-    [337, 417],
-    [553, 435],
-    [707, 434],
-    [907, 483],
-  ]) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(-0.4);
-    ctx.fillStyle = "#d8d4bc";
-    ctx.fillRect(-5, -19, 10, 38);
-    ctx.fillStyle = "#f5ead0";
-    ctx.fillRect(-1, -19, 2, 38);
-    ctx.restore();
-  }
-  // Stylized Baiterek and Khan Shatyr landmarks, part of the map itself.
-  ctx.save();
-  ctx.translate(711, 550);
-  ctx.fillStyle = "#67827688";
-  ctx.beginPath();
-  ctx.ellipse(8, 12, 17, 6, -0.3, 0, 7);
-  ctx.fill();
-  ctx.strokeStyle = "#f6eed2";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(-7, 8);
-  ctx.lineTo(-3, -20);
-  ctx.moveTo(7, 8);
-  ctx.lineTo(3, -20);
-  ctx.stroke();
-  ctx.fillStyle = "#c8a555";
-  ctx.beginPath();
-  ctx.arc(0, -23, 8, 0, 7);
-  ctx.fill();
-  ctx.fillStyle = "#f8da89";
-  ctx.beginPath();
-  ctx.arc(-2, -26, 3, 0, 7);
-  ctx.fill();
-  ctx.restore();
-  ctx.save();
-  ctx.translate(533, 550);
-  ctx.fillStyle = "#e6ddc1";
-  ctx.beginPath();
-  ctx.moveTo(0, -25);
-  ctx.lineTo(-17, 6);
-  ctx.quadraticCurveTo(0, 17, 21, 6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#a6a48c";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, -25);
-  ctx.lineTo(2, 11);
-  ctx.stroke();
-  ctx.restore();
-  return canvas;
-}
+  districtKato,
+  geographicDistricts,
+  geoCenters,
+  toLatLng,
+} from "./geography";
+import type { Poll } from "./residents";
 interface Props {
   selected: DistrictId | null;
   onSelect: (id: DistrictId) => void;
@@ -208,320 +19,265 @@ interface Props {
   poll: Poll | null;
   panelOpen: boolean;
   minutes: number;
-  onResident: (resident: Resident) => void;
+  onResident: (p: Resident) => void;
   residentId: number | null;
   stayInside: boolean;
 }
-export default function CityMap({
-  selected,
-  onSelect,
-  result,
-  after,
-  poll,
-  panelOpen,
-  minutes,
-  onResident,
-  residentId,
-  stayInside,
-}: Props) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const born = useRef(performance.now());
-  const base = useRef<HTMLCanvasElement | null>(null);
-  const [size, setSize] = useState({ w: 1200, h: 850 });
-  const [hover, setHover] = useState<DistrictId | null>(null);
-  const camera = useRef({ x: 640, y: 410, zoom: 1 });
-  const target = useRef(camera.current);
-  const sizeRef = useRef(size);
-  const snapshot = useRef({
-    selected,
-    result,
-    after,
-    poll,
-    hover,
-    minutes,
-    residentId,
-    stayInside,
-  });
-  snapshot.current = {
-    selected,
-    result,
-    after,
-    poll,
-    hover,
-    minutes,
-    residentId,
-    stayInside,
-  };
-  const [labels, setLabels] = useState({ scale: 1, tx: 0, ty: 0 });
+export default function CityMap(props: Props) {
+  const host = useRef<HTMLDivElement>(null),
+    mapRef = useRef<L.Map | null>(null),
+    overlayRef = useRef<HTMLCanvasElement | null>(null),
+    snapshot = useRef(props);
+  snapshot.current = props;
+  const [mapError, setMapError] = useState(false),
+    [ready, setReady] = useState(false);
   useEffect(() => {
-    const canvas = ref.current!;
-    const resize = new ResizeObserver(([e]) => {
-      const next = { w: e.contentRect.width, h: e.contentRect.height };
-      sizeRef.current = next;
-      setSize(next);
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = next.w * ratio;
-      canvas.height = next.h * ratio;
-    });
-    resize.observe(canvas);
-    return () => resize.disconnect();
-  }, []);
-  useEffect(() => {
-    const d = districts.find((d) => d.id === selected);
-    const mobile = size.w < 760;
-    target.current = {
-      x: d ? d.center[0] : 635,
-      y: d ? d.center[1] : 410,
-      zoom: d ? (mobile ? 1.7 : 2) : 1,
-    };
-  }, [selected, size.w]);
-  useEffect(() => {
-    if (!base.current) base.current = buildBase();
-    const canvas = ref.current!;
-    const ctx = canvas.getContext("2d")!;
-    const started = born.current;
-    let raf = 0;
-    let lastLabels = 0;
-    let cancelled = false;
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const sprites = new Image();
+    const map = L.map(host.current!, {
+      zoomControl: false,
+      attributionControl: true,
+      minZoom: 10,
+      maxZoom: 18,
+      zoomSnap: 0.5,
+      preferCanvas: true,
+    }).setView([51.153, 71.427], 12);
+    mapRef.current = map;
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+    const tiles = L.tileLayer(
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+      },
+    ).addTo(map);
+    tiles.on("tileerror", () => setMapError(true));
+    tiles.on("tileload", () => setMapError(false));
+    const boundaries = L.geoJSON(geographicDistricts, {
+      style: () => ({
+        color: "#477363",
+        weight: 1.5,
+        fillColor: "#d4e6c7",
+        fillOpacity: 0.12,
+      }),
+      onEachFeature(feature, layer) {
+        const id = Object.entries(districtKato).find(
+          ([, kato]) => kato === feature.properties.kato,
+        )?.[0] as DistrictId | undefined;
+        if (id) layer.on("click", () => snapshot.current.onSelect(id));
+        else
+          layer.bindPopup(
+            "Сарайшык · реальный район. В исходной модели пока нет отдельных показателей.",
+          );
+      },
+    }).addTo(map);
+    map.attributionControl.addAttribution(
+      'Границы: <a href="https://map.gov.kz" target="_blank" rel="noreferrer">map.gov.kz</a> · снимок 23.09.2026',
+    );
+    const markers = districts.map((d) =>
+      L.marker(geoCenters[d.id], {
+        keyboard:false,
+        icon: L.divIcon({
+          className: "real-district-marker",
+          html: `<button aria-label="Район ${d.name}" class="district-label"><span>${d.name}</span><small></small></button>`,
+          iconSize: [120, 38],
+          iconAnchor: [60, 19],
+        }),
+      })
+        .addTo(map)
+        .on("click", () => snapshot.current.onSelect(d.id)),
+    );
+    L.marker([51.105, 71.533], {
+      icon: L.divIcon({
+        className: "real-district-marker unmodeled",
+        html: '<span class="district-label"><span>Сарайшык</span><small>нет модели</small></span>',
+        iconSize: [128, 38],
+        iconAnchor: [64, 19],
+      }),
+    }).addTo(map);
+    const overlay = document.createElement("canvas");
+    overlay.className = "resident-overlay";
+    const residentPane=map.createPane("residents");residentPane.style.zIndex="3";residentPane.style.pointerEvents="none";residentPane.appendChild(overlay);
+    overlayRef.current = overlay;
+    const ctx = overlay.getContext("2d")!,
+      sprites = new Image();
     sprites.src = "/residents.png";
-    let lastPaint = "";
-    let lastResult: Projection | null | undefined;
-    let lastPoll: Poll | null | undefined;
-    const draw = (time: number) => {
-      if (cancelled) return;
-      const { w, h } = sizeRef.current;
-      const mobile = w < 760;
-      const t = target.current,
-        c = camera.current;
-      const ease = reduced ? 1 : 0.12;
-      c.x += (t.x - c.x) * ease;
-      c.y += (t.y - c.y) * ease;
-      c.zoom += (t.zoom - c.zoom) * ease;
-      const fit = Math.min(
-        w / (mobile ? 1000 : 1350),
-        h / (mobile ? 950 : 890),
-      );
-      const scale = fit * c.zoom;
-      const shift = mobile ? 0 : panelOpen ? 155 : 70;
-      const tx = w / 2 - c.x * scale + shift;
-      const ty = h * (mobile ? 0.4 : 0.5) - c.y * scale;
-      const scene = snapshot.current;
-      const paintKey = [
-        w,
-        h,
-        tx.toFixed(2),
-        ty.toFixed(2),
-        scale.toFixed(4),
-        scene.selected,
-        scene.after,
-        scene.hover,
-        Math.floor(scene.minutes * 20),
-        scene.residentId,
-        scene.stayInside,
-        sprites.complete,
-      ].join("|");
+    const draw = () => {
+      const s = snapshot.current,
+        size = map.getSize(),
+        ratio = Math.min(devicePixelRatio, 2);
       if (
-        time - started > 1150 &&
-        paintKey === lastPaint &&
-        scene.result === lastResult &&
-        scene.poll === lastPoll
+        overlay.width !== size.x * ratio ||
+        overlay.height !== size.y * ratio
       ) {
-        raf = requestAnimationFrame(draw);
-        return;
+        overlay.width = size.x * ratio;
+        overlay.height = size.y * ratio;
+        overlay.style.width = size.x + "px";
+        overlay.style.height = size.y + "px";
       }
-      lastPaint = paintKey;
-      lastResult = scene.result;
-      lastPoll = scene.poll;
-      const ratio = canvas.width / w;
+      L.DomUtil.setPosition(overlay,map.containerPointToLayerPoint([0,0]));
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-      ctx.translate(tx, ty);
-      ctx.scale(scale, scale);
-      ctx.drawImage(base.current!, 0, 0, 1200, 850);
-      const s = snapshot.current;
-      districts.forEach((d, i) => {
-        const isSelected = d.id === s.selected;
-        const score =
-          s.result?.districts[i].score ?? baseline.districts[i].score;
-        if (s.result && s.after) {
-          ctx.fillStyle = `rgba(179,234,140,${Math.min(0.5, (score - baseline.districts[i].score) * 0.055)})`;
-          ctx.fill(districtPaths[i]);
-        }
-        ctx.lineWidth = (isSelected ? 2.5 : 1) / scale;
-        ctx.strokeStyle = isSelected
-          ? "#f1ffba"
-          : s.hover === d.id
-            ? "#fcf7d4"
-            : "#eef2d378";
-        ctx.setLineDash(isSelected ? [] : [4 / scale, 5 / scale]);
-        ctx.stroke(districtPaths[i]);
-        ctx.setLineDash([]);
-        if (s.selected && !isSelected) {
-          ctx.fillStyle = "#173d5044";
-          ctx.fill(districtPaths[i]);
-        }
-      });
-      const reveal = reduced ? 1 : Math.min(1, (time - started) / 1100);
-      for (let i = 0; i < population.length; i++) {
-        if (((i * 7919) % population.length) / population.length > reveal)
+      ctx.clearRect(0, 0, size.x, size.y);
+      ctx.imageSmoothingEnabled = false;
+      for (const p of population) {
+        const state = residentState(p, s.minutes, s.stayInside),
+          point = map.latLngToContainerPoint(toLatLng(state.point));
+        if (
+          point.x < -10 ||
+          point.y < -10 ||
+          point.x > size.x + 10 ||
+          point.y > size.y + 10
+        )
           continue;
-        const p = population[i],
-          state = residentState(p, s.minutes, s.stayInside),
-          [x, y] = state.point;
-        const approval = s.poll?.districts[p.districtIndex];
         const cohort = s.poll?.cohorts?.find(
-          (c) => c.districtId === p.districtId && c.profileId === p.profileId,
-        );
+            (c) => c.districtId === p.districtId && c.profileId === p.profileId,
+          ),
+          row = s.poll?.districts[p.districtIndex];
         const yes = cohort
           ? p.cohortIndex < cohort.yes
-          : approval
-            ? p.index < approval.yes
+          : row
+            ? p.index < row.yes
             : false;
-        ctx.globalAlpha = s.selected && s.selected !== p.districtId ? 0.48 : 1;
-        if (approval || s.residentId === p.id) {
+        ctx.globalAlpha =
+          s.selected && s.selected !== p.districtId ? 0.25 : 0.9;
+        if (row || s.residentId === p.id) {
           ctx.fillStyle =
-            s.residentId === p.id ? "#fff7b3" : yes ? "#76c44b" : "#d5584d";
+            s.residentId === p.id ? "#fff59d" : yes ? "#6ca444" : "#d56b58";
           ctx.beginPath();
-          ctx.arc(x, y, 4, 0, Math.PI * 2);
+          ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
           ctx.fill();
         }
-        if (sprites.complete && sprites.naturalWidth) {
-          const next = residentState(p, s.minutes + 0.15, s.stayInside).point;
-          const dx = next[0] - x,
-            dy = next[1] - y;
-          const direction =
-            Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 1) : dy < 0 ? 3 : 0;
-          const frame = state.moving ? Math.floor(s.minutes * 4 + p.id) % 3 : 1;
-          ctx.imageSmoothingEnabled = false;
+        const next = residentState(p, s.minutes + 0.2, s.stayInside).point,
+          dx = next[0] - state.point[0],
+          dy = next[1] - state.point[1],
+          direction =
+            Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 1) : dy < 0 ? 3 : 0,
+          frame = state.moving ? Math.floor(s.minutes * 4 + p.id) % 3 : 1,
+          px = map.getZoom() >= 13 ? 10 : 6;
+        if (sprites.complete && sprites.naturalWidth)
           ctx.drawImage(
             sprites,
             (p.sprite % 5) * 48 + frame * 16,
             Math.floor(p.sprite / 5) * 64 + direction * 16,
             16,
             16,
-            x - 3.5,
-            y - 6,
-            7,
-            7,
+            point.x - px / 2,
+            point.y - px,
+            px,
+            px,
           );
-        } else {
-          ctx.fillStyle = "#f4dfba";
-          ctx.fillRect(x - 1, y - 3, 2, 4);
+        else {
+          ctx.fillStyle = "#356749";
+          ctx.fillRect(point.x, point.y, 2, 3);
         }
       }
       ctx.globalAlpha = 1;
-      if (time - lastLabels > 30) {
-        setLabels((old) =>
-          Math.abs(old.scale - scale) < 0.0001 &&
-          Math.abs(old.tx - tx) < 0.05 &&
-          Math.abs(old.ty - ty) < 0.05
-            ? old
-            : { scale, tx, ty },
+    };
+    const update = () => {
+      draw();
+      const s = snapshot.current;
+      boundaries.setStyle((feature) => {
+        const id = Object.entries(districtKato).find(
+          ([, k]) => k === feature?.properties.kato,
+        )?.[0];
+        const index = districts.findIndex((d) => d.id === id);
+        return {
+          weight: s.selected === id ? 3 : 1,
+          color: s.selected === id ? "#315c40" : "#637c68",
+          fillColor: s.after && s.result ? "#9bbe6e" : "#d4e6c7",
+          fillOpacity: s.selected === id ? 0.17 : 0.045,
+          dashArray: index < 0 ? "5 5" : "",
+        };
+      });
+      markers.forEach((marker, i) => {
+        const el = marker.getElement();
+        const button = el?.querySelector("button"),
+          small = el?.querySelector("small");
+        button?.setAttribute(
+          "aria-pressed",
+          String(s.selected === districts[i].id),
         );
-        lastLabels = time;
+        button?.classList.toggle("selected", s.selected === districts[i].id);
+        if (small)
+          small.textContent = (
+            s.after && s.result ? s.result.districts[i] : baseline.districts[i]
+          ).score.toFixed(1);
+      });
+    };
+    map.on("move zoom resize", draw);
+    const timer = window.setInterval(update, 100);
+    update();
+    setReady(true);
+    const click = (event: MouseEvent) => {
+      if (
+        (event.target as HTMLElement).closest(
+          ".leaflet-marker-icon,.leaflet-control,.leaflet-popup",
+        )
+      )
+        return;
+      const rect = host.current!.getBoundingClientRect();
+      const clickPoint = L.point(
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+      );
+      let nearest: Resident | undefined,
+        distance = 8;
+      for (const p of population) {
+        const pixel = map.latLngToContainerPoint(
+          toLatLng(
+            residentState(
+              p,
+              snapshot.current.minutes,
+              snapshot.current.stayInside,
+            ).point,
+          ),
+        );
+        const d = pixel.distanceTo(clickPoint);
+        if (d < distance) {
+          nearest = p;
+          distance = d;
+        }
       }
-      raf = requestAnimationFrame(draw);
+      if (nearest) {
+        event.stopPropagation();
+        snapshot.current.onResident(nearest);
+      }
     };
-    raf = requestAnimationFrame(draw);
+    host.current!.addEventListener("click", click, true);
+    const resize = new ResizeObserver(() => map.invalidateSize());
+    resize.observe(host.current!);
     return () => {
-      cancelled = true;
-      cancelAnimationFrame(raf);
+      clearInterval(timer);
+      resize.disconnect();
+      host.current?.removeEventListener("click", click, true);
+      overlay.remove();
+      map.remove();
+      mapRef.current = null;
     };
-  }, [panelOpen]);
-  const hit = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const x = (e.clientX - labels.tx) / labels.scale,
-      y = (e.clientY - labels.ty) / labels.scale;
-    return districts.find((d) => inside(x, y, d.polygon))?.id ?? null;
-  };
+  }, []);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    map.flyTo(
+      props.selected ? geoCenters[props.selected] : [51.153, 71.427],
+      props.selected ? 13 : 12,
+      { animate: !reduced, duration: 0.6 },
+    );
+  }, [props.selected, ready]);
   return (
-    <div className="city-map">
-      <canvas
-        ref={ref}
-        aria-label="Схематичная карта Астаны с 2000 синтетическими жителями. Выберите район кнопками на карте."
-        onPointerMove={(e) => setHover(hit(e))}
-        onPointerLeave={() => setHover(null)}
-        onClick={(e) => {
-          const x = (e.clientX - labels.tx) / labels.scale,
-            y = (e.clientY - labels.ty) / labels.scale;
-          let nearest: Resident | undefined,
-            distance = 9 / labels.scale;
-          for (const person of population) {
-            const p = residentState(person, minutes, stayInside).point;
-            const d = Math.hypot(p[0] - x, p[1] - y);
-            if (d < distance) {
-              nearest = person;
-              distance = d;
-            }
-          }
-          if (nearest) {
-            onResident(nearest);
-            return;
-          }
-          const id = hit(e);
-          if (id) onSelect(id);
-        }}
-        style={{ cursor: hover ? "pointer" : "default" }}
+    <div className="city-map real-city-map">
+      <div
+        ref={host}
+        className="leaflet-host"
+        aria-label="Карта Астаны: OpenStreetMap и реальные границы районов"
       />
-      <div className="map-labels">
-        {districts.map((d, i) => {
-          const row =
-            result && after ? result.districts[i] : baseline.districts[i];
-          return (
-            <button
-              key={d.id}
-              className={`district-label ${selected === d.id ? "selected" : ""}`}
-              style={{
-                left: d.center[0] * labels.scale + labels.tx,
-                top: (d.center[1] - 24) * labels.scale + labels.ty,
-                opacity: selected && selected !== d.id ? 0.55 : 1,
-              }}
-              onClick={() => onSelect(d.id)}
-              aria-pressed={selected === d.id}
-              aria-label={`Район ${d.name}`}
-            >
-              <span>{d.name}</span>
-              <small>
-                {row.score.toFixed(1)}
-                {result && after && (
-                  <b>
-                    {" "}
-                    +{(row.score - baseline.districts[i].score).toFixed(1)}
-                  </b>
-                )}
-              </small>
-            </button>
-          );
-        })}
-      </div>
-      {selected &&
-        districts
-          .find((d) => d.id === selected)!
-          .voices.map((voice, i) => (
-            <div
-              className={`thought thought-${i}`}
-              key={voice}
-              style={{
-                left:
-                  (districts.find((d) => d.id === selected)!.center[0] +
-                    (i ? 90 : -100)) *
-                    labels.scale +
-                  labels.tx,
-                top:
-                  (districts.find((d) => d.id === selected)!.center[1] +
-                    (i ? 65 : -65)) *
-                    labels.scale +
-                  labels.ty,
-              }}
-            >
-              {poll
-                ? poll.districts.find((d) => d.id === selected)!.quote
-                : voice}
-            </div>
-          ))}
+      {mapError && (
+        <div className="map-error glass" role="status">
+          Картографические тайлы временно недоступны. Границы районов сохранены.
+        </div>
+      )}
     </div>
   );
 }

@@ -29,7 +29,11 @@ export const choiceSchema = z
   .strict();
 export const planSchema = z.array(choiceSchema).max(5);
 export const askRequest = z
-  .object({ question: z.string().trim().min(1).max(1000), plan: planSchema })
+  .object({
+    question: z.string().trim().min(1).max(1000),
+    plan: planSchema,
+    useThreads: z.boolean().optional(),
+  })
   .strict();
 export const akimRequest = z
   .object({ mode: z.enum(["advisor", "autopilot"]), plan: planSchema })
@@ -75,4 +79,9 @@ export const narrativeSchema = z.object({
   strengths: z.string(),
   risks: z.string(),
   why: z.string(),
+});
+
+export const threadsRequest = z.object({
+  question: z.string().trim().min(3).max(1000),
+  plan: planSchema,
 });

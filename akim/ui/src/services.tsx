@@ -1,3 +1,4 @@
+import type { ThreadsEvidence } from "./threads";
 import {
   createContext,
   useContext,
@@ -110,9 +111,15 @@ export async function askApi(
   plan: Choice[],
   token: string,
   signal: AbortSignal,
-): Promise<Poll> {
-  const response = await post("/api/ask", { question, plan }, token, signal);
-  return (await response.json()).poll;
+  useThreads = false,
+): Promise<{ poll: Poll | null; evidence?: ThreadsEvidence; notice?: string }> {
+  const response = await post(
+    "/api/ask",
+    { question, plan, useThreads },
+    token,
+    signal,
+  );
+  return response.json();
 }
 export async function akimApi(
   mode: "advisor" | "autopilot",
@@ -150,4 +157,17 @@ export async function akimApi(
   }
   if (!result) throw Error("AI не завершил ответ. Попробуйте снова.");
   return result;
+}
+
+export async function ingestApi(
+  question: string,
+  plan: Choice[],
+  token: string,
+  signal: AbortSignal,
+): Promise<ThreadsEvidence> {
+  return (
+    await (
+      await post("/api/threads/ingest", { question, plan }, token, signal)
+    ).json()
+  ).evidence;
 }

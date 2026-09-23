@@ -1,4 +1,5 @@
-import { districts, type DistrictId, type Indicator } from "./data";
+import streetGraphs from "./astana-roads.json" with { type: "json" };
+import { districts, type DistrictId } from "./data";
 export type Point = [number, number];
 export function seeded(seed: number) {
   return () => {
@@ -19,27 +20,7 @@ export function inside(x: number, y: number, points: Point[]) {
   }
   return yes;
 }
-export const profiles: { name: string; needs: Indicator[]; routine: string }[] =
-  [
-    { name: "Родитель", needs: ["S1", "S2"], routine: "Работа, школа и семья" },
-    { name: "Водитель", needs: ["T1", "B2"], routine: "Поездки и работа" },
-    { name: "Студент", needs: ["T2", "E1"], routine: "Учёба и прогулки" },
-    {
-      name: "Пенсионер",
-      needs: ["S2", "C1"],
-      routine: "Покупки, поликлиника и дом",
-    },
-    {
-      name: "Предприниматель",
-      needs: ["B1", "C2"],
-      routine: "Работа и дела района",
-    },
-    {
-      name: "Горожанин",
-      needs: ["E2", "E1"],
-      routine: "Работа и отдых в парке",
-    },
-  ];
+export { profiles, cohortSize } from "./profiles";
 export interface Resident {
   id: number;
   districtId: DistrictId;
@@ -58,65 +39,34 @@ export interface Resident {
   toHome: Point[];
   offset: number;
 }
-// Original local implementation inspired by Sim Francisco's separation of seeded
-// personas, routine-driven travel and batched opinion inference. Routes are synthetic.
-function gridFor(polygon: Point[]) {
-  const nodes = new Map<string, Point>();
-  for (let x = 230; x <= 1060; x += 16)
-    for (let y = 110; y <= 710; y += 16)
-      if (inside(x, y, polygon)) nodes.set(`${x},${y}`, [x, y]);
-  const neighbors = (p: Point) =>
-    [
-      [p[0] + 16, p[1]],
-      [p[0] - 16, p[1]],
-      [p[0], p[1] + 16],
-      [p[0], p[1] - 16],
-    ].filter(
-      (q) =>
-        nodes.has(q.join(",")) &&
-        [0.25, 0.5, 0.75].every((t) =>
-          inside(p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, polygon),
-        ),
-    ) as Point[];
-  let biggest: Point[] = [];
-  const seen = new Set<string>();
-  for (const p of nodes.values()) {
-    if (seen.has(p.join(","))) continue;
-    const queue = [p];
-    seen.add(p.join(","));
-    for (let i = 0; i < queue.length; i++)
-      for (const q of neighbors(queue[i]))
-        if (!seen.has(q.join(","))) {
-          seen.add(q.join(","));
-          queue.push(q);
-        }
-    if (queue.length > biggest.length) biggest = queue;
-  }
-  return { nodes: biggest, neighbors };
-}
+// Fictional journeys on an OSM street snapshot, ignoring access restrictions,
+// traffic, one-way rules and travel speeds. These are not navigation directions.
 function route(
-  start: Point,
-  end: Point,
-  neighbors: (p: Point) => Point[],
+  start: number,
+  end: number,
+  graph: { points: number[][]; edges: number[][] },
 ): Point[] {
-  const queue = [start],
-    parents = new Map<string, Point | null>([[start.join(","), null]]);
-  for (let i = 0; i < queue.length; i++) {
-    const p = queue[i];
-    if (p[0] === end[0] && p[1] === end[1]) break;
-    for (const q of neighbors(p))
-      if (!parents.has(q.join(","))) {
-        parents.set(q.join(","), p);
-        queue.push(q);
+  const parents = new Int32Array(graph.points.length).fill(-1);
+  const queue = new Int32Array(graph.points.length);
+  queue[0] = start;
+  parents[start] = start;
+  let tail = 1;
+  for (let head = 0; head < tail; head++) {
+    const node = queue[head];
+    if (node === end) break;
+    for (const next of graph.edges[node])
+      if (parents[next] === -1) {
+        parents[next] = node;
+        queue[tail++] = next;
       }
   }
-  const path: Point[] = [];
-  let cursor: Point | null = end;
-  while (cursor) {
-    path.push(cursor);
-    cursor = parents.get(cursor.join(",")) ?? null;
+  if (parents[end] === -1) throw new Error("Disconnected street graph");
+  const result: Point[] = [];
+  for (let node = end; ; node = parents[node]) {
+    result.push(graph.points[node] as Point);
+    if (node === start) break;
   }
-  return path.reverse();
+  return result.reverse();
 }
 export function generatePopulation(seed = 711): Resident[] {
   const rng = seeded(seed);
@@ -136,8 +86,8 @@ export function generatePopulation(seed = 711): Resident[] {
     "Алексей",
   ];
   return districts.flatMap((d, districtIndex) => {
-    const grid = gridFor(d.polygon);
-    const pick = () => grid.nodes[Math.floor(rng() * grid.nodes.length)];
+    const graph = streetGraphs[d.id];
+    const pick = () => Math.floor(rng() * graph.points.length);
     return Array.from(
       { length: Math.round(d.population * 2000) },
       (_, index) => {
@@ -160,12 +110,12 @@ export function generatePopulation(seed = 711): Resident[] {
                 ? 62 + Math.floor(rng() * 19)
                 : 25 + Math.floor(rng() * 34),
           sprite: Math.floor(rng() * 10),
-          home,
-          work,
-          leisure,
-          toWork: route(home, work, grid.neighbors),
-          toLeisure: route(work, leisure, grid.neighbors),
-          toHome: route(leisure, home, grid.neighbors),
+          home: graph.points[home] as Point,
+          work: graph.points[work] as Point,
+          leisure: graph.points[leisure] as Point,
+          toWork: route(home, work, graph),
+          toLeisure: route(work, leisure, graph),
+          toHome: route(leisure, home, graph),
           offset: Math.floor(rng() * 35),
         };
       },
@@ -173,11 +123,6 @@ export function generatePopulation(seed = 711): Resident[] {
   });
 }
 export const population = generatePopulation();
-export function cohortSize(districtId: DistrictId, profileId: number) {
-  return population.filter(
-    (p) => p.districtId === districtId && p.profileId === profileId,
-  ).length;
-}
 export function walk(path: Point[], progress: number): Point {
   if (path.length === 1) return path[0];
   const t = Math.max(0, Math.min(1, progress)) * (path.length - 1);

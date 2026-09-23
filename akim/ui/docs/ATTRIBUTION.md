@@ -13,3 +13,7 @@ Licensed under **Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 
 (https://creativecommons.org/licenses/by-sa/3.0/). Attribution is required, **and** any
 modified spritesheet must be released under the same license (ShareAlike). Ship this
 attribution in the game's credits/about screen.
+
+## Map and street graph
+
+Map and street data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), licensed under [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/). The derived graph `src/astana-roads.json` is distributed under the same license. District geometry: Kazakhstan National Geoportal. See [MAP.md](MAP.md) for provenance, extraction and limitations.

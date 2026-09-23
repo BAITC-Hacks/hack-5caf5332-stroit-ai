@@ -1,3 +1,4 @@
+import { mainPolygon, geoCenters, toWorld } from "./geography";
 import { costs } from "./money";
 export const indicators = [
   "T1",
@@ -212,6 +213,12 @@ export const districts: District[] = [
     color: "#b8c9ad",
   },
 ];
+for (const district of districts) {
+  district.polygon = mainPolygon(district.id);
+  const [lat, lng] = geoCenters[district.id];
+  district.center = toWorld(lng, lat);
+}
+
 export interface Measure {
   id: string;
   direction: Direction;

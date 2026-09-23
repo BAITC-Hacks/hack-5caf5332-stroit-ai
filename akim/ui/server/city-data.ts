@@ -1,11 +1,6 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
-import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { memoryStore, type Store } from "./storage";
 import type { CityData, SourceRecord } from "../src/city-data";
-const cacheDir = fileURLToPath(new URL("../.cache/sources/", import.meta.url));
-const mem = new Map<string, SourceRecord>();
-const inflight = new Map<string, Promise<SourceRecord>>();
 const weatherSchema = z.object({
   current: z.object({
     time: z.string(),
@@ -60,7 +55,7 @@ const metadata = {
   boundaries: {
     name: "Районы в геопортале",
     attribution: "map.gov.kz · geonode:border_districts",
-    note: "Список уникальных KATO: части одного района объединены. На игровой карте остаются 5 районов исходной модели; реестр включает Сарайшык.",
+    note: "Список уникальных KATO: части одного района объединены. Карта показывает 6 реальных районов, включая Сарайшык. Сценарные показатели рассчитаны для 5 районов исходной модели.",
   },
 };
 export function parsePopulation(raw: unknown) {
@@ -158,89 +153,68 @@ function parse(
 export async function getSource(
   id: keyof CityData,
   fetcher: typeof fetch = fetch,
+  store: Store = memoryStore(),
 ): Promise<SourceRecord> {
-  const running = inflight.get(id);
-  if (running) return running;
-  const job = (async () => {
-    const file =
-      cacheDir +
-      createHash("sha256").update(sourceUrls[id]).digest("hex") +
-      ".json";
-    let previous = mem.get(id);
-    if (!previous)
-      try {
-        previous = JSON.parse(await readFile(file, "utf8")) as SourceRecord;
-      } catch {
-        /* First request. */
-      }
-    const ttl =
-      id === "weather" || id === "air" ? 15 * 60_000 : 24 * 60 * 60_000;
-    if (
-      previous?.data &&
-      previous.fetchedAt &&
-      Date.now() - Date.parse(previous.fetchedAt) < ttl
-    ) {
-      return { ...previous, status: "cached" as const };
-    }
-    try {
-      const res = await fetcher(sourceUrls[id], {
-        headers: ua,
-        signal: AbortSignal.timeout(id === "population" ? 20_000 : 12_000),
-      });
-      if (!res.ok) throw Error(`HTTP ${res.status}`);
-      const contentRange = res.headers.get("content-range");
-      if (res.status === 206 && contentRange) {
-        const m = /bytes (\d+)-(\d+)\/(\d+)/.exec(contentRange);
-        if (!m || Number(m[1]) !== 0 || Number(m[2]) + 1 < Number(m[3]))
-          throw Error("Partial response");
-      }
-      const parsed = parse(id, await res.json());
-      const record: SourceRecord = {
-        id,
-        ...metadata[id],
-        url: sourceUrls[id],
-        status: "live",
-        fetchedAt: new Date().toISOString(),
-        ...parsed,
-      };
-      mem.set(id, record);
-      await mkdir(cacheDir, { recursive: true });
-      await writeFile(file, JSON.stringify(record));
-      return record;
-    } catch {
-      if (previous?.data)
-        return {
-          ...previous,
-          status: "cached" as const,
-          error: "Источник недоступен; показан сохранённый снимок.",
-        };
-      return {
-        id,
-        ...metadata[id],
-        url: sourceUrls[id],
-        status: "unavailable" as const,
-        data: null,
-        fetchedAt: null,
-        observedAt: null,
-        error: "Источник не ответил или вернул неполные данные.",
-      };
-    }
-  })();
-  inflight.set(id, job);
+  const key = "source:" + id;
+  const previous = await store.get<SourceRecord>(key);
+  const ttl = id === "weather" || id === "air" ? 15 * 60_000 : 24 * 60 * 60_000;
+  if (
+    previous?.data &&
+    previous.fetchedAt &&
+    Date.now() - Date.parse(previous.fetchedAt) < ttl
+  )
+    return { ...previous, status: "cached" };
   try {
-    return await job;
-  } finally {
-    inflight.delete(id);
+    const res = await fetcher(sourceUrls[id], {
+      headers: ua,
+      signal: AbortSignal.timeout(id === "population" ? 20_000 : 12_000),
+    });
+    if (!res.ok) throw Error("Upstream unavailable");
+    if (res.status === 206) {
+      const m = /bytes (\d+)-(\d+)\/(\d+)/.exec(
+        res.headers.get("content-range") ?? "",
+      );
+      if (!m || Number(m[1]) !== 0 || Number(m[2]) + 1 < Number(m[3]))
+        throw Error("Partial response");
+    }
+    const parsed = parse(id, await res.json());
+    const record: SourceRecord = {
+      id,
+      ...metadata[id],
+      url: sourceUrls[id],
+      status: "live",
+      fetchedAt: new Date().toISOString(),
+      ...parsed,
+    };
+    await store.put(key, record, 7 * 86400);
+    return record;
+  } catch {
+    return previous?.data
+      ? {
+          ...previous,
+          status: "cached",
+          error: "Источник недоступен; показан сохранённый снимок.",
+        }
+      : {
+          id,
+          ...metadata[id],
+          url: sourceUrls[id],
+          status: "unavailable",
+          data: null,
+          fetchedAt: null,
+          observedAt: null,
+          error: "Источник не ответил или вернул неполные данные.",
+        };
   }
 }
-export async function getCityData(): Promise<CityData> {
+export async function getCityData(
+  store: Store = memoryStore(),
+): Promise<CityData> {
   const keys = Object.keys(sourceUrls) as (keyof CityData)[];
-  const results = await Promise.all(keys.map((id) => getSource(id)));
+  const results = await Promise.all(
+    keys.map((id) => getSource(id, fetch, store)),
+  );
   return Object.fromEntries(
     keys.map((id, i) => [id, results[i]]),
   ) as unknown as CityData;
-}
-export function clearSourceMemory() {
-  mem.clear();
-  inflight.clear();
 }

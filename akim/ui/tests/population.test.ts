@@ -1,3 +1,4 @@
+import roads from "../src/astana-roads.json" with { type: "json" };
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -21,18 +22,22 @@ test("2000 reproducible residents form the same 30 cohorts as the polls", () => 
       Math.round(d.population * 2000),
     );
 });
-test("residents travel along continuous routes inside their synthetic district and return home", () => {
+test("residents travel along continuous routes on connected OSM streets within their district and return home", () => {
   for (const p of population) {
     const polygon = districts[p.districtIndex].polygon;
+    const graph = roads[p.districtId];
+    const index = new Map(graph.points.map((point, i) => [point.join(","), i]));
     for (const route of [p.toWork, p.toLeisure, p.toHome])
       for (let i = 0; i < route.length; i++) {
         assert.ok(inside(...route[i], polygon));
-        if (i)
-          assert.equal(
-            Math.abs(route[i][0] - route[i - 1][0]) +
-              Math.abs(route[i][1] - route[i - 1][1]),
-            16,
+        if (i) {
+          const from = index.get(route[i - 1].join(","))!;
+          const to = index.get(route[i].join(","))!;
+          assert.ok(
+            graph.edges[from].includes(to),
+            "Every step follows an actual OSM segment",
           );
+        }
       }
     assert.deepEqual(residentState(p, 0).point, p.home);
     assert.deepEqual(residentState(p, 600).point, p.work);

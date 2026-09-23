@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["./worker-configuration.d.ts", "node"],
+    "noUnusedLocals": true
+  },
+  "include": ["worker/**/*.ts", "server/**/*.ts", "worker-configuration.d.ts"],
+  "exclude": ["server/index.ts", "server/local-store.ts"]
+}

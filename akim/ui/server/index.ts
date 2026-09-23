@@ -2,10 +2,13 @@ import { config } from "dotenv";
 import { fileURLToPath } from "node:url";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import express from "express";
+import { localStore } from "./local-store";
 import { getCityData } from "./city-data";
 import { createLlm, PublicError, publicMessage } from "./llm";
 import { askRequest, akimRequest } from "./schemas";
-import { askResidents } from "./polls";
+import { askWithEvidence } from "./ask";
+import { ingestThreads } from "./threads";
+import { threadsRequest } from "./schemas";
 import { runAkim } from "./akim";
 config({
   path: fileURLToPath(new URL("../.env", import.meta.url)),
@@ -15,21 +18,24 @@ const app = express();
 app.disable("x-powered-by");
 app.use(express.json({ limit: "16kb" }));
 const token = randomBytes(32).toString("hex");
-const llm = createLlm();
+const store = localStore();
+const llm = createLlm({
+  apiKey: process.env.OPENAI_API_KEY,
+  model: process.env.OPENAI_MODEL,
+  store,
+});
 let active = 0;
 const hits: number[] = [];
 app.get("/api/health", (_req, res) =>
-  res
-    .set("Cache-Control", "no-store")
-    .json({
-      configured: !!process.env.OPENAI_API_KEY,
-      model: llm.model,
-      token,
-    }),
+  res.set("Cache-Control", "no-store").json({
+    configured: !!process.env.OPENAI_API_KEY,
+    model: llm.model,
+    token,
+  }),
 );
 app.get("/api/city", async (_req, res) => {
   try {
-    res.json(await getCityData());
+    res.json(await getCityData(store));
   } catch {
     res.status(503).json({ error: "Городские источники временно недоступны." });
   }
@@ -78,34 +84,60 @@ app.use("/api", (req, res, next) => {
 app.post("/api/ask", async (req, res) => {
   const parsed = askRequest.safeParse(req.body);
   if (!parsed.success) {
-    res
-      .status(400)
-      .json({
-        error:
-          "Укажите вопрос до 1000 символов и допустимые идентификаторы мер.",
-      });
+    res.status(400).json({
+      error: "Укажите вопрос до 1000 символов и допустимые идентификаторы мер.",
+    });
     return;
   }
   const abort = new AbortController();
   res.once("close", () => {
     if (!res.writableEnded) abort.abort();
   });
-  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(120_000)]);
+  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(180_000)]);
   try {
-    const context = await getCityData();
-    const poll = await askResidents(
+    const context = await getCityData(store);
+    const answer = await askWithEvidence(
       llm,
       parsed.data.question,
       parsed.data.plan,
       context,
+      parsed.data.useThreads,
       signal,
     );
-    res.json({ poll });
+    res.json(answer);
   } catch (error) {
     if (!res.destroyed)
       res
         .status(error instanceof PublicError ? error.status : 502)
         .json({ error: publicMessage(error) });
+  }
+});
+app.post("/api/threads/ingest", async (req, res) => {
+  const parsed = threadsRequest.safeParse(req.body);
+  if (!parsed.success) {
+    res
+      .status(400)
+      .json({ error: "Укажите решение или вопрос до 1000 символов." });
+    return;
+  }
+  const abort = new AbortController();
+  res.once("close", () => {
+    if (!res.writableEnded) abort.abort();
+  });
+  try {
+    res.json({
+      evidence: await ingestThreads(
+        llm,
+        parsed.data.question,
+        parsed.data.plan,
+        AbortSignal.any([abort.signal, AbortSignal.timeout(150000)]),
+      ),
+    });
+  } catch (e) {
+    if (!res.destroyed)
+      res
+        .status(e instanceof PublicError ? e.status : 502)
+        .json({ error: publicMessage(e) });
   }
 });
 app.post("/api/akim", async (req, res) => {
@@ -118,7 +150,7 @@ app.post("/api/akim", async (req, res) => {
   res.once("close", () => {
     if (!res.writableEnded) abort.abort();
   });
-  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(120_000)]);
+  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(180_000)]);
   res.set({
     "Content-Type": "application/x-ndjson",
     "Cache-Control": "no-store",
@@ -137,7 +169,7 @@ app.post("/api/akim", async (req, res) => {
         at: new Date().toISOString(),
       },
     });
-    const context = await getCityData();
+    const context = await getCityData(store);
     const result = await runAkim(
       llm,
       parsed.data.mode,

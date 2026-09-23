@@ -7,3 +7,7 @@ playwright-report/
 .env.*
 !.env.example
 .cache/
+
+.dev.vars*
+.wrangler/
+worker-build/

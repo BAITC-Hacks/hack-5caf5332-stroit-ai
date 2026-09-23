@@ -106,6 +106,10 @@ test("invalid current plan is rejected before any paid model call", async () => 
   let calls = 0;
   const llm = {
     model: "fake",
+    search: async () => {
+      throw Error();
+    },
+    cache: async (_kind, _input, run) => ({ value: await run(), hit: false }),
     structured: async () => {
       calls++;
       throw Error();
@@ -117,4 +121,136 @@ test("invalid current plan is rejected before any paid model call", async () => 
   } as Llm;
   await assert.rejects(askResidents(llm, "мой план", [], {} as CityData));
   assert.equal(calls, 0);
+});
+
+test("Threads evidence rejects fabricated URLs, unrelated domains and duplicate posts", async () => {
+  const { threadUrl, verifiedEvidence } = await import("../server/threads");
+  assert.equal(threadUrl("https://threads.com.evil.example/@a/post/123"), null);
+  assert.equal(threadUrl("https://threads.com/@a"), null);
+  assert.equal(threadUrl("javascript:alert(1)"), null);
+  const source = "https://www.threads.com/@example/post/fixture123";
+  const post = {
+    url: source,
+    summary: "Synthetic fixture about a road.",
+    stance: "complaint",
+    scope: "street",
+  };
+  const results = verifiedEvidence(
+    {
+      posts: [
+        post,
+        { ...post, url: source + "?utm_source=x" },
+        { ...post, url: "https://threads.com/@invented/post/missing" },
+      ],
+    },
+    [{ url: source, title: "Fixture source" }],
+  );
+  assert.equal(results.length, 1);
+  assert.equal(results[0].title, "Fixture source");
+  assert.equal(results[0].publishedAt, null);
+});
+test("source storage reuses valid snapshots and labels stale failures", async () => {
+  const { getSource } = await import("../server/city-data");
+  const { memoryStore } = await import("../server/storage");
+  const store = memoryStore();
+  let calls = 0;
+  const fetcher: typeof fetch = async () => {
+    calls++;
+    return Response.json({
+      current: {
+        time: "2026-09-23T15:00",
+        temperature_2m: 17,
+        wind_speed_10m: 20,
+        weather_code: 1,
+      },
+    });
+  };
+  const live = await getSource("weather", fetcher, store);
+  assert.equal(live.status, "live");
+  const cached = await getSource("weather", fetcher, store);
+  assert.equal(cached.status, "cached");
+  assert.equal(calls, 1);
+  await store.put(
+    "source:weather",
+    { ...live, fetchedAt: "2020-01-01T00:00:00Z" },
+    600,
+  );
+  const stale = await getSource(
+    "weather",
+    async () => {
+      throw Error("offline");
+    },
+    store,
+  );
+  assert.equal(stale.status, "cached");
+  assert.ok(stale.error);
+  assert.equal(stale.fetchedAt, "2020-01-01T00:00:00Z");
+  const unavailable = await getSource(
+    "air",
+    async () => {
+      throw Error("offline");
+    },
+    store,
+  );
+  assert.equal(unavailable.status, "unavailable");
+  assert.equal(unavailable.data, null);
+});
+
+test("advisor closes a prolonged search with a verified, consulted proposal", async () => {
+  const { runAkim } = await import("../server/akim");
+  const { advise } = await import("../src/engine");
+  const candidate = advise(samplePlan)!.plan;
+  let rounds = 0;
+  const llm: Llm = {
+    model: "test-fixture",
+    search: async () => {
+      throw new Error("Unexpected search");
+    },
+    cache: async (_kind, _input, run) => ({ value: await run(), hit: false }),
+    tools: async (_input, available) => {
+      const round = rounds++;
+      const names = available.flatMap((t) =>
+        t.type === "function" ? [t.name] : [],
+      );
+      if (round === 5) assert.deepEqual(names, ["submit_plan"]);
+      const name =
+        round === 0
+          ? "simulate"
+          : round === 5
+            ? "submit_plan"
+            : "ask_residents";
+      return {
+        output: [
+          {
+            type: "function_call",
+            name,
+            call_id: `fixture-${round}`,
+            arguments: JSON.stringify({
+              choices: candidate.map((c) => ({
+                ...c,
+                districtId: c.districtId ?? null,
+              })),
+            }),
+          },
+        ],
+      } as import("openai/resources/responses/responses").Response;
+    },
+    structured: async (_name, schema) =>
+      schema.parse({
+        title: "Fixture",
+        strengths: "Fixture",
+        risks: "Fixture",
+        why: "Fixture",
+      }),
+  };
+  const result = await runAkim(
+    llm,
+    "advisor",
+    samplePlan,
+    {} as CityData,
+    () => {},
+  );
+  assert.equal(rounds, 6);
+  assert.deepEqual(result.plan, candidate);
+  assert.deepEqual(validateAdvisor(samplePlan, result.plan), []);
 });

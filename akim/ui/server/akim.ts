@@ -12,7 +12,7 @@ import { BUDGET_LIMIT, costs } from "../src/money";
 import { pollProposal } from "../src/residents";
 import type { ActivityEvent, CityData } from "../src/city-data";
 import { compactContext } from "./polls";
-import { cached, PublicError, type Llm } from "./llm";
+import { PublicError, type Llm } from "./llm";
 import { narrativeSchema, wireChoice } from "./schemas";
 import { z } from "zod";
 export interface AkimResult {
@@ -112,12 +112,13 @@ export async function runAkim(
   );
   const candidate = mode === "advisor" ? advise(original)?.plan : autopilot();
   const cacheInput = {
+    workflowVersion: 2,
     model: llm.model,
     mode,
     plan: canonical(original),
     context: compactContext(context),
   };
-  const output = await cached("akim", cacheInput, async () => {
+  const output = await llm.cache("akim", cacheInput, async () => {
     const input: ResponseInput = [
       {
         role: "system",
@@ -138,11 +139,31 @@ export async function runAkim(
       },
     ];
     const simulated = new Set<string>();
+    const eligible = new Map<string, Choice[]>();
     let proposed: Choice[] | null = null;
     const consulted = new Set<string>();
-    for (let round = 0; round < 6 && !proposed; round++) {
+    for (let round = 0; round < 8 && !proposed; round++) {
       record("AI сравнивает варианты", `Запрос ${round + 1} к ${llm.model}.`);
-      const response = await llm.tools(input, tools, signal);
+      const ready = [...eligible.entries()]
+        .filter(([key]) => consulted.has(key))
+        .map(([, plan]) => plan);
+      const finishing = round >= 5 && ready.length > 0;
+      if (finishing)
+        input.push({
+          role: "user",
+          content:
+            "Заверши выбор через submit_plan. Выбери один из уже проверенных и обсуждённых планов без изменений: " +
+            JSON.stringify(ready),
+        });
+      const response = await llm.tools(
+        input,
+        finishing
+          ? tools.filter(
+              (t) => t.type === "function" && t.name === "submit_plan",
+            )
+          : tools,
+        signal,
+      );
       input.push(
         ...response.output.filter(
           (item) =>
@@ -175,8 +196,15 @@ export async function runAkim(
           }));
           if (call.name === "simulate") {
             const result = simulate(plan);
-            if (result.result) simulated.add(canonical(plan));
-            toolResult = { ...result, costMln: budget(plan) };
+            const errors =
+              mode === "advisor"
+                ? validateAdvisor(original, plan)
+                : result.errors;
+            if (result.result && !errors.length) {
+              simulated.add(canonical(plan));
+              eligible.set(canonical(plan), plan);
+            }
+            toolResult = { ...result, errors, costMln: budget(plan) };
             record(
               "Симуляция сценария",
               result.result
@@ -227,7 +255,7 @@ export async function runAkim(
     }
     if (!proposed)
       throw new PublicError(
-        "AI не смог завершить допустимый план за шесть шагов. Попробуйте снова.",
+        "AI не смог завершить допустимый план за восемь шагов. Попробуйте снова.",
       );
     const result = simulate(proposed).result!;
     const narrative = await llm.structured(
