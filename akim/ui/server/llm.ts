@@ -37,6 +37,7 @@ export interface Llm {
     input: ResponseInput,
     tools: Tool[],
     signal?: AbortSignal,
+    force?: string,
   ): Promise<Response>;
 }
 export function createLlm(
@@ -69,6 +70,7 @@ export function createLlm(
           model,
           reasoning: { effort: "low" },
           store: false,
+          prompt_cache_key: "sim-astana:" + name,
           input: [
             { role: "system", content: system },
             { role: "user", content: JSON.stringify(payload) },
@@ -91,6 +93,7 @@ export function createLlm(
       } = {
         model,
         store: false,
+        prompt_cache_key: "sim-astana:search" + (options?.press ? ":press" : ""),
         reasoning: { effort: "low" },
         max_output_tokens: 4500,
         max_tool_calls: 4,
@@ -125,17 +128,19 @@ export function createLlm(
       };
       return client.responses.create(request, { signal, timeout: 90_000 });
     },
-    async tools(input, tools, signal) {
+    async tools(input, tools, signal, force) {
       if (!apiKey) throw new PublicError("Ключ OpenAI не настроен.", 503);
       return client.responses.create(
         {
           model,
           reasoning: { effort: "low" },
           store: false,
+          // Stable key + unchanged tools keep the growing history a cacheable prefix.
+          prompt_cache_key: "sim-astana:akim",
           input,
           tools,
           parallel_tool_calls: false,
-          tool_choice: "required",
+          tool_choice: force ? { type: "function", name: force } : "required",
           max_output_tokens: 2200,
         },
         { signal },
