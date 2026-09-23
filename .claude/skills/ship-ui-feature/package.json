@@ -1,0 +1,9 @@
+{
+  "name": "ship-ui-feature-skill",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@types/node": "25.2.3",
+    "sharp": "0.34.4"
+  }
+}
