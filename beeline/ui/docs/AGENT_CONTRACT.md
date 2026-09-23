@@ -27,7 +27,7 @@
 
 `audit.low_confidence_fallback` (bool), `audit.stop_reason`, `audit.quality {rows, invalid_rows, duplicate_ids, missing_values}`, `audit.limits {budget, contacts, pilots}`, `audit.elapsed_seconds`, `candidates[].prior_rank`, `candidates[].history_n`, `plan[].gross`, `plan[].conservative_net`.
 
-## Маппинг на agent.py из PR #4
+## Маппинг на agent.py из PR #4 (делает адаптер `engine/agent.py`, агент менять не нужно)
 
 - `self.records` → `audit.pilots` (`result` собрать из `res`, `filters` из аргументов run_pilot, `candidate` = `f"{tariff}_{seg}_{target}_{channel}"`).
 - `self.hyps` (DataFrame) → `audit.candidates` (`n` = `n_obs`, `mean` = `mu`, `se` = `sd`, `channel` = канал финальной кампании или `sms`).

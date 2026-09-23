@@ -1,5 +1,7 @@
 """External runner. Evaluator results never enter Agent.act or its decisions."""
 import argparse
+import os
+import sys
 import contextlib
 import hashlib
 import io
@@ -10,13 +12,15 @@ import statistics
 import time
 import uuid
 
+ROOT = Path(os.getcwd()).resolve()  # case folder: organizer scripts and data
+sys.path.append(str(ROOT))
+
 from agent import Agent
 from agent_template import Agent as Starter
 from local_eval import evaluate_agent
 from make_submission import CAMPAIGN_COLUMNS
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent
 
 
 def clean(value):

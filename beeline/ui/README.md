@@ -10,11 +10,10 @@ Python 3.9+; зависимости pandas и numpy. npm нужен только
 ```sh
 cd beeline/ui
 pip install -r requirements.txt
-cp engine/run_case.py "../beeline_case_participants (1)/"
-python3 server.py --engine "../beeline_case_participants (1)"
+python3 server.py
 ```
 
-Открыть <http://127.0.0.1:4173>. Обычный `http.server` не подходит: нужен API агента. `--engine` указывает на папку кейса с `agent.py`, данными и организаторскими скриптами; агент должен заполнять `self.audit` по `docs/AGENT_CONTRACT.md` (пример: `docs/run.example.json`). `engine/agent.py` здесь только эталон контракта, в сабмишен не идёт.
+Открыть <http://127.0.0.1:4173>. Обычный `http.server` не подходит: нужен API агента. По умолчанию сервер берёт агента команды из `../beeline_case_participants (1)/agent.py` (сабмишен из PR #4) и данные организатора оттуда же; другая папка кейса задаётся флагом `--engine`. Файлы кейса не меняются: `engine/agent.py` это адаптер, который запускает агента команды и собирает `self.audit` по `docs/AGENT_CONTRACT.md` из его `records`, `hyps` и `plan_detail`. Если у агента уже есть `self.audit`, адаптер берёт его как есть. `engine/reference_agent.py` используется, только если в папке кейса нет `agent.py`.
 
 ## Сценарий сотрудника
 

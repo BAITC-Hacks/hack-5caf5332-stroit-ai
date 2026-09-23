@@ -10,7 +10,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit, parse_qs
 
 ROOT = Path(__file__).resolve().parent
-ENGINE = ROOT / "engine"
+RUNNER = ROOT / "engine" / "run_case.py"
+ENGINE = ROOT.parent / "beeline_case_participants (1)"  # case folder with agent.py and data
 OUTPUT = ROOT / "outputs"
 LOCK = threading.Lock()
 STATE = {"status": "idle", "message": "Подбор ещё не запускался"}
@@ -19,7 +20,7 @@ ARTIFACTS = {}
 
 
 def command(*args):
-    process = subprocess.run([sys.executable, "run_case.py", *args], cwd=ENGINE,
+    process = subprocess.run([sys.executable, str(RUNNER), *args], cwd=ENGINE,
                              capture_output=True, text=True, timeout=300)
     if process.returncode:
         raise RuntimeError((process.stderr or process.stdout)[-1500:])
@@ -114,7 +115,7 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=4173)
-    parser.add_argument("--engine", default=str(ENGINE), help="папка с agent.py, run_case.py и данными кейса")
+    parser.add_argument("--engine", default=str(ENGINE), help="папка кейса с agent.py команды и данными организатора")
     args = parser.parse_args()
     ENGINE = Path(args.engine).resolve()
     DATA = json.loads(command("--describe"))

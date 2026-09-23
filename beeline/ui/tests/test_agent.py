@@ -7,8 +7,10 @@ import unittest
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+CASE = Path(os.environ.get("BEELINE_CASE", ROOT.parent / "beeline_case_participants (1)")).resolve()
+sys.path.insert(0, str(CASE))
 sys.path.insert(0, str(ROOT / "engine"))
-from agent import Agent
+from reference_agent import Agent
 from make_submission import build_submission
 
 
@@ -103,7 +105,7 @@ class Contract(unittest.TestCase):
         self.assertTrue(all(p["filter_arpu_segment"]=="HIGH" for p in plan))
 
     def test_source_uses_only_public_env(self):
-        tree=ast.parse((ROOT/"engine/agent.py").read_text())
+        tree=ast.parse((ROOT/"engine/reference_agent.py").read_text())
         allowed={"customer_profile","tariffs","channels","remaining_budget","remaining_contacts","pilots_left","pilot_history","run_pilot"}
         for node in ast.walk(tree):
             if isinstance(node,ast.Attribute) and isinstance(node.value,ast.Name) and node.value.id=="env":
@@ -115,7 +117,7 @@ class Contract(unittest.TestCase):
     def test_submission_is_reproducible(self):
         previous=os.getcwd()
         try:
-            os.chdir(ROOT/"engine")
+            os.chdir(CASE)
             one=build_submission(Agent());two=build_submission(Agent())
             pd.testing.assert_frame_equal(one,two)
         finally:os.chdir(previous)
