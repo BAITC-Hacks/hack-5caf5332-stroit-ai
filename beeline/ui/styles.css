@@ -2000,3 +2000,100 @@ progress::-moz-progress-bar {
     margin-left: 0;
   }
 }
+
+.source-note,
+.run-context {
+  margin: 24px 0;
+  padding: 22px 0;
+  border-top: 1px solid var(--line);
+}
+.source-note h2,
+.run-context h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.source-note p,
+.run-context p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.source-note code {
+  overflow-wrap: anywhere;
+}
+.pagination {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+.actual-result {
+  padding: 22px 26px;
+  min-width: 0;
+}
+.actual-result h2 {
+  margin-top: 10px;
+  font-size: 19px;
+}
+.actual-result p {
+  font-size: 12px;
+  color: var(--muted);
+}
+.live-campaign {
+  border-top: 1px solid var(--line);
+  padding: 22px 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+.live-campaign h3 {
+  font-size: 16px;
+}
+.live-campaign > div {
+  min-width: 0;
+}
+.live-campaign .campaign-values {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.live-campaign dd {
+  overflow-wrap: anywhere;
+}
+.panel-header:has([data-export]) {
+  flex-wrap: wrap;
+}
+.estimate-value {
+  overflow-wrap: anywhere;
+}
+.risk-review h2 {
+  font-size: 18px;
+}
+.source-note p,
+.actual-result p,
+.run-context p {
+  max-width: 76ch;
+}
+@media (max-width: 700px) {
+  .live-campaign {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 20px;
+  }
+  .live-campaign .campaign-values {
+    padding: 0;
+  }
+  .live-campaign .campaign-values > div:last-child {
+    grid-column: auto;
+  }
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .metric dd {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+  .pagination {
+    flex-wrap: wrap;
+  }
+}

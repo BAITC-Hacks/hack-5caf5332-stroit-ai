@@ -2,12 +2,27 @@
 
 Интерактивный UI только для кейса Beeline: аудитория, пилоты, план кампаний. Кейс №11 сюда не входит.
 
+## Запуск с агентом
+
+Сервер поднимает UI и гоняет агента через `engine/run_case.py` в папке кейса:
+
+```sh
+cd beeline/ui
+pip install -r requirements.txt
+cp engine/run_case.py "../beeline_case_participants (1)/"
+python3 server.py --engine "../beeline_case_participants (1)"
+```
+
+Открыть <http://127.0.0.1:4173>, кнопка запуска дёргает `POST /api/run`. Агент должен после `act(env)` оставить `self.audit` по контракту из `docs/AGENT_CONTRACT.md`; пример заполненного прогона в `docs/run.example.json`. `engine/agent.py` здесь только как эталон, который этот контракт выполняет; в сабмишен идёт агент из папки кейса.
+
+Без агента (только статика на fixtures):
+
 ## Открыть
 
 Приложение не требует сборки или npm-зависимостей во время работы.
 
 ```sh
-cd beeline/ui
+cd "/Users/ardan/Project Code/beeline-campaign-ui"
 python3 -m http.server 4173 --bind 127.0.0.1
 ```
 
