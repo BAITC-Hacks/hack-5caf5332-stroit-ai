@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { X, Route, Play, LoaderCircle } from "lucide-react";
+import { X, Route, Play, LoaderCircle, Circle } from "lucide-react";
 import { districts, measures, type Choice } from "./data";
 import { mobilityExample, type MobilityComparison } from "./mobility";
 import { budget, validate } from "./engine";
+import { fmt } from "./planner/analysis";
 import { money } from "./money";
 export function useMobility(plan: Choice[], enabled: boolean) {
   const [data, setData] = useState<MobilityComparison | null>(null),
@@ -91,7 +92,7 @@ export default function MobilityPanel({
             .map((c) => measures.find((m) => m.id === c.measureId)!.name)
             .join(" · ")}
           <br />
-          <strong>{money(budget(transport))} млн ₸</strong> · транспортная часть
+          <strong>{money(budget(transport))} у.е.</strong> · транспортная часть
           плана
         </p>
       ) : (
@@ -140,26 +141,26 @@ export default function MobilityPanel({
             ].map(([label, b, a]) => (
               <div key={label}>
                 <span>{label}</span>
-                <span>{Number(b).toFixed(1)}</span>
-                <strong>{Number(a).toFixed(1)}</strong>
+                <span>{fmt(Number(b), 1)}</span>
+                <strong>{fmt(Number(a), 1)}</strong>
               </div>
             ))}
           </div>
           <p className="analysis-summary">
-            {data.changedRoutes} жителей выбрали другой маршрут. Цвет дорог
+            {fmt(data.changedRoutes, 0)} жителей выбрали другой маршрут. Цвет дорог
             показывает модельную нагрузку.
           </p>
           <div className="road-legend">
-            <span>🟢 Свободно</span>
-            <span>🟠 Плотно</span>
-            <span>🔴 Перегрузка</span>
+            <span><Circle size={10} fill="#328365" color="#328365" aria-hidden="true" /> Свободно</span>
+            <span><Circle size={10} fill="#c98c00" color="#c98c00" aria-hidden="true" /> Плотно</span>
+            <span><Circle size={10} fill="#b8392a" color="#b8392a" aria-hidden="true" /> Перегрузка</span>
           </div>
           <details>
             <summary>Районы · средняя поездка</summary>
             {districts.map((d) => (
               <p key={d.id}>
-                {d.name}: {data.before.districts[d.id].minutes.toFixed(1)} →{" "}
-                {data.after.districts[d.id].minutes.toFixed(1)} мин
+                {d.name}: {fmt(data.before.districts[d.id].minutes, 1)} →{" "}
+                {fmt(data.after.districts[d.id].minutes, 1)} мин
               </p>
             ))}
           </details>

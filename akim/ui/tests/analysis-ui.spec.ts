@@ -110,7 +110,7 @@ test("complaints ingest, filter, geolocate verified items and preserve results o
   });
   await page.goto("/");
   await page.getByRole("button", { name: "Жалобы", exact: true }).click();
-  await page.getByRole("button", { name: "Ingest Threads → карта" }).click();
+  await page.getByRole("button", { name: "Найти жалобы на карте" }).click();
   await expect(page.locator(".complaint-counts")).toContainText("2");
   await expect(page.locator(".complaint-marker")).toHaveCount(1);
   await page
@@ -140,7 +140,7 @@ test("complaints ingest, filter, geolocate verified items and preserve results o
   await page.route("**/api/complaints/ingest", (r) =>
     r.fulfill({ status: 502, json: { error: "Jev временно недоступен." } }),
   );
-  await page.getByRole("button", { name: "Ingest Threads → карта" }).click();
+  await page.getByRole("button", { name: "Найти жалобы на карте" }).click();
   await expect(page.getByRole("alert")).toContainText(
     "Предыдущий результат сохранён",
   );

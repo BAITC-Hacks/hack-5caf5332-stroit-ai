@@ -122,15 +122,11 @@ button {
   backdrop-filter: blur(18px);
 }
 .city-map,
-.city-map canvas,
-.map-labels {
+.city-map canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-}
-.map-labels {
-  pointer-events: none;
 }
 .district-label {
   position: absolute;
@@ -165,122 +161,6 @@ button {
   font-weight: 600;
   color: #566449;
 }
-.thought {
-  position: absolute;
-  background: #fcf8e9f5;
-  box-shadow: 0 3px 16px #1c333822;
-  border-radius: 9px;
-  padding: 11px 14px;
-  font-size: 11px;
-  max-width: 200px;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  line-height: 1.5;
-}
-.thought:after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  left: 20px;
-  border-top: 7px solid #fcf8e9;
-  border-right: 7px solid transparent;
-}
-.topbar {
-  position: absolute;
-  left: 26px;
-  right: 26px;
-  top: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  pointer-events: none;
-  z-index: 3;
-}
-.topbar button,
-.city-status {
-  pointer-events: auto;
-}
-.brand {
-  border-radius: 15px;
-  gap: 11px;
-  padding: 14px 17px;
-  font-weight: 750;
-  font-size: 23px;
-  letter-spacing: -1.4px;
-}
-.brand-period {
-  color: #566449;
-}
-.brand-mark {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  width: 22px;
-  height: 23px;
-}
-.brand-mark i {
-  width: 5px;
-  background: #3c5e48;
-  border-radius: 1px;
-}
-.brand-mark i:nth-child(1) {
-  height: 12px;
-}
-.brand-mark i:nth-child(2) {
-  height: 23px;
-}
-.brand-mark i:nth-child(3) {
-  height: 17px;
-}
-.brand-tag {
-  font-weight: 500;
-  letter-spacing: 1.2px;
-  font-size: 8px;
-  max-width: 83px;
-  text-align: left;
-  border-left: 1px solid #bac7b5;
-  line-height: 1.6;
-  padding-left: 14px;
-  margin-left: 4px;
-}
-.breadcrumb {
-  font-size: 10px;
-  letter-spacing: 0.15px;
-  color: #c2d2d4;
-  padding: 11px 4px;
-  display: flex;
-  gap: 9px;
-}
-.breadcrumb span {
-  color: #566449;
-}
-.city-status {
-  border-radius: 13px;
-  padding: 13px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 280px;
-}
-.city-status strong {
-  font-size: 12px;
-  font-weight: 500;
-  display: block;
-}
-.city-status strong span {
-  margin: 0 3px;
-  color: #566449;
-}
-.city-status small {
-  font-size: 10px;
-  color: #566449;
-  display: block;
-  margin-top: 4px;
-}
-.city-status > svg {
-  margin-left: auto;
-  color: #566449;
-}
 .live-dot,
 .demo-note i {
   height: 6px;
@@ -291,249 +171,11 @@ button {
   box-shadow: 0 0 0 4px #62855313;
   flex-shrink: 0;
 }
-.welcome {
-  position: absolute;
-  top: 30%;
-  left: 38px;
-  z-index: 1;
-  color: #edf1e6;
-  pointer-events: none;
-}
-.welcome button {
-  pointer-events: auto;
-}
 .eyebrow {
   font-size: 9px;
   letter-spacing: 1.5px;
   font-weight: 600;
   line-height: 1.7;
-}
-.welcome .eyebrow {
-  color: #c0d5c8;
-  font-size: 8px;
-  letter-spacing: 1.2px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.tiny-line {
-  display: inline-block;
-  width: 17px;
-  height: 1px;
-  background: #cbe59b;
-}
-.welcome h1 {
-  font-size: 43px;
-  line-height: 1.12;
-  font-weight: 500;
-  letter-spacing: -2px;
-  margin: 17px 0;
-}
-.welcome h1 em {
-  font-style: normal;
-  color: #d7eda8;
-}
-.welcome p {
-  font-size: 12px;
-  line-height: 1.9;
-  color: #cbd9d7;
-}
-.welcome-button {
-  margin-top: 24px;
-  border-radius: 10px;
-  padding: 13px 18px;
-  background: #d7edac;
-  font-size: 12px;
-  font-weight: 550;
-  color: #2c4638;
-  box-shadow: 0 4px 15px #1b344332;
-}
-.welcome-button:hover {
-  background: #e8f4c5;
-}
-.sample-link {
-  display: flex;
-  font-size: 10px;
-  color: #d2dfd6;
-  padding: 15px 0;
-}
-.welcome-hint {
-  margin-top: 33px;
-  display: flex;
-  gap: 10px;
-  font-size: 10px;
-  line-height: 1.6;
-  color: #a8c0c4;
-}
-.welcome-hint svg {
-  margin-top: 3px;
-}
-.score-card {
-  position: absolute;
-  right: 26px;
-  top: 108px;
-  width: 235px;
-  padding: 16px 18px;
-  border-radius: 14px;
-}
-.score-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 9px;
-  letter-spacing: 1px;
-  font-weight: 500;
-}
-.score-title .icon-button {
-  margin-left: auto;
-  width: 22px;
-  height: 22px;
-}
-.score-value {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-}
-.score-value > strong {
-  font-size: 43px;
-  letter-spacing: -2.3px;
-  line-height: 1.1;
-  font-weight: 550;
-  font-variant-numeric: tabular-nums;
-}
-.score-value > span {
-  font-size: 10px;
-  line-height: 1.6;
-  color: #566449;
-}
-.score-value b {
-  color: var(--good);
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: -0.5px;
-}
-.score-card > p {
-  font-size: 9px;
-  color: #566449;
-  margin-top: 8px;
-}
-.before-after {
-  display: flex;
-  background: #dce3d5;
-  padding: 3px;
-  border-radius: 8px;
-  margin-top: 14px;
-}
-.before-after button {
-  flex: 1;
-  font-size: 10px;
-  padding: 7px 3px;
-  border-radius: 6px;
-}
-.before-after .active {
-  background: #f5f6ed;
-  box-shadow: 0 1px 3px #2c442317;
-}
-.dock {
-  position: absolute;
-  z-index: 6;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  border-radius: 19px;
-  padding: 7px;
-  gap: 6px;
-  white-space: nowrap;
-  background: #edf0e5f5;
-}
-.dock > button {
-  font-size: 11px;
-  padding: 13px 17px;
-  border-radius: 12px;
-  min-height: 44px;
-}
-.dock > button:hover,
-.dock > button.active {
-  background: #dce9c7;
-}
-.dock > button.dock-plan {
-  background: #d4e8a8;
-}
-.dock > button.dock-plan:hover {
-  background: #c8e193;
-}
-.dock small {
-  font-size: 9px;
-  padding: 3px 5px;
-  background: #59744617;
-  border-radius: 4px;
-  color: #566449;
-  margin-left: 4px;
-}
-.dock-divider {
-  width: 1px;
-  height: 22px;
-  background: #84937733;
-  margin: 0 1px;
-}
-.akim-dot {
-  width: 5px;
-  height: 5px;
-  background: #6d8a48;
-  border-radius: 50%;
-  margin-left: 1px;
-}
-.map-footer {
-  position: absolute;
-  bottom: 13px;
-  left: 28px;
-  right: 28px;
-  display: flex;
-  justify-content: space-between;
-  color: #afc1c6;
-  font-size: 9px;
-  align-items: center;
-}
-.map-footer > span {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.map-footer i {
-  width: 4px;
-  height: 4px;
-  border: 1px solid #bdcdcb;
-  border-radius: 50%;
-}
-.map-footer button {
-  font-size: 10px;
-  padding: 4px;
-  color: #c9d5d2;
-}
-.map-compass {
-  position: absolute;
-  right: 36px;
-  bottom: 82px;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  gap: 4px;
-  color: #aec5c8;
-}
-.map-compass span {
-  font-size: 9px;
-}
-.whole-city {
-  position: absolute;
-  top: 115px;
-  left: 29px;
-  padding: 9px 13px;
-  border-radius: 10px;
-  font-size: 11px;
-  z-index: 3;
 }
 .icon-button {
   border-radius: 8px;
@@ -577,117 +219,6 @@ button {
   scrollbar-width: thin;
   scrollbar-color: #b4c4a5 transparent;
 }
-.budget-area {
-  padding: 0 22px 16px;
-  border-bottom: 1px solid var(--line);
-  flex-shrink: 0;
-}
-.budget-line {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 11px;
-}
-.budget-line > strong {
-  font-size: 19px;
-  letter-spacing: -0.7px;
-  font-weight: 550;
-}
-.budget-line strong span {
-  font-size: 11px;
-  letter-spacing: 0;
-  font-weight: 400;
-  color: #566449;
-}
-.budget-line > small {
-  margin-left: auto;
-  font-size: 10px;
-  color: #566449;
-}
-.budget-track {
-  height: 5px;
-  background: #dce3d4;
-  border-radius: 5px;
-  margin-top: 10px;
-  overflow: hidden;
-}
-.budget-track i {
-  display: block;
-  height: 100%;
-  background: #8fa760;
-  border-radius: 5px;
-  transition: width 0.3s;
-}
-.slots {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 7px;
-  margin-top: 14px;
-}
-.slots button {
-  height: 33px;
-  border: 1px dashed #aebda1;
-  border-radius: 7px;
-  font-size: 11px;
-  gap: 5px;
-  color: #566449;
-  opacity: 1;
-}
-.slots button.filled {
-  background: #e0ebcc;
-  border-style: solid;
-  border-color: #c5d7ad;
-  color: #466536;
-}
-.slots button.filled:hover {
-  background: #ecd9c9;
-  border-color: #d5af92;
-}
-.plan-rule {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  color: #566449;
-  margin-top: 8px;
-  gap: 10px;
-}
-.demo-banner {
-  background: #e3ecd3;
-  border: 1px solid #d4dfc3;
-  border-radius: 11px;
-  width: 100%;
-  padding: 13px;
-  text-align: left;
-  justify-content: space-between;
-  margin-top: 17px;
-}
-.demo-banner b {
-  font-size: 11px;
-  font-weight: 550;
-  display: block;
-}
-.demo-banner small {
-  font-size: 9px;
-  display: block;
-  margin-top: 5px;
-  color: #566449;
-}
-.catalog-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 20px 0 12px;
-}
-.catalog-heading h3 {
-  font-size: 14px;
-  font-weight: 550;
-}
-.catalog-heading h3 span {
-  font-size: 10px;
-  color: #566449;
-  font-weight: 400;
-  margin-left: 4px;
-}
 .text-button {
   font-size: 10px;
   color: #566449;
@@ -696,196 +227,10 @@ button {
 .text-button:hover {
   color: #2c4534;
 }
-.filter-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 14px;
-}
-.filter-tabs button {
-  border: 1px solid #d7decf;
-  font-size: 9px;
-  padding: 6px 9px;
-  border-radius: 20px;
-}
-.filter-tabs .active {
-  background: #334b3c;
-  color: #eff4e8;
-  border-color: #334b3c;
-}
-.group-heading {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 10px;
-  font-weight: 600;
-  margin: 19px 0 9px;
-}
-.group-heading > span {
-  margin-left: auto;
-  font-weight: 400;
-  color: #566449;
-}
-.direction-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: #91a9b7;
-}
-.direction-1 {
-  background: #83a478;
-}
-.direction-2 {
-  background: #bd9b73;
-}
-.direction-3 {
-  background: #b19bac;
-}
-.direction-4 {
-  background: #9daba0;
-}
-.measure-card {
-  background: #f9faf4b3;
-  border: 1px solid #dce2d3;
-  border-radius: 11px;
-  padding: 12px;
-  margin-bottom: 9px;
-}
-.measure-card.chosen {
-  background: #e7efdba8;
-  border-color: #afc291;
-}
-.measure-top {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 9px;
-  color: #566449;
-}
-.measure-id {
-  font-size: 9px;
-  font-weight: 600;
-  color: #566449;
-  border: 1px solid #d7dfcf;
-  border-radius: 4px;
-  padding: 2px 4px;
-}
-.measure-top > strong {
-  margin-left: auto;
-  color: #4b6040;
-  font-size: 14px;
-  font-weight: 550;
-}
-.measure-top > strong small {
-  font-size: 9px;
-  font-weight: 400;
-}
-.measure-card h4 {
-  font-size: 12px;
-  font-weight: 550;
-  line-height: 1.5;
-  margin: 8px 0 5px;
-  letter-spacing: -0.1px;
-}
-.measure-effects {
-  font-size: 9px;
-  line-height: 1.7;
-  color: #566449;
-}
-.measure-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
-  gap: 10px;
-}
-.measure-bottom select {
-  max-width: 230px;
-  min-width: 170px;
-  background: #edf1e5;
-  border: 1px solid #d9e1cc;
-  border-radius: 6px;
-  padding: 7px 9px;
-  font-size: 10px;
-  color: #53664a;
-}
-.measure-bottom .add-measure,
-.measure-bottom .remove-measure {
-  width: 29px;
-  height: 29px;
-  border-radius: 7px;
-  background: #dce9c6;
-}
-.measure-bottom .remove-measure {
-  background: #d1dfba;
-}
-.measure-bottom .add-measure:hover {
-  background: #c9ddab;
-}
-.chosen-label {
-  font-size: 10px;
-  color: #566449;
-}
-.citywide-label {
-  font-size: 10px;
-  color: #566449;
-}
-.block-reason {
-  display: block;
-  margin-top: 7px;
-  font-size: 9px;
-  color: #8b7359;
-  line-height: 1.4;
-}
-.plan-result {
-  border-radius: 11px;
-  background: #e4ecd8;
-  border: 1px solid #cedbbb;
-  margin-top: 17px;
-  padding: 14px;
-}
-.result-heading {
-  width: 100%;
-  justify-content: space-between;
-  text-align: left;
-}
 .section-label {
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.6px;
-  color: #566449;
-}
-.result-heading strong {
-  font-size: 34px;
-  font-weight: 550;
-  letter-spacing: -1.5px;
-  display: block;
-  margin-top: 7px;
-}
-.result-heading strong small {
-  font-size: 13px;
-  letter-spacing: -0.4px;
-  color: #566449;
-}
-.changes {
-  margin-top: 16px;
-}
-.change-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
-  font-size: 11px;
-}
-.change-row small {
-  display: block;
-  font-size: 9px;
-  color: #566449;
-  margin-top: 2px;
-}
-.change-row strong {
-  font-size: 12px;
-  font-weight: 500;
   color: #566449;
 }
 .tradeoff {
@@ -904,18 +249,6 @@ button {
   line-height: 1.65;
   color: #566449;
   margin-top: 5px;
-}
-.result-actions {
-  display: flex;
-  gap: 7px;
-  margin-top: 13px;
-}
-.result-actions button {
-  border: 1px solid #c5d2b7;
-  padding: 9px 8px;
-  border-radius: 7px;
-  font-size: 9px;
-  flex: 1;
 }
 .dark {
   background: #2e4738 !important;
@@ -937,82 +270,6 @@ button {
 }
 .negative {
   color: var(--red);
-}
-.result-nudge {
-  position: absolute;
-  bottom: 127px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 12px;
-  padding: 13px 15px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  white-space: nowrap;
-}
-.result-nudge b {
-  font-size: 11px;
-  font-weight: 500;
-  display: block;
-}
-.result-nudge small {
-  font-size: 9px;
-  color: #566449;
-  display: block;
-  margin-top: 4px;
-}
-.success-icon {
-  background: #dcebbf;
-  color: #566449;
-  width: 29px;
-  height: 29px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.district-panel {
-  position: absolute;
-  left: 26px;
-  top: 166px;
-  width: 308px;
-  padding: 20px;
-  border-radius: 17px;
-  z-index: 3;
-}
-.district-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.district-title .eyebrow {
-  font-size: 8px;
-  color: #566449;
-  margin-bottom: 4px;
-}
-.district-panel > p {
-  font-size: 11px;
-  color: #566449;
-  margin-top: 12px;
-}
-.district-stats {
-  display: flex;
-  gap: 35px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 16px;
-}
-.district-stats small {
-  font-size: 9px;
-  color: #566449;
-  display: block;
-}
-.district-stats strong {
-  font-size: 25px;
-  font-weight: 500;
-  letter-spacing: -1px;
-  display: block;
-  margin-top: 4px;
 }
 .need {
   display: flex;
@@ -1557,19 +814,6 @@ blockquote cite {
   font-size: 14px;
   margin: 19px 0 9px;
 }
-.about-steps {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 16px;
-  background: #e4ecd9;
-  border-radius: 10px;
-  font-size: 11px;
-}
-.about-steps svg {
-  color: #566449;
-}
 .about-panel code {
   display: block;
   background: #e4eadc;
@@ -1628,58 +872,15 @@ blockquote cite {
   }
 }
 @media (min-width: 1550px) {
-  .welcome {
-    left: 55px;
-  }
-  .welcome h1 {
-    font-size: 52px;
-  }
-  .welcome p {
-    font-size: 14px;
-  }
-  .welcome .eyebrow {
-    font-size: 9px;
-  }
-  .welcome-button {
-    font-size: 13px;
-  }
-  .score-card {
-    width: 255px;
-  }
   .panel {
     width: 430px;
   }
-  .dock > button {
-    font-size: 12px;
-    padding: 15px 20px;
-  }
 }
 @media (max-width: 1100px) and (min-width: 761px) {
-  .welcome {
-    left: 28px;
-    top: 35%;
-  }
-  .welcome h1 {
-    font-size: 34px;
-  }
-  .welcome p {
-    font-size: 11px;
-  }
-  .welcome .eyebrow {
-    max-width: 200px;
-    font-size: 7px;
-  }
-  .welcome-hint {
-    margin-top: 15px;
-  }
-  .score-card {
-    width: 200px;
-  }
   .panel {
     width: 365px;
   }
-  .panel-heading,
-  .budget-area {
+  .panel-heading {
     padding-left: 18px;
     padding-right: 18px;
   }
@@ -1687,180 +888,20 @@ blockquote cite {
     padding-left: 17px;
     padding-right: 17px;
   }
-  .city-status {
-    min-width: 250px;
-  }
-  .brand-tag {
-    display: none;
-  }
 }
 @media (max-height: 760px) and (min-width: 761px) {
-  .welcome {
-    top: 27%;
-  }
-  .welcome-hint {
-    margin-top: 13px;
-  }
-  .welcome h1 {
-    font-size: 36px;
-  }
   .panel {
     top: 110px;
     bottom: 114px;
-  }
-  .score-card {
-    top: 106px;
   }
   .ask-panel {
     bottom: 113px;
     max-height: calc(100dvh - 200px);
   }
-  .dock {
-    bottom: 33px;
-  }
-  .map-footer {
-    bottom: 8px;
-  }
-  .welcome-button {
-    margin-top: 16px;
-  }
 }
 @media (max-width: 760px) {
   .app {
     min-height: 540px;
-  }
-  .topbar {
-    left: 15px;
-    right: 15px;
-    top: 16px;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .brand {
-    font-size: 20px;
-    padding: 12px 13px;
-    border-radius: 12px;
-    gap: 8px;
-  }
-  .brand-tag {
-    display: none;
-  }
-  .brand-mark {
-    transform: scale(0.82);
-    width: 18px;
-  }
-  .breadcrumb {
-    font-size: 8px;
-    gap: 5px;
-    padding-top: 9px;
-    white-space: nowrap;
-  }
-  .city-status {
-    min-width: 0;
-    gap: 7px;
-    padding: 10px;
-    border-radius: 11px;
-    box-shadow: 0 4px 15px #18382c22;
-  }
-  .city-status > svg {
-    display: none;
-  }
-  .city-status strong {
-    font-size: 9px;
-  }
-  .city-status small {
-    font-size: 8px;
-  }
-  .city-status .live-dot {
-    width: 4px;
-    height: 4px;
-  }
-  .city-status strong > span {
-    margin: 0 1px;
-  }
-  .score-card {
-    top: 97px;
-    right: 15px;
-    width: 151px;
-    padding: 10px 12px;
-    border-radius: 11px;
-  }
-  .score-title {
-    font-size: 7px;
-    gap: 4px;
-    letter-spacing: 0.6px;
-  }
-  .score-title > svg {
-    width: 12px;
-  }
-  .score-title .icon-button {
-    width: 15px;
-    height: 15px;
-  }
-  .score-value {
-    margin-top: 7px;
-    gap: 9px;
-  }
-  .score-value > strong {
-    font-size: 31px;
-    letter-spacing: -1.6px;
-  }
-  .score-value > span {
-    font-size: 8px;
-  }
-  .score-value b {
-    font-size: 11px;
-  }
-  .score-card > p {
-    font-size: 7px;
-    line-height: 1.5;
-    margin-top: 5px;
-  }
-  .before-after {
-    margin-top: 9px;
-  }
-  .before-after button {
-    font-size: 8px;
-    padding: 6px 2px;
-  }
-  .welcome {
-    top: auto;
-    bottom: 132px;
-    left: 22px;
-    right: 22px;
-    background: linear-gradient(90deg, #21495bee, #21495b00);
-    border-radius: 15px;
-    padding: 15px 16px;
-    width: 310px;
-  }
-  .welcome .eyebrow {
-    font-size: 6px;
-    letter-spacing: 1px;
-  }
-  .welcome h1 {
-    font-size: 31px;
-    letter-spacing: -1.2px;
-    margin: 9px 0 10px;
-    line-height: 1.1;
-  }
-  .welcome p {
-    font-size: 10px;
-    line-height: 1.7;
-  }
-  .welcome p br:last-child {
-    display: none;
-  }
-  .welcome-button {
-    margin-top: 14px;
-    padding: 10px 13px;
-    font-size: 10px;
-  }
-  .sample-link {
-    font-size: 9px;
-    padding: 11px 0 0;
-  }
-  .welcome-hint {
-    display: none;
   }
   .district-label {
     font-size: 10px;
@@ -1874,60 +915,6 @@ blockquote cite {
   }
   .district-label b {
     display: none;
-  }
-  .dock {
-    bottom: 35px;
-    max-width: calc(100% - 24px);
-    width: max-content;
-    padding: 5px;
-    gap: 2px;
-    border-radius: 15px;
-  }
-  .dock > button {
-    font-size: 9px;
-    gap: 5px;
-    padding: 12px 9px;
-    border-radius: 10px;
-    min-height: 42px;
-  }
-  .dock > button > svg {
-    width: 15px;
-    height: 15px;
-  }
-  .dock small {
-    font-size: 8px;
-    margin-left: 0;
-    padding: 3px;
-  }
-  .dock-divider {
-    height: 17px;
-    margin: 0 2px;
-  }
-  .akim-dot {
-    display: none;
-  }
-  .map-footer {
-    left: 16px;
-    right: 16px;
-    bottom: 11px;
-    font-size: 7px;
-  }
-  .map-footer > button {
-    font-size: 8px;
-    gap: 4px;
-  }
-  .map-footer button > svg {
-    width: 11px;
-  }
-  .map-compass {
-    right: 18px;
-    bottom: 111px;
-  }
-  .map-compass svg {
-    width: 22px;
-  }
-  .map-compass span {
-    font-size: 7px;
   }
   .panel {
     top: auto;
@@ -1949,92 +936,12 @@ blockquote cite {
   .panel-heading .eyebrow {
     font-size: 7px;
   }
-  .budget-area {
-    padding: 0 17px 13px;
-  }
-  .budget-line {
-    font-size: 10px;
-  }
-  .budget-line > strong {
-    font-size: 17px;
-  }
-  .slots {
-    margin-top: 10px;
-    gap: 6px;
-  }
-  .slots button {
-    height: 28px;
-    font-size: 10px;
-  }
-  .plan-rule {
-    font-size: 8px;
-  }
   .panel-scroll {
     padding: 0 16px 17px;
-  }
-  .budget-track {
-    margin-top: 7px;
-    height: 4px;
-  }
-  .catalog-heading {
-    margin-top: 16px;
-  }
-  .measure-card {
-    padding: 11px;
-  }
-  .whole-city {
-    top: 99px;
-    left: 16px;
-    padding: 8px 10px;
-    font-size: 10px;
-  }
-  .district-panel {
-    top: auto;
-    bottom: 105px;
-    left: 13px;
-    right: 13px;
-    width: auto;
-    padding: 16px;
-    max-height: 52dvh;
-    overflow: auto;
-    border-radius: 15px;
-  }
-  .district-panel h2 {
-    font-size: 21px;
-  }
-  .district-panel > p {
-    font-size: 10px;
-    margin-top: 9px;
-  }
-  .district-stats {
-    padding: 12px 0;
-    margin-bottom: 12px;
-  }
-  .district-stats strong {
-    font-size: 23px;
   }
   .need {
     font-size: 10px;
     padding-top: 9px;
-  }
-  .district-panel blockquote {
-    font-size: 10px;
-    margin: 12px 0;
-  }
-  .district-panel > .dark {
-    padding: 10px 12px;
-    font-size: 10px;
-  }
-  .thought {
-    font-size: 9px;
-    padding: 8px 10px;
-    max-width: 150px;
-  }
-  .has-panel .whole-city {
-    z-index: 2;
-  }
-  .has-panel .score-card {
-    display: none;
   }
   .ask-panel {
     left: 12px;
@@ -2118,20 +1025,6 @@ blockquote cite {
   .about-panel code {
     font-size: 9px;
   }
-  .result-nudge {
-    bottom: 111px;
-    max-width: calc(100% - 26px);
-    padding: 10px 12px;
-    gap: 8px;
-    white-space: normal;
-    min-width: 310px;
-  }
-  .result-nudge b {
-    font-size: 10px;
-  }
-  .result-nudge small {
-    font-size: 8px;
-  }
   .toast {
     top: 95px;
     font-size: 10px;
@@ -2141,35 +1034,6 @@ blockquote cite {
   }
   .toast svg {
     width: 14px;
-  }
-}
-@media (max-width: 370px) {
-  .dock > button {
-    font-size: 8px;
-    padding: 11px 7px;
-  }
-  .dock > button > svg {
-    width: 13px;
-  }
-  .city-status {
-    padding: 9px 7px;
-  }
-  .city-status strong {
-    font-size: 8px;
-  }
-  .brand {
-    font-size: 18px;
-  }
-  .brand-mark {
-    display: none;
-  }
-  .welcome {
-    left: 12px;
-    width: 290px;
-  }
-  .map-footer > span {
-    max-width: 220px;
-    font-size: 6px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2182,106 +1046,14 @@ blockquote cite {
     scroll-behavior: auto !important;
   }
 }
-/* Keep introductory text and small-screen labels clear of the map. */
-@media (min-width: 761px) {
-  .welcome {
-    padding: 18px 0;
-    max-width: 295px;
-  }
-  .welcome:before {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    inset: -15px -38px -15px -40px;
-    background: linear-gradient(90deg, #254b5df5 68%, #254b5d00);
-    border-radius: 20px;
-  }
-  .welcome h1 {
-    font-size: 39px;
-  }
-}
+/* Small-screen map labels. */
 @media (max-width: 760px) {
   .district-label small {
     display: none;
   }
-  .score-card > p {
-    display: none;
-  }
-  .score-card {
-    padding: 9px 12px;
-  }
-  .welcome {
-    padding: 12px 15px;
-    bottom: 130px;
-  }
-  .welcome > .eyebrow {
-    display: none;
-  }
-  .welcome h1 {
-    font-size: 25px;
-    margin: 0 0 8px;
-    letter-spacing: -1px;
-  }
-  .welcome h1 br {
-    display: none;
-  }
-  .welcome p {
-    font-size: 10px;
-    line-height: 1.7;
-  }
-  .welcome p br {
-    display: none;
-  }
-  .welcome-button {
-    margin-top: 11px;
-  }
-  .sample-link {
-    padding-top: 10px;
-  }
 }
 
-/* Live city context and the residents' daily clock. */
-.simulation-controls {
-  position: absolute;
-  right: 28px;
-  top: 108px;
-  z-index: 12;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
-  border-radius: 13px;
-  font-size: 11px;
-  color: #32564f;
-}
-.simulation-controls time {
-  font-size: 17px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-.simulation-controls select {
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  padding: 4px;
-  cursor: pointer;
-}
-.simulation-controls .data-toggle {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border: 0;
-  border-left: 1px solid #254e4825;
-  background: none;
-  padding: 4px 0 4px 10px;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-.data-toggle small {
-  color: #657c72;
-}
+/* Resident cards and live city context. */
 .resident-card {
   position: absolute;
   right: 28px;
@@ -2482,46 +1254,11 @@ blockquote cite {
   color: #396c54;
   margin-top: 9px;
 }
-.cost-basis {
-  font-size: 10px;
-  color: #688171;
-  margin: 10px 0;
-  line-height: 1.5;
-}
-.cost-basis summary {
-  cursor: pointer;
-}
-.cost-basis a {
-  color: #34664a;
-}
-.cost-basis p {
-  font-size: 10px;
-}
-.attribution {
-  font-size: 10px !important;
-}
-.attribution a {
-  color: inherit;
-  text-decoration: underline;
-}
 .about-panel {
   overflow-y: auto;
   max-height: calc(100dvh - 220px);
 }
 @media (max-width: 760px) {
-  .simulation-controls {
-    right: 12px;
-    top: 84px;
-    gap: 7px;
-    padding: 5px 7px;
-  }
-  .simulation-controls time {
-    font-size: 14px;
-  }
-  .simulation-controls > span,
-  .data-toggle small {
-    display: none;
-  }
   .resident-card {
     top: 132px;
     right: 12px;
@@ -2543,22 +1280,6 @@ blockquote cite {
   }
   .about-panel {
     max-height: calc(100dvh - 210px);
-  }
-  .score-card {
-    top: 137px;
-  }
-  .resident-card ~ .score-card {
-    display: none;
-  }
-}
-
-.resident-card ~ .score-card {
-  display: none;
-}
-
-@media (min-width: 761px) {
-  .score-card {
-    top: 174px;
   }
 }
 .akim-start p {
@@ -2633,30 +1354,7 @@ blockquote cite {
   border-radius: 12px;
   font-size: 11px;
 }
-.welcome {
-  background: #123b4ac7;
-  backdrop-filter: blur(9px);
-  border-radius: 20px;
-  padding: 25px;
-}
-.breadcrumb {
-  color: #284b43;
-  text-shadow: 0 1px #fff;
-}
-.map-footer,
-.map-footer button {
-  color: #294c43 !important;
-  text-shadow: 0 1px #fff;
-}
-.compass {
-  display: none;
-}
 @media (max-width: 760px) {
-  .welcome {
-    background: #163f4ddc;
-    padding: 16px;
-    border-radius: 15px;
-  }
   .leaflet-bottom {
     bottom: 38px !important;
   }

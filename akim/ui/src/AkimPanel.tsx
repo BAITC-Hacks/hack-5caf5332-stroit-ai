@@ -8,11 +8,12 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { choiceLabel, type Choice, districts } from "./data";
+import { choiceLabel, type Choice, directions, districts } from "./data";
 import {
   advise,
   autopilot,
   budget,
+  projectEffects,
   simulate,
   type Alternative,
   type Projection,
@@ -22,7 +23,8 @@ import { fmt } from "./PlanBuilder";
 import { AiModeSwitch, akimApi, useServices } from "./services";
 import type { ActivityEvent } from "./city-data";
 import type { AkimResult } from "../server/akim";
-import { money } from "./money";
+import type { GoalConstraints } from "../server/schemas";
+import { BUDGET_LIMIT, money } from "./money";
 interface Props {
   plan: Choice[];
   onChange: (plan: Choice[]) => void;
@@ -41,15 +43,31 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const [mode, setMode] = useState<"advisor" | "autopilot">("advisor");
+  const [mode, setMode] = useState<"advisor" | "autopilot" | "goal">("advisor");
+  const [goal, setGoal] = useState("");
+  const [constraints, setConstraints] = useState<GoalConstraints>({
+    priorities: [],
+    protectedDistricts: [],
+    minSupportPercent: 0,
+    reserveUnits: 0,
+    mustInclude: [],
+    mustExclude: [],
+  });
+  const [submittedGoal, setSubmittedGoal] = useState<{
+    serviceMode: "live" | "local";
+    goal: string;
+    constraints: GoalConstraints;
+  } | null>(null);
   const [step, setStep] = useState(0);
   const [alternative, setAlternative] = useState<Alternative | null>(null);
   const [proposed, setProposed] = useState<Choice[] | null>(null);
   const [projection, setProjection] = useState<Projection | null>(null);
   const [approval, setApproval] = useState<number | null>(null);
   const [dismissed, setDismissed] = useState(false);
-  const current = simulate(plan).result;
+  const current = mode === "goal" ? projectEffects(plan) : simulate(plan).result;
   const blocked = mode === "advisor" && !current;
+  const usesApi = services.mode === "live" || mode === "goal";
+  const busy = usesApi && attempt > 0 && !liveResult && !error;
   useEffect(() => {
     setStep(0);
     setAlternative(null);
@@ -61,8 +79,12 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
     setEvents([]);
     setLiveResult(null);
     if (blocked) return;
-    if (services.mode === "live") {
+    if (services.mode === "live" || mode === "goal") {
       if (attempt === 0) return;
+      if (mode === "goal" && submittedGoal?.serviceMode !== services.mode) {
+        setAttempt(0);
+        return;
+      }
       const controller = new AbortController();
       akimApi(
         mode,
@@ -70,6 +92,12 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
         services.health?.token ?? "",
         (event) => setEvents((old) => [...old, event]),
         controller.signal,
+        mode === "goal" && services.mode === "live"
+          ? submittedGoal?.goal
+          : undefined,
+        mode === "goal" && services.mode === "local"
+          ? submittedGoal?.constraints
+          : undefined,
       )
         .then((answer) => {
           if (controller.signal.aborted) return;
@@ -129,7 +157,10 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
       }, 1060),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [plan, mode, blocked, services.mode, services.health?.token, attempt]);
+  }, [
+    plan, mode, blocked, services.mode, services.health?.token,
+    attempt, submittedGoal,
+  ]);
   const apply = () => {
     if (proposed) {
       onChange(proposed);
@@ -139,6 +170,7 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
   return (
     <section
       className="panel akim-panel glass"
+      style={{ zIndex: 9 }}
       role="dialog"
       aria-labelledby="akim-title"
     >
@@ -181,6 +213,16 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
         >
           Автопилот
         </button>
+        <button
+          aria-pressed={mode === "goal"}
+          className={mode === "goal" ? "active" : ""}
+          onClick={() => {
+            setAttempt(0);
+            setMode("goal");
+          }}
+        >
+          Цель
+        </button>
       </div>
       <AiModeSwitch />
       <div className="panel-scroll">
@@ -199,7 +241,150 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
           </div>
         ) : (
           <>
-            {services.mode === "live" && attempt === 0 && (
+            {mode === "goal" && (
+              <form
+                className="akim-start"
+                style={{ display: "grid", gap: 12, fontSize: 12 }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setSubmittedGoal({
+                    serviceMode: services.mode,
+                    goal: goal.trim(),
+                    constraints,
+                  });
+                  setAttempt((n) => n + 1);
+                }}
+              >
+                {services.mode === "live" ? (
+                  <>
+                    <label htmlFor="akim-goal">Цель словами</label>
+                    <div className="question-field">
+                      <textarea
+                        id="akim-goal"
+                        rows={4}
+                        maxLength={300}
+                        required
+                        disabled={busy}
+                        placeholder="Например: экология в приоритете, Есиль не трогать, поддержка не ниже 60%, оставить 10 у.е. в резерве"
+                        value={goal}
+                        onChange={(e) => setGoal(e.target.value)}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <fieldset
+                    disabled={busy}
+                    style={{ border: 0, padding: 0, margin: 0 }}
+                  >
+                    <legend>Ограничения цели</legend>
+                    <p className="demo-note">
+                      Выберите ограничения для локального поиска.
+                    </p>
+                    <fieldset style={{ border: 0, padding: "8px 0" }}>
+                      <legend>Приоритеты</legend>
+                      <div
+                        style={{ display: "flex", flexWrap: "wrap", gap: "6px 12px" }}
+                      >
+                        {directions.map((direction) => (
+                          <label key={direction}>
+                            <input
+                              type="checkbox"
+                              checked={constraints.priorities.includes(direction)}
+                              onChange={(e) =>
+                                setConstraints((old) => ({
+                                  ...old,
+                                  priorities: e.target.checked
+                                    ? [...old.priorities, direction]
+                                    : old.priorities.filter((d) => d !== direction),
+                                }))
+                              }
+                            />{" "}
+                            {direction}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <fieldset style={{ border: 0, padding: "8px 0" }}>
+                      <legend>Защищённые районы</legend>
+                      <div
+                        style={{ display: "flex", flexWrap: "wrap", gap: "6px 12px" }}
+                      >
+                        {districts.map((district) => (
+                          <label key={district.id}>
+                            <input
+                              type="checkbox"
+                              checked={constraints.protectedDistricts.includes(district.id)}
+                              onChange={(e) =>
+                                setConstraints((old) => ({
+                                  ...old,
+                                  protectedDistricts: e.target.checked
+                                    ? [...old.protectedDistricts, district.id]
+                                    : old.protectedDistricts.filter((id) => id !== district.id),
+                                }))
+                              }
+                            />{" "}
+                            {district.name}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <p className="demo-note">
+                      Балл защищённого района не должен снижаться относительно
+                      исходного состояния города.
+                    </p>
+                    <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                      <label style={{ flex: 1, minWidth: 0 }}>
+                        Поддержка не ниже, %
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="any"
+                          required
+                          style={{ width: "100%" }}
+                          value={constraints.minSupportPercent}
+                          onChange={(e) =>
+                            setConstraints((old) => ({
+                              ...old,
+                              minSupportPercent: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      </label>
+                      <label style={{ flex: 1, minWidth: 0 }}>
+                        Резерв, у.е.
+                        <input
+                          type="number"
+                          min={0}
+                          max={BUDGET_LIMIT}
+                          step="any"
+                          required
+                          style={{ width: "100%" }}
+                          value={constraints.reserveUnits}
+                          onChange={(e) =>
+                            setConstraints((old) => ({
+                              ...old,
+                              reserveUnits: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  </fieldset>
+                )}
+                <button
+                  type="submit"
+                  className="dark wide"
+                  disabled={
+                    busy || !services.health ||
+                    (services.mode === "live" && !goal.trim())
+                  }
+                >
+                  Собрать план под цель <Sparkles size={16} />
+                </button>
+              </form>
+            )}
+            {mode !== "goal" && services.mode === "live" && attempt === 0 && (
               <div className="akim-start">
                 <p>
                   Аким учтёт ваш сценарий, данные города и интересы жителей.
@@ -217,7 +402,7 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
             )}
             <div className="activity">
               <div className="section-label">ЖУРНАЛ ДЕЙСТВИЙ</div>
-              {services.mode === "live" ? (
+              {usesApi ? (
                 <>
                   {events.map((event, i) => (
                     <div className="done" key={i}>
@@ -231,7 +416,11 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
                   {attempt > 0 && !liveResult && !error && (
                     <div className="running">
                       <LoaderCircle size={14} className="spin" />
-                      <span>GPT-6 Luna принимает решение…</span>
+                      <span>
+                        {services.mode === "live"
+                          ? "AI принимает решение…"
+                          : "Ищем план под ограничения…"}
+                      </span>
                     </div>
                   )}
                 </>
@@ -267,10 +456,44 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
             )}
             {step === 4 && projection && proposed && (
               <div className="akim-answer" aria-live="polite">
+                {liveResult?.constraints && (
+                  <ul
+                    aria-label="Ограничения плана"
+                    style={{
+                      display: "flex", flexWrap: "wrap", gap: 6,
+                      listStyle: "none", padding: 0, margin: "0 0 12px",
+                    }}
+                  >
+                    {[
+                      ...liveResult.constraints.priorities.map(
+                        (d) => `Приоритет: ${d.toLocaleLowerCase("ru")}`,
+                      ),
+                      ...liveResult.constraints.protectedDistricts.map(
+                        (id) => `Защищён: ${districts.find((d) => d.id === id)?.name ?? id}`,
+                      ),
+                      `Поддержка ≥ ${money(liveResult.constraints.minSupportPercent)}%`,
+                      `Резерв ${money(liveResult.constraints.reserveUnits)} у.е.`,
+                      ...liveResult.constraints.mustInclude.map((id) => `Обязательная мера: ${id}`),
+                      ...liveResult.constraints.mustExclude.map((id) => `Исключена мера: ${id}`),
+                    ].map((label) => (
+                      <li
+                        key={label}
+                        style={{
+                          borderRadius: 12, background: "#edf1df",
+                          padding: "4px 8px", fontSize: 11,
+                        }}
+                      >
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <div className="eyebrow">
                   {mode === "advisor"
                     ? "РЕЗУЛЬТАТ ПРОВЕРКИ"
-                    : "ПЛАН АВТОПИЛОТА"}
+                    : mode === "goal"
+                      ? "План под цель"
+                      : "ПЛАН АВТОПИЛОТА"}
                 </div>
                 <h3>
                   {liveResult
@@ -290,22 +513,24 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
                 </p>
                 <div className="comparison">
                   <div>
-                    <small>{current ? "Ваш план" : "Ваш план"}</small>
+                    <small>{mode === "goal" ? "До изменений" : "Ваш план"}</small>
                     <strong>{current ? fmt(current.score) : "—"}</strong>
                     <span>
                       {current
-                        ? `${money(budget(plan))} млн ₸`
+                        ? `${money(budget(plan))} у.е.`
                         : "Ещё не собран"}
                     </span>
                   </div>
                   <ArrowRight size={19} />
                   <div>
                     <small>
-                      {mode === "advisor" ? "После замены" : "Автопилот"}
+                      {mode === "advisor"
+                        ? "После замены"
+                        : mode === "goal" ? "План под цель" : "Автопилот"}
                     </small>
                     <strong>{fmt(projection.score)}</strong>
                     <span>
-                      {money(budget(proposed))} млн ₸{" "}
+                      {money(budget(proposed))} у.е.{" "}
                       {current &&
                         `· ${projection.score - current.score >= 0 ? "+" : ""}${fmt(projection.score - current.score)}`}
                     </span>
@@ -336,7 +561,9 @@ export default function AkimPanel({ plan, onChange, onClose, onBuild }: Props) {
                 {liveResult && (
                   <div className="live-narrative">
                     <p className="model-caption">
-                      {liveResult.model} ·{" "}
+                      {liveResult.model === "local"
+                        ? "Локальная модель"
+                        : liveResult.model} ·{" "}
                       {liveResult.cached ? "сохранённый ответ" : "новый ответ"}
                     </p>
                     <b>Сильные стороны</b>

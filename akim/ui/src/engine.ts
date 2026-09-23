@@ -25,7 +25,7 @@ export function validate(plan: Choice[], draft = false): string[] {
     errors.push("Меры не должны повторяться.");
   if (budget(plan) > BUDGET_LIMIT)
     errors.push(
-      `Бюджет превышен на ${money(budget(plan) - BUDGET_LIMIT)} млн ₸.`,
+      `Бюджет превышен на ${money(budget(plan) - BUDGET_LIMIT)} у.е.`,
     );
   const counts: Record<string, number> = {};
   for (const c of plan) {
@@ -50,7 +50,7 @@ export function validate(plan: Choice[], draft = false): string[] {
   }
   return errors;
 }
-export interface DistrictResult {
+interface DistrictResult {
   id: DistrictId;
   values: Values;
   delta: Values;
@@ -64,7 +64,8 @@ export interface Projection {
 }
 // Internal effects calculation also supports individual proposals for the demo poll.
 // Public simulate() never assigns a score to an invalid plan.
-export function projectEffects(plan: Choice[]): Projection {
+export type IndicatorShock = Partial<Record<DistrictId, Partial<Values>>>;
+export function projectEffects(plan: Choice[], shock: IndicatorShock = {}): Projection {
   const rows: DistrictResult[] = districts.map((d) => ({
     id: d.id,
     values: { ...d.values },
@@ -88,7 +89,7 @@ export function projectEffects(plan: Choice[]): Projection {
   }
   for (const [i, row] of rows.entries())
     for (const k of indicators) {
-      row.values[k] = Math.min(100, Math.max(0, row.values[k]));
+      row.values[k] = Math.min(100, Math.max(0, row.values[k] + (shock[row.id]?.[k] ?? 0)));
       row.delta[k] = row.values[k] - districts[i].values[k];
       row.score += weights[k] * row.values[k];
     }

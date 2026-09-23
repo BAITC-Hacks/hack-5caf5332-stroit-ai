@@ -7,7 +7,7 @@
     "dev": "concurrently -k -n api,ui \"npm:dev:api\" \"npm:dev:ui\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "tsx --test tests/engine.test.ts tests/server.test.ts tests/population.test.ts tests/analysis.test.ts",
+    "test": "tsx --test tests/engine.test.ts tests/server.test.ts tests/population.test.ts tests/planner.test.ts tests/residentsLod.test.ts tests/stress.test.ts tests/analysis.test.ts",
     "test:browser": "playwright test",
     "dev:api": "tsx watch server/index.ts",
     "dev:ui": "vite --host 127.0.0.1",

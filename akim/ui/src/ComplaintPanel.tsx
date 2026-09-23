@@ -122,7 +122,7 @@ export default function ComplaintPanel({
             <LoaderCircle size={15} className="spin" /> Поиск и проверка Jev…
           </>
         ) : (
-          "Ingest Threads → карта"
+          "Найти жалобы на карте"
         )}
       </button>
       {!health?.jevConfigured && (

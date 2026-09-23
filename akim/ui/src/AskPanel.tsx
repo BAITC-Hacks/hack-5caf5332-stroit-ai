@@ -113,6 +113,7 @@ export default function AskPanel({
   return (
     <section
       className="ask-panel glass"
+      style={{ zIndex: 9 }}
       role="dialog"
       aria-labelledby="ask-title"
     >
@@ -136,7 +137,7 @@ export default function AskPanel({
           disabled={busy || ingesting || !health?.configured}
           className="threads-ingest"
         >
-          {ingesting ? "Ищем публикации…" : "Ingest Threads"}
+          {ingesting ? "Ищем публикации…" : "Найти публичные посты"}
         </button>
         <label>
           <input
@@ -145,7 +146,7 @@ export default function AskPanel({
             disabled={busy || ingesting || mode !== "live"}
             onChange={(e) => setUseThreads(e.target.checked)}
           />
-          Учитывать при опросе
+          Учитывать посты в ответе жителей
         </label>
       </div>
       {ingesting && (
@@ -204,10 +205,10 @@ export default function AskPanel({
               <b>Сравнение двух отдельных предложений</b>
               <p>
                 {poll.primaryLabel || "Школа + поликлиника в Нуре"}:{" "}
-                {fmt(poll.approval, 2)}% за · {money(poll.cost)} млн ₸
+                {fmt(poll.approval, 2)}% за · {money(poll.cost)} у.е.
                 <br />
                 {poll.comparison.title}: {fmt(poll.comparison.approval, 2)}% за
-                · {money(poll.comparison.cost ?? 0)} млн ₸
+                · {money(poll.comparison.cost ?? 0)} у.е.
               </p>
               <small>
                 На карте — реакции на первое предложение. Это не голосование
@@ -292,6 +293,10 @@ export default function AskPanel({
                 <Send size={18} />
               </button>
             </div>
+            <p className="demo-note">
+              Синтетические жители отвечают по модели. Публичные посты из
+              Threads добавляют реальные голоса по теме.
+            </p>
           </form>
           {error && (
             <p className="inline-error" role="alert">

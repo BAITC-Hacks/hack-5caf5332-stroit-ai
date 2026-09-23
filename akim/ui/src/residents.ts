@@ -13,7 +13,7 @@ export const examples = [
   "ЛРТ в Есиле или школа и поликлиника в Нуре?",
   "Что жители думают о моём плане?",
 ];
-export interface PollDistrict {
+interface PollDistrict {
   id: DistrictId;
   approval: number;
   yes: number;

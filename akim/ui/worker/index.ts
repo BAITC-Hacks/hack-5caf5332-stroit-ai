@@ -8,7 +8,13 @@ import { getCityData } from "../server/city-data";
 import { askWithEvidence } from "../server/ask";
 import { runAkim } from "../server/akim";
 import { ingestThreads } from "../server/threads";
-import { askRequest, akimRequest, threadsRequest } from "../server/schemas";
+import {
+  askRequest,
+  akimRequest,
+  explainRequest,
+  threadsRequest,
+} from "../server/schemas";
+import { explainPlan } from "../server/explain";
 import type { Store } from "../server/storage";
 const json = (value: unknown, status = 200) =>
   Response.json(value, {
@@ -109,8 +115,9 @@ export default {
         ![
           "/api/ask",
           "/api/akim",
-          "/api/threads/ingest",
+          "/api/explain",
           "/api/complaints/ingest",
+          "/api/threads/ingest",
         ].includes(url.pathname)
       )
         return json({ error: "Неизвестный API endpoint." }, 404);
@@ -172,6 +179,19 @@ export default {
           ),
         });
       }
+      if (url.pathname === "/api/explain") {
+        const parsed = explainRequest.safeParse(body);
+        if (!parsed.success)
+          return json({ error: "Некорректный план для разбора." }, 400);
+        return json({
+          brief: await explainPlan(
+            llm,
+            parsed.data.plan,
+            parsed.data.priorities,
+            signal,
+          ),
+        });
+      }
       if (url.pathname === "/api/ask") {
         const parsed = askRequest.safeParse(body);
         if (!parsed.success)
@@ -200,21 +220,23 @@ export default {
       };
       const task = (async () => {
         try {
+          const local = parsed.data.mode === "goal" && !env.OPENAI_API_KEY;
           send({
             type: "activity",
             event: {
-              label: "Загрузка данных города",
-              detail: "Читаем датированные источники.",
+              label: local ? "Локальная цель" : "Загрузка данных города",
+              detail: local ? "Поиск без OpenAI и внешних источников." : "Читаем датированные источники.",
               at: new Date().toISOString(),
             },
           });
           const result = await runAkim(
-            llm,
+            local ? null : llm,
             parsed.data.mode,
             parsed.data.plan,
-            await getCityData(store),
+            local ? null : await getCityData(store),
             (event) => send({ type: "activity", event }),
             signal,
+            parsed.data,
           );
           send({ type: "result", result });
         } catch (e) {

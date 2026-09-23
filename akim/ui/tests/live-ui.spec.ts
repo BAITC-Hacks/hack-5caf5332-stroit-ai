@@ -1,7 +1,12 @@
 import { test, expect } from "@playwright/test";
 import { districts, samplePlan } from "../src/data";
 import { pollProposal } from "../src/residents";
-import { advise } from "../src/engine";
+import { advise, simulate } from "../src/engine";
+import { population, residentState } from "../src/population";
+import { toLatLng } from "../src/geography";
+import { encodePlan } from "../src/planner/analysis";
+const planUrl = "/?plan=M7.nura,M8.nura,M10.nura,M12,M5.saryarka";
+test.use({ reducedMotion: "reduce" });
 const source = (id: string, data: unknown, note: string) => ({
   id,
   name: id,
@@ -49,29 +54,47 @@ test.beforeEach(async ({ page }) => {
     }),
   );
   await page.route("**/api/city", (r) => r.fulfill({ json: city }));
+  await page.route("https://tile.openstreetmap.org/**", (r) =>
+    r.fulfill({ status: 204, body: "" }),
+  );
 });
-test("city sources, resident details, clock speed and pause", async ({
+test("city sources and resident details in the turn stage", async ({
   page,
 }, info) => {
-  await page.goto("/");
-  await expect(page.locator(".data-toggle")).toContainText("16.5°");
-  await page.getByRole("button", { name: "Пауза симуляции" }).click();
-  const time = await page.locator(".simulation-controls time").innerText();
-  await page.waitForTimeout(250);
-  await expect(page.locator(".simulation-controls time")).toHaveText(time);
-  await page.getByRole("button", { name: "Познакомиться с жителем" }).click();
-  await expect(page.getByLabel("Житель города")).toContainText(
-    "СИНТЕТИЧЕСКИЙ ЖИТЕЛЬ",
-  );
-  await page.screenshot({ path: info.outputPath("resident.png") });
-  await page.getByRole("button", { name: "Закрыть жителя" }).click();
-  await page.getByLabel("Скорость симуляции").selectOption("120");
-  await page.getByRole("button", { name: "Продолжить симуляцию" }).click();
-  await expect(page.locator(".simulation-controls time")).not.toHaveText(time);
-  await page.getByRole("button", { name: "Открыть реальные данные" }).click();
+  await page.goto(planUrl);
+  await expect(page.locator(".tray-slots li.filled")).toHaveCount(5);
+  await page.getByRole("button", { name: "Данные города", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("16.5");
   await expect(page.getByRole("dialog")).toContainText("1 528 703");
   await expect(page.getByRole("dialog")).toContainText("Сарайшык");
   await page.screenshot({ path: info.outputPath("sources.png") });
+  await page.keyboard.press("Escape");
+
+  // Reduced motion keeps residents at 09:00; project their positions at the initial zoom.
+  const project = ([lat, lng]: [number, number]) => {
+    const sin = Math.sin(lat * Math.PI / 180);
+    const scale = 256 * 2 ** 12;
+    return [scale * (lng / 360 + 0.5), scale * (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI))];
+  };
+  const center = project([51.153, 71.427]);
+  const bounds = (await page.locator(".leaflet-host").boundingBox())!;
+  const positions = population.map((person) => {
+    const point = project(toLatLng(residentState(person, 540, false).point));
+    return {
+      x: bounds.x + point[0] - Math.round(center[0] - bounds.width / 2),
+      y: bounds.y + point[1] - Math.round(center[1] - bounds.height / 2),
+    };
+  });
+  const point = await page.evaluate((positions) => positions.find(({ x, y }) => {
+    const target = document.elementFromPoint(x, y);
+    return target?.closest(".leaflet-host") &&
+      !target.closest(".leaflet-marker-icon,.leaflet-control,.leaflet-popup");
+  }), positions);
+  expect(point).toBeDefined();
+  await page.mouse.click(point!.x, point!.y);
+  await expect(page.getByLabel("Житель города")).toContainText(/синтетический житель/i);
+  await page.screenshot({ path: info.outputPath("resident.png") });
+  await page.getByRole("button", { name: "Закрыть жителя" }).click();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -99,10 +122,8 @@ test("live poll carries model identity, validates token and surfaces failure wit
       },
     });
   });
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Спросить город", exact: true })
-    .click();
+  await page.goto(`${planUrl}&step=report`);
+  await page.getByRole("button", { name: "Спросить жителей", exact: true }).click();
   await expect(page.locator(".ai-mode-switch")).toContainText("gpt-6-luna");
   await page.getByRole("button", { name: /Школа и детсад в Нуре/ }).click();
   await expect(page.locator(".poll-result")).toContainText("OpenAI gpt-6-luna");
@@ -129,7 +150,7 @@ test("live advisor streams actual activity, displays verified result and applies
     const event = {
       label: "Симуляция сценария",
       detail: "Проверка бюджета завершена.",
-      at: new Date().toISOString(),
+      at: "2026-09-23T10:00:00Z",
     };
     await route.fulfill({
       contentType: "application/x-ndjson",
@@ -153,11 +174,8 @@ test("live advisor streams actual activity, displays verified result and applies
         "\n",
     });
   });
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: /Попробовать готовый сценарий/ })
-    .click();
-  await page.getByRole("button", { name: "AI Аким", exact: true }).click();
+  await page.goto(`${planUrl}&step=report`);
+  await page.getByRole("button", { name: "AI-аким", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Проверить план с AI" }),
   ).toBeVisible();
@@ -171,11 +189,13 @@ test("live advisor streams actual activity, displays verified result and applies
   );
   await page.screenshot({ path: info.outputPath("luna-advisor.png") });
   const stored = await page.evaluate(() =>
-    JSON.parse(localStorage.getItem("sim-astana-plan-v1")!),
+    JSON.parse(localStorage.getItem("sim-astana-game-v1")!),
   );
-  expect(stored).toEqual(samplePlan);
-  await page.getByRole("button", { name: "Применить замену" }).click();
-  await expect(page.locator(".score-value")).toContainText("57,21");
+  expect(stored.plan).toBe(encodePlan(samplePlan));
+  await page.getByRole("dialog", { name: "AI Аким", exact: true })
+    .getByRole("button", { name: "Применить замену", exact: true }).click();
+  await expect(page.locator(".tray-score strong")).toContainText("57,21");
+  expect(new URL(page.url()).searchParams.get("plan")).toBe(encodePlan(candidate.plan));
   expect(calls).toBe(1);
 });
 
@@ -217,13 +237,14 @@ test("Threads ingestion displays cited evidence, scopes complaints and attaches 
       },
     });
   });
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Спросить город", exact: true })
-    .click();
+  await page.goto(`${planUrl}&step=report`);
+  await page.getByRole("button", { name: "Спросить жителей", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Спросить город" })).toContainText(
+    "Синтетические жители отвечают по модели. Публичные посты из Threads добавляют реальные голоса по теме.",
+  );
   await page.getByLabel("Вопрос жителям").fill("Новая дорога у Сейфуллина");
   await page
-    .getByRole("button", { name: "Ingest Threads", exact: true })
+    .getByRole("button", { name: "Найти публичные посты", exact: true })
     .click();
   await expect(page.getByLabel("Результаты Threads")).toContainText(
     "С явной привязкой к улице: 1",
@@ -231,6 +252,7 @@ test("Threads ingestion displays cited evidence, scopes complaints and attaches 
   await expect(
     page.getByRole("link", { name: "Тестовая публикация" }),
   ).toHaveAttribute("href", evidence.posts[0].url);
+  await expect(page.getByRole("checkbox", { name: "Учитывать посты в ответе жителей" })).toBeChecked();
   await page.getByRole("button", { name: "Отправить вопрос" }).click();
   await expect(page.getByRole("alert")).toContainText(
     "Результаты поиска доступны",
@@ -259,12 +281,10 @@ test("empty Threads search is distinct from a provider failure", async ({
       },
     }),
   );
-  await page.goto("/");
+  await page.goto(`${planUrl}&step=report`);
+  await page.getByRole("button", { name: "Спросить жителей", exact: true }).click();
   await page
-    .getByRole("button", { name: "Спросить город", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Ingest Threads", exact: true })
+    .getByRole("button", { name: "Найти публичные посты", exact: true })
     .click();
   await expect(page.getByLabel("Результаты Threads")).toContainText(
     "не означает, что жители не жалуются",
@@ -273,10 +293,146 @@ test("empty Threads search is distinct from a provider failure", async ({
     r.fulfill({ status: 502, json: { error: "Поиск временно недоступен" } }),
   );
   await page
-    .getByRole("button", { name: "Ingest Threads", exact: true })
+    .getByRole("button", { name: "Найти публичные посты", exact: true })
     .click();
   await expect(page.getByRole("alert")).toContainText(
     "Поиск временно недоступен",
   );
   await expect(page.getByLabel("Результаты Threads")).toHaveCount(0);
+});
+
+test("live goal submits text, shows parsed constraints and applies only on request", async ({
+  page,
+}, info) => {
+  const goal = "Экология в приоритете, защитить Есиль, поддержка не ниже 50%, резерв 5 у.е.";
+  const constraints = {
+    priorities: ["Экология"],
+    protectedDistricts: ["esil"],
+    minSupportPercent: 50,
+    reserveUnits: 5,
+    mustInclude: [],
+    mustExclude: [],
+  };
+  let calls = 0;
+  await page.route("**/api/akim", async (route) => {
+    calls++;
+    expect(route.request().headers()["x-sim-token"]).toBe("fixture-token");
+    expect(route.request().postDataJSON()).toEqual({ mode: "goal", plan: [], goal });
+    const event = {
+      label: "Проверка цели",
+      detail: "Ограничения проверены локальным расчётом.",
+      at: "2026-09-23T10:00:00Z",
+    };
+    await route.fulfill({
+      contentType: "application/x-ndjson",
+      body: [
+        { type: "activity", event },
+        {
+          type: "result",
+          result: {
+            plan: samplePlan,
+            result: simulate(samplePlan).result,
+            constraints,
+            title: "План под экологическую цель",
+            strengths: "Чище воздух в Сарыарке.",
+            risks: "Резерв ограничивает выбор мер.",
+            why: "Учтены приоритет и защита района.",
+            model: "gpt-6-luna",
+            cached: false,
+            events: [event],
+          },
+        },
+      ].map((item) => JSON.stringify(item)).join("\n") + "\n",
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Стать акимом" }).click();
+  await page.getByRole("button", { name: "Поручить AI-акиму" }).click();
+  await expect(page.locator(".ai-mode-switch")).toContainText("gpt-6-luna");
+  await page.getByRole("button", { name: "Цель", exact: true }).click();
+  const submit = page.getByRole("button", { name: "Собрать план под цель" });
+  await expect(submit).toBeDisabled();
+  await expect(page.getByLabel("Цель словами")).toHaveAttribute("maxlength", "300");
+  await page.getByLabel("Цель словами").fill(goal);
+  expect(calls).toBe(0);
+  await submit.click();
+  await expect(page.locator(".activity")).toContainText("Ограничения проверены");
+  await expect(page.getByLabel("Ограничения плана").locator("li")).toHaveText([
+    "Приоритет: экология", "Защищён: Есиль", "Поддержка ≥ 50%", "Резерв 5 у.е.",
+  ]);
+  await expect(page.locator(".akim-answer")).toContainText("План под экологическую цель");
+  await expect(page.locator(".proposed-plan li")).toHaveCount(5);
+  await expect(page.locator(".comparison strong")).toHaveText(["52,56", "56,54"]);
+  expect(new URL(page.url()).searchParams.has("plan")).toBe(false);
+  await page.screenshot({ path: info.outputPath("goal.png") });
+  await page.getByRole("button", { name: "Применить план", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "AI Аким", exact: true })).toBeHidden();
+  await expect(page.locator(".tray-slots li.filled")).toHaveCount(5);
+  await expect(page.locator(".tray-score strong")).toContainText("56,54");
+  expect(new URL(page.url()).searchParams.get("plan")).toBe(encodePlan(samplePlan));
+  expect(calls).toBe(1);
+});
+
+test("goal without a key submits structured constraints and preserves server errors", async ({
+  page,
+}, info) => {
+  await page.route("**/api/health", (route) => route.fulfill({
+    json: { configured: false, model: "gpt-6-luna", token: "fixture-token" },
+  }));
+  let calls = 0;
+  await page.route("**/api/akim", async (route) => {
+    calls++;
+    const body = route.request().postDataJSON();
+    expect(body).toEqual({
+      mode: "goal",
+      plan: [],
+      constraints: {
+        priorities: ["Экология"], protectedDistricts: ["esil"],
+        minSupportPercent: 50, reserveUnits: calls === 1 ? 100 : 5,
+        mustInclude: [], mustExclude: [],
+      },
+    });
+    await route.fulfill({
+      contentType: "application/x-ndjson",
+      body: JSON.stringify(calls === 1 ? {
+        type: "error",
+        error: "Ограниченный локальный поиск не нашёл допустимый план. Уменьшите резерв.",
+      } : {
+        type: "result",
+        result: {
+          plan: samplePlan,
+          result: simulate(samplePlan).result,
+          constraints: body.constraints,
+          title: "План по заданной цели",
+          strengths: "Ограничения соблюдены.",
+          risks: "Поддержка синтетическая.",
+          why: "План проверен локально.",
+          model: "local", cached: false, events: [],
+        },
+      }) + "\n",
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Стать акимом" }).click();
+  await page.getByRole("button", { name: "Поручить AI-акиму" }).click();
+  await page.getByRole("button", { name: "Цель", exact: true }).click();
+  await expect(page.getByLabel("Цель словами")).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "Экология", exact: true }).check();
+  await page.getByRole("checkbox", { name: "Есиль", exact: true }).check();
+  await page.getByLabel("Поддержка не ниже, %").fill("50");
+  await page.getByLabel("Резерв, у.е.").fill("100");
+  expect(calls).toBe(0);
+  await page.getByRole("button", { name: "Собрать план под цель" }).click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Ограниченный локальный поиск не нашёл допустимый план. Уменьшите резерв.",
+  );
+  await expect(page.locator(".akim-answer")).toHaveCount(0);
+  await page.getByLabel("Резерв, у.е.").fill("5");
+  expect(calls).toBe(1);
+  await page.getByRole("button", { name: "Собрать план под цель" }).click();
+  await expect(page.getByLabel("Ограничения плана")).toContainText("Резерв 5 у.е.");
+  await expect(page.locator(".akim-answer")).toContainText("План по заданной цели");
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath("local-goal.png") });
+  expect(calls).toBe(2);
 });
