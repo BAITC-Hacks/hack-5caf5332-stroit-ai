@@ -1,6 +1,6 @@
 import streetGraphs from "./astana-roads.json" with { type: "json" };
 import { districts, type DistrictId } from "./data";
-type Point = [number, number];
+export type Point = [number, number];
 function seeded(seed: number) {
   return () => {
     seed |= 0;

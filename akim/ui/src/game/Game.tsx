@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, FileDown, HelpCircle, Link2, Save, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, FileDown, HelpCircle, Link2, MapPin, Route, Save, Sparkles, X } from "lucide-react";
+import MobilityPanel, { useMobility } from "../MobilityPanel";
+import ComplaintPanel from "../ComplaintPanel";
+import type { ComplaintCollection, Complaint } from "../complaints";
 import CityMap, { type Marker } from "../CityMap";
 import AskPanel from "../AskPanel";
 import AkimPanel from "../AkimPanel";
@@ -33,7 +36,7 @@ import "../planner/planner-sheet.css";
 import "./game.css";
 
 type Stage = "intro" | "brief" | "turn" | "report";
-type Dialog = "ask" | "akim" | "about" | "data" | "variants" | null;
+type Dialog = "ask" | "akim" | "about" | "data" | "variants" | "mobility" | "complaints" | null;
 
 const STORAGE = "sim-astana-game-v1";
 
@@ -91,19 +94,40 @@ export default function Game() {
     }
   });
 
+  const [mobilityAfter, setMobilityAfter] = useState(true);
+  const [replaying, setReplaying] = useState(false);
+  const [complaints, setComplaints] = useState<ComplaintCollection | null>(null);
+  const [complaintFilter, setComplaintFilter] = useState<Direction | "">("");
+  const [complaintFocus, setComplaintFocus] = useState<Complaint | null>(null);
+  const [complaintVisible, setComplaintVisible] = useState(false);
+  const mappedComplaints = useMemo(() => complaintVisible
+    ? (complaints?.posts ?? []).filter(p => p.decision === "accepted" && (!complaintFilter || p.directions.includes(complaintFilter)))
+    : [], [complaints, complaintVisible, complaintFilter]);
+  const mobility = useMobility(plan, dialog === "mobility");
+  const mobilityPhase = dialog === "mobility" && mobility.data
+    ? mobilityAfter ? mobility.data.after : mobility.data.before : null;
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/complaints", { signal: controller.signal })
+      .then(r => r.ok ? r.json() : null)
+      .then(r => { if (r?.collection) setComplaints(r.collection); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+
   // The city keeps moving at a fixed, unobtrusive pace; there are no clock controls.
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
+    if (reduced && !replaying) return;
     let last = performance.now();
     const timer = window.setInterval(() => {
       const now = performance.now();
       const elapsed = Math.min(1, (now - last) / 1000);
       last = now;
-      if (!document.hidden) setMinutes((t) => (t + elapsed * 4) % 1440);
+      if (!document.hidden) setMinutes((t) => (t + elapsed * (dialog === "mobility" ? 36 : 4)) % 1440);
     }, 100);
     return () => clearInterval(timer);
-  }, []);
+  }, [dialog, replaying]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -211,6 +235,9 @@ export default function Game() {
   return (
     <main className={`app game stage-${stage} ${dialog ? "has-panel" : ""}`}>
       <CityMap
+        mobility={mobilityPhase}
+        complaints={mappedComplaints}
+        complaintFocus={complaintFocus}
         minutes={minutes}
         residentId={resident?.id ?? null}
         stayInside={stayInside}
@@ -227,7 +254,7 @@ export default function Game() {
           setSelected(id);
         }}
         result={result ?? (plan.length ? projection : null)}
-        after
+        after={dialog !== "mobility" || mobilityAfter}
         poll={poll}
         panelOpen={stage === "turn" && !!selected}
         markers={markers}
@@ -249,6 +276,13 @@ export default function Game() {
           </div>
         )}
         <div className="game-tools">
+          <button type="button" className="text-button" onClick={() => { setDialog("mobility"); setMinutes(480); }}>
+            <Route size={14} /> Мобильность
+          </button>
+          <button type="button" className="text-button" onClick={() => { setDialog("complaints"); setComplaintVisible(true); }}>
+            <MapPin size={14} /> Жалобы
+          </button>
+          {complaintVisible && <button type="button" className="icon-button" aria-label="Скрыть пины жалоб" onClick={() => { setComplaintVisible(false); setComplaintFocus(null); }}><X size={14} /></button>}
           <button type="button" className="text-button" onClick={() => setDialog("variants")}>
             Варианты ({fmt(variants.length, 0)})
           </button>
@@ -355,7 +389,7 @@ export default function Game() {
         />
       )}
 
-      {(stage === "turn" || stage === "report") && (
+      {(stage === "turn" || stage === "report") && dialog !== "mobility" && dialog !== "complaints" && (
         <Tray
           plan={plan}
           score={projection.score}
@@ -466,6 +500,18 @@ export default function Game() {
           }}
         />
       )}
+      {dialog === "mobility" && <MobilityPanel
+        plan={plan} data={mobility.data} error={mobility.error}
+        after={mobilityAfter} onAfter={setMobilityAfter} onClose={() => setDialog(null)}
+        onExample={next => { changePlan(next); setStage("turn"); }}
+        onReplay={() => { setMinutes(455); setReplaying(true); }}
+      />}
+      {dialog === "complaints" && <ComplaintPanel
+        collection={complaints} filter={complaintFilter} onFilter={setComplaintFilter}
+        onCollection={collection => { setComplaints(collection); setComplaintVisible(true); setComplaintFocus(null); }}
+        onFocus={complaint => { setComplaintFocus({ ...complaint }); setComplaintVisible(true); }}
+        onClose={() => setDialog(null)}
+      />}
       {dialog === "data" && <CityDataPanel onClose={() => setDialog(null)} />}
       {dialog === "about" && (
         <section className="about-panel glass" role="dialog" aria-labelledby="about-title">

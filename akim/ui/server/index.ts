@@ -1,3 +1,8 @@
+import {
+  complaintRequest,
+  complaintSnapshot,
+  ingestComplaints,
+} from "./complaints";
 import { config } from "dotenv";
 import { fileURLToPath } from "node:url";
 import { randomBytes, timingSafeEqual } from "node:crypto";
@@ -31,6 +36,7 @@ app.get("/api/health", (_req, res) =>
   res.set("Cache-Control", "no-store").json({
     configured: !!process.env.OPENAI_API_KEY,
     model: llm.model,
+    jevConfigured: !!process.env.JEV_API_KEY,
     token,
   }),
 );
@@ -40,6 +46,11 @@ app.get("/api/city", async (_req, res) => {
   } catch {
     res.status(503).json({ error: "Городские источники временно недоступны." });
   }
+});
+app.get("/api/complaints", async (_req, res) => {
+  res
+    .set("Cache-Control", "no-store")
+    .json({ collection: await store.get(complaintSnapshot) });
 });
 app.use("/api", (req, res, next) => {
   if (req.method !== "POST") {
@@ -111,6 +122,32 @@ app.post("/api/ask", async (req, res) => {
       res
         .status(error instanceof PublicError ? error.status : 502)
         .json({ error: publicMessage(error) });
+  }
+});
+app.post("/api/complaints/ingest", async (req, res) => {
+  const parsed = complaintRequest.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Некорректный поиск жалоб." });
+    return;
+  }
+  const abort = new AbortController();
+  res.once("close", () => {
+    if (!res.writableEnded) abort.abort();
+  });
+  try {
+    const collection = await ingestComplaints(
+      llm,
+      process.env.JEV_API_KEY,
+      store,
+      parsed.data,
+      AbortSignal.any([abort.signal, AbortSignal.timeout(180000)]),
+    );
+    if (!res.destroyed) res.json({ collection });
+  } catch (e) {
+    if (!res.destroyed)
+      res
+        .status(e instanceof PublicError ? e.status : 502)
+        .json({ error: publicMessage(e) });
   }
 });
 app.post("/api/threads/ingest", async (req, res) => {

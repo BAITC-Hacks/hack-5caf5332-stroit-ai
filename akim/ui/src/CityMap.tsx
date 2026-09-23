@@ -1,3 +1,5 @@
+import { mobilityState, streetPoint, type MobilityPhase } from "./mobility";
+import { complaintColors, type Complaint } from "./complaints";
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -32,6 +34,9 @@ interface Props {
   markers?: Marker[];
   /** District to draw attention to before the first decision. */
   spotlight?: DistrictId | null;
+  mobility: MobilityPhase | null;
+  complaints: Complaint[];
+  complaintFocus: Complaint | null;
   selected: DistrictId | null;
   onSelect: (id: DistrictId) => void;
   result: Projection | null;
@@ -47,7 +52,10 @@ export default function CityMap(props: Props) {
   const host = useRef<HTMLDivElement>(null),
     mapRef = useRef<L.Map | null>(null),
     overlayRef = useRef<HTMLCanvasElement | null>(null),
-    snapshot = useRef(props);
+    snapshot = useRef(props),
+    roadsRef = useRef<L.LayerGroup | null>(null),
+    complaintsRef = useRef<L.LayerGroup | null>(null),
+    complaintMarkers = useRef(new Map<string, L.Marker>());
   snapshot.current = props;
   const [mapError, setMapError] = useState(false),
     [ready, setReady] = useState(false);
@@ -64,6 +72,13 @@ export default function CityMap(props: Props) {
     // Dev-only handle lets browser regressions exercise Leaflet's real zoom events.
     const testHost = host.current! as HTMLDivElement & { simMap?: L.Map };
     if (import.meta.env.DEV) testHost.simMap = map;
+    const roadPane = map.createPane("mobility-roads");
+    roadPane.style.zIndex = "2";
+    roadPane.style.pointerEvents = "none";
+    roadsRef.current = L.layerGroup().addTo(map);
+    const complaintPane = map.createPane("complaints");
+    complaintPane.style.zIndex = "5";
+    complaintsRef.current = L.layerGroup().addTo(map);
     L.control.zoom({ position: "bottomright" }).addTo(map);
     // OSM tiles, desaturated in CSS (.game .leaflet-tile-pane) so districts, residents and decisions read first.
     const tiles = L.tileLayer(
@@ -99,7 +114,7 @@ export default function CityMap(props: Props) {
     );
     const markers = districts.map((d) =>
       L.marker(geoCenters[d.id], {
-        keyboard:false,
+        keyboard: false,
         icon: L.divIcon({
           className: "real-district-marker",
           html: `<button aria-label="Район ${d.name}" class="district-label"><span>${d.name}</span><small></small></button>`,
@@ -135,13 +150,13 @@ export default function CityMap(props: Props) {
         overlay.style.width = size.x + "px";
         overlay.style.height = size.y + "px";
       }
-      L.DomUtil.setPosition(overlay,map.containerPointToLayerPoint([0,0]));
+      L.DomUtil.setPosition(overlay, map.containerPointToLayerPoint([0, 0]));
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, size.x, size.y);
       ctx.imageSmoothingEnabled = false;
       function* screenResidents() {
         for (const p of population) {
-          const state = residentState(p, s.minutes, s.stayInside),
+          const state = s.mobility ? mobilityState(p, s.minutes, s.mobility.trips[p.id]) : residentState(p, s.minutes, s.stayInside),
             point = map.latLngToContainerPoint(toLatLng(state.point));
           if (
             point.x < -12 ||
@@ -196,7 +211,11 @@ export default function CityMap(props: Props) {
           ctx.arc(snap(point.x), snap(point.y), snap(halo), 0, Math.PI * 2);
           ctx.fill();
         }
-        const next = residentState(p, s.minutes + 0.2, s.stayInside).point,
+        const next = (
+            s.mobility
+              ? mobilityState(p, s.minutes + 0.2, s.mobility.trips[p.id])
+              : residentState(p, s.minutes + 0.2, s.stayInside)
+          ).point,
           dx = next[0] - state.point[0],
           dy = next[1] - state.point[1],
           direction =
@@ -343,10 +362,17 @@ export default function CityMap(props: Props) {
       for (const p of population) {
         const pixel = map.latLngToContainerPoint(
           toLatLng(
-            residentState(
-              p,
-              snapshot.current.minutes,
-              snapshot.current.stayInside,
+            (snapshot.current.mobility
+              ? mobilityState(
+                  p,
+                  snapshot.current.minutes,
+                  snapshot.current.mobility.trips[p.id],
+                )
+              : residentState(
+                  p,
+                  snapshot.current.minutes,
+                  snapshot.current.stayInside,
+                )
             ).point,
           ),
         );
@@ -390,6 +416,90 @@ export default function CityMap(props: Props) {
       { animate: !reduced, duration: 0.6 },
     );
   }, [props.selected, ready]);
+  useEffect(() => {
+    const layer = roadsRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    for (const segment of props.mobility?.segments ?? []) {
+      L.polyline(
+        [
+          toLatLng(streetPoint(segment.district, segment.a)),
+          toLatLng(streetPoint(segment.district, segment.b)),
+        ],
+        {
+          pane: "mobility-roads",
+          color:
+            segment.load > 1
+              ? "#c4473d"
+              : segment.load > 0.65
+                ? "#d49436"
+                : "#438769",
+          opacity: 0.75,
+          weight: segment.load > 1 ? 4 : 2.5,
+          interactive: false,
+        },
+      ).addTo(layer);
+    }
+  }, [props.mobility, ready]);
+  useEffect(() => {
+    const layer = complaintsRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    complaintMarkers.current.clear();
+    for (const complaint of props.complaints) {
+      if (!complaint.location || complaint.decision !== "accepted") continue;
+      const color = complaintColors[complaint.directions[0]] || "#536650";
+      const popup = document.createElement("div");
+      popup.className = "complaint-popup";
+      const title = document.createElement("strong");
+      title.textContent = complaint.location.name;
+      const text = document.createElement("p");
+      text.textContent = complaint.summary;
+      const scope = document.createElement("small");
+      scope.textContent =
+        complaint.location.kind === "street"
+          ? "Улица · приблизительная точка, не адрес. Текущий статус проблемы не проверен."
+          : "Район · место внутри района неизвестно. Текущий статус проблемы не проверен.";
+      const link = document.createElement("a");
+      link.textContent =
+        complaint.sourceKind === "press"
+          ? "Threads через СМИ: открыть источник"
+          : "Открыть публикацию Threads";
+      link.href = complaint.url;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      popup.append(title, text, scope, document.createElement("br"), link);
+      const marker = L.marker(complaint.location.point, {
+        pane: "complaints",
+        title: complaint.location.name,
+        icon: L.divIcon({
+          className: "complaint-marker",
+          html: `<span style="background:${color}">!</span>`,
+          iconSize: [28, 34],
+          iconAnchor: [14, 34],
+        }),
+      })
+        .bindPopup(popup, {
+          maxWidth: 300,
+          maxHeight: 260,
+          autoPanPaddingTopLeft: [15, 195],
+          autoPanPaddingBottomRight: [15, 100],
+        })
+        .addTo(layer);
+      complaintMarkers.current.set(complaint.id, marker);
+    }
+  }, [props.complaints, ready]);
+  useEffect(() => {
+    if (!props.complaintFocus?.location) return;
+    const map = mapRef.current,
+      marker = complaintMarkers.current.get(props.complaintFocus.id);
+    map?.setView(
+      props.complaintFocus.location.point,
+      props.complaintFocus.location.kind === "street" ? 14 : 12,
+      { animate: false },
+    );
+    marker?.openPopup();
+  }, [props.complaintFocus, ready]);
   return (
     <div className="city-map real-city-map">
       <div

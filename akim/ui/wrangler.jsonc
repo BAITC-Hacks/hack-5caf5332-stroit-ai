@@ -11,7 +11,7 @@
     "run_worker_first": ["/api/*"],
   },
   "vars": { "OPENAI_MODEL": "gpt-6-luna" },
-  "secrets": { "required": ["OPENAI_API_KEY", "SESSION_SECRET"] },
+  "secrets": { "required": ["OPENAI_API_KEY", "SESSION_SECRET", "JEV_API_KEY"] },
   "kv_namespaces": [
     { "binding": "CACHE", "id": "42abdb5c773e4500897b2b480725083d" },
   ],

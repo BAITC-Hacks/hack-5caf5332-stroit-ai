@@ -1043,3 +1043,9 @@
   .game.stage-report .sheet-backdrop { top: 78px; padding-top: 12px; }
 }
 .sheet-backdrop[hidden] { display: none; }
+
+@media (min-width: 801px) {
+  .game .analysis-panel { top: 88px; right: 20px; bottom: 40px; }
+  .game-top { grid-template-columns: auto auto minmax(0, 1fr); }
+  .game-tools { justify-self: end; }
+}

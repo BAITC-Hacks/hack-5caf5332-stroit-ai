@@ -21,6 +21,7 @@ export interface CityData {
   }>;
 }
 export interface ServiceHealth {
+  jevConfigured?: boolean;
   configured: boolean;
   model: string;
   token: string;

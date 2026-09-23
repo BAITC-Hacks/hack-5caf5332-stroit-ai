@@ -1,4 +1,5 @@
 export interface ThreadEvidence {
+  sourceKind?: "threads" | "press";
   url: string;
   title: string;
   summary: string;

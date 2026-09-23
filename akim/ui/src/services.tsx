@@ -1,3 +1,5 @@
+import type { ComplaintCollection } from "./complaints";
+import type { Direction } from "./data";
 import type { ThreadsEvidence } from "./threads";
 import {
   createContext,
@@ -178,4 +180,23 @@ export async function ingestApi(
       await post("/api/threads/ingest", { question, plan }, token, signal)
     ).json()
   ).evidence;
+}
+
+export async function complaintApi(
+  keywords: string,
+  direction: Direction | undefined,
+  token: string,
+  signal: AbortSignal,
+  includePress = true,
+): Promise<ComplaintCollection> {
+  return (
+    await (
+      await post(
+        "/api/complaints/ingest",
+        { keywords, direction, includePress },
+        token,
+        signal,
+      )
+    ).json()
+  ).collection;
 }
