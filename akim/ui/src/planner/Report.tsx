@@ -5,6 +5,7 @@ import { advise, autopilot, budget, simulate } from "../engine";
 import { pollProposal } from "../residents";
 import { useServices } from "../services";
 import Matrix from "./Matrix";
+import StressTest from "./StressTest";
 import ScoreGauge from "./ScoreGauge";
 import Comparison, { type ComparisonTarget } from "./Comparison";
 import { contributions, explain, fmt, goals, signed } from "./analysis";
@@ -106,6 +107,8 @@ export default function Report({
           <p className="section-note">Сохраните план как вариант, измените решения и сравните результат. Или выберите эталон автопилота.</p>
         )}
       </section>
+
+      <StressTest plan={plan} />
 
       <section className="report-section" aria-labelledby="parts-title">
         <h2 id="parts-title">Откуда взялся балл</h2>

@@ -24,3 +24,20 @@ test("report yields to residents and advisor; helper overlays never cover dialog
   await expect(page.locator(".toast")).toBeHidden();
   await expect(page.getByRole("dialog")).toBeVisible();
 });
+
+test("stress events change the projection, preserve the plan and reject inflation overspend", async ({ page }, info) => {
+  await page.goto(`/?plan=${example}&step=report`);
+  await page.getByRole("button", { name: "Что если", exact: true }).click();
+  await expect(page.locator(".stress-summary")).toContainText("56,54");
+  await expect(page.locator(".stress-verdict")).toContainText("Критических показателей: 0 → 2");
+  await expect(page.locator(".stress-measures tbody tr")).toHaveCount(5);
+  await page.getByRole("button", { name: "Отключение ТЭЦ", exact: true }).click();
+  await expect(page.locator(".stress-assumptions")).toContainText("Алматы и Сарыарка");
+  await page.getByRole("button", { name: "Рост цен на 20%", exact: true }).click();
+  await expect(page.locator(".stress-deficit")).toContainText("Не хватает 14 у.е.");
+  await expect(page.locator(".stress-summary")).toContainText("Не считается");
+  await expect(page.locator(".stress-summary")).toContainText("114 у.е.");
+  expect(new URL(page.url()).searchParams.get("plan")).toBe(example);
+  await expect(page.locator(".gauge-number strong")).toHaveText("56,54");
+  await page.screenshot({ path: info.outputPath("stress.png"), scale: "css" });
+});
