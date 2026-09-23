@@ -185,15 +185,19 @@ export async function runAkim(
             "Заверши выбор через submit_plan. Выбери один из уже проверенных и обсуждённых планов без изменений: " +
             JSON.stringify(ready),
         });
+      // Force submit_plan via tool_choice, not a narrower tools list: changing tools busts the prompt cache.
       const response = await llm.tools(
         input,
-        finishing
-          ? tools.filter(
-              (t) => t.type === "function" && t.name === "submit_plan",
-            )
-          : tools,
+        tools,
         signal,
+        finishing ? "submit_plan" : undefined,
       );
+      const usage = response.usage;
+      if (usage)
+        record(
+          "Кэш запроса",
+          `${usage.input_tokens_details?.cached_tokens ?? 0} из ${usage.input_tokens} входных токенов из кэша.`,
+        );
       input.push(
         ...response.output.filter(
           (item) =>

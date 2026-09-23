@@ -207,12 +207,10 @@ test("advisor closes a prolonged search with a verified, consulted proposal", as
       throw new Error("Unexpected search");
     },
     cache: async (_kind, _input, run) => ({ value: await run(), hit: false }),
-    tools: async (_input, available) => {
+    tools: async (_input, available, _signal, force) => {
       const round = rounds++;
-      const names = available.flatMap((t) =>
-        t.type === "function" ? [t.name] : [],
-      );
-      if (round === 5) assert.deepEqual(names, ["submit_plan"]);
+      assert.equal(available.length, 3);
+      assert.equal(force, round === 5 ? "submit_plan" : undefined);
       const name =
         round === 0
           ? "simulate"
