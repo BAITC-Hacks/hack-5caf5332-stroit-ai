@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "beeline/beeline_case_participants (1)/flow.html"
+        ],
+        "createdAt": "2026-09-23T09:19:35.815Z",
+        "reason": "model decided: uppercase is applied only to short labels (eyebrow line, stage keys, table headers, column headers) via letter-spaced 11-12px mono; no body passages are uppercase"
+      }
+    ]
+  }
+}
