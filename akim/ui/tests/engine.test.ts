@@ -11,6 +11,7 @@ import {
 } from "../src/engine";
 import { samplePlan, weights, districts, type Choice } from "../src/data";
 import { askCity, examples, pollProposal } from "../src/residents";
+import { AGENTS } from "../src/profiles";
 const near = (actual: number, expected: number) =>
   assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} ≠ ${expected}`);
 test("baseline reproduces all five district scores and strict critical threshold", () => {
@@ -204,9 +205,9 @@ test("poll resolver supports examples, tradeoffs and valid current plan with rep
     assert.deepEqual(a, askCity(question, samplePlan));
     assert.equal(
       a.poll.districts.reduce((s, d) => s + d.total, 0),
-      2000,
+      AGENTS,
     );
-    near(a.poll.approval, a.poll.districts.reduce((s, d) => s + d.yes, 0) / 20);
+    near(a.poll.approval, a.poll.districts.reduce((s, d) => s + d.yes, 0) * 100 / AGENTS);
   }
   assert.ok(askCity(examples[1], samplePlan).poll?.comparison);
   assert.equal(askCity("Will it rain tomorrow?", samplePlan).poll, null);

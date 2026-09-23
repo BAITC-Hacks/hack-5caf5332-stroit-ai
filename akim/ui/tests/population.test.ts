@@ -8,18 +8,19 @@ import {
   residentState,
   activityCounts,
   cohortSize,
+  AGENTS,
 } from "../src/population";
 import { districts } from "../src/data";
-test("2000 reproducible residents form the same 30 cohorts as the polls", () => {
-  assert.equal(population.length, 2000);
+test("reproducible residents form the same 30 cohorts as the polls", () => {
+  assert.equal(population.length, AGENTS);
   assert.deepEqual(generatePopulation(), population);
-  assert.equal(new Set(population.map((p) => p.id)).size, 2000);
+  assert.equal(new Set(population.map((p) => p.id)).size, AGENTS);
   for (const d of districts)
     assert.equal(
       Array.from({ length: 6 }, (_, i) => cohortSize(d.id, i)).reduce(
         (a, b) => a + b,
       ),
-      Math.round(d.population * 2000),
+      Math.round(d.population * AGENTS),
     );
 });
 test("residents travel along continuous routes on connected OSM streets within their district and return home", () => {
@@ -47,6 +48,6 @@ test("residents travel along continuous routes on connected OSM streets within t
     assert.equal(residentState(p, 480 + p.offset).moving, true);
     assert.deepEqual(residentState(p, 600 + 1440), residentState(p, 600));
   }
-  assert.equal(activityCounts(500).moving, 2000);
-  assert.equal(activityCounts(0).home, 2000);
+  assert.equal(activityCounts(500).moving, AGENTS);
+  assert.equal(activityCounts(0).home, AGENTS);
 });

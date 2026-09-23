@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { compareMobility, shortestRoute, mobilityState } from "../src/mobility";
-import { population } from "../src/population";
+import { AGENTS, population } from "../src/population";
 import streets from "../src/astana-roads.json" with { type: "json" };
 import { jevQuestions, parseJev, classifyComplaints } from "../server/jev";
 import { locationCandidates } from "../server/locations";
@@ -47,8 +47,8 @@ test("same demand is compared; non-transport policies have no invented mobility 
   ]);
   assert.deepEqual(noTransport.before, noTransport.after);
   const result = compareMobility([{ measureId: "M1", districtId: "saryarka" }]);
-  assert.equal(result.before.trips.length, 2000);
-  assert.equal(result.after.trips.length, 2000);
+  assert.equal(result.before.trips.length, AGENTS);
+  assert.equal(result.after.trips.length, AGENTS);
   assert.ok(result.after.metrics.carShare < result.before.metrics.carShare);
   assert.deepEqual(result.before.districts.nura, result.after.districts.nura);
   assert.ok(result.changedRoutes > 0);
