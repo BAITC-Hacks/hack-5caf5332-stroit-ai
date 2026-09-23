@@ -186,6 +186,7 @@ export default {
         return json({
           brief: await explainPlan(
             llm,
+            store,
             parsed.data.plan,
             parsed.data.priorities,
             signal,
