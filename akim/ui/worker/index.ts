@@ -3,7 +3,13 @@ import { getCityData } from "../server/city-data";
 import { askWithEvidence } from "../server/ask";
 import { runAkim } from "../server/akim";
 import { ingestThreads } from "../server/threads";
-import { askRequest, akimRequest, threadsRequest } from "../server/schemas";
+import {
+  askRequest,
+  akimRequest,
+  explainRequest,
+  threadsRequest,
+} from "../server/schemas";
+import { explainPlan } from "../server/explain";
 import type { Store } from "../server/storage";
 const json = (value: unknown, status = 200) =>
   Response.json(value, {
@@ -98,7 +104,12 @@ export default {
       if (url.pathname === "/api/city" && request.method === "GET")
         return json(await getCityData(store));
       if (
-        !["/api/ask", "/api/akim", "/api/threads/ingest"].includes(url.pathname)
+        ![
+          "/api/ask",
+          "/api/akim",
+          "/api/explain",
+          "/api/threads/ingest",
+        ].includes(url.pathname)
       )
         return json({ error: "Неизвестный API endpoint." }, 404);
       if (request.method !== "POST")
@@ -138,6 +149,19 @@ export default {
             llm,
             parsed.data.question,
             parsed.data.plan,
+            signal,
+          ),
+        });
+      }
+      if (url.pathname === "/api/explain") {
+        const parsed = explainRequest.safeParse(body);
+        if (!parsed.success)
+          return json({ error: "Некорректный план для разбора." }, 400);
+        return json({
+          brief: await explainPlan(
+            llm,
+            parsed.data.plan,
+            parsed.data.priorities,
             signal,
           ),
         });

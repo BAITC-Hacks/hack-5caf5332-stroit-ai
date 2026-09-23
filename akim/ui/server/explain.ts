@@ -2,7 +2,7 @@ import type { Choice, Direction } from "../src/data";
 import { choiceLabel } from "../src/data";
 import { baseline, budget, simulate, validate } from "../src/engine";
 import { contributions, explain, goals } from "../src/planner/analysis";
-import { cached, PublicError, type Llm } from "./llm";
+import { PublicError, type Llm } from "./llm";
 import { planBriefSchema } from "./schemas";
 
 export interface PlanBrief {
@@ -37,7 +37,7 @@ export async function explainPlan(
     ...explain(plan, priorities),
     priorities,
   };
-  const output = await cached("plan-brief", { model: llm.model, facts }, () =>
+  const output = await llm.cache("plan-brief", { model: llm.model, facts }, () =>
     llm.structured("plan_brief", planBriefSchema, system, facts, signal),
   );
   return { ...output.value, model: llm.model, cached: output.hit };

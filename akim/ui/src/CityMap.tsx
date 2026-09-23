@@ -11,7 +11,16 @@ import {
   toLatLng,
 } from "./geography";
 import type { Poll } from "./residents";
+export interface Marker {
+  id: string;
+  districtId: DistrictId | null;
+  label: string;
+}
 interface Props {
+  /** Decisions already placed on the map; city-wide ones sit near the centre. */
+  markers?: Marker[];
+  /** District to draw attention to before the first decision. */
+  spotlight?: DistrictId | null;
   selected: DistrictId | null;
   onSelect: (id: DistrictId) => void;
   result: Projection | null;
@@ -42,12 +51,14 @@ export default function CityMap(props: Props) {
     }).setView([51.153, 71.427], 12);
     mapRef.current = map;
     L.control.zoom({ position: "bottomright" }).addTo(map);
+    // A muted basemap keeps street names quiet so districts, residents and decisions read first.
     const tiles = L.tileLayer(
-      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
       {
         maxZoom: 19,
+        subdomains: "abcd",
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">CARTO</a>',
       },
     ).addTo(map);
     tiles.on("tileerror", () => setMapError(true));
@@ -86,14 +97,8 @@ export default function CityMap(props: Props) {
         .addTo(map)
         .on("click", () => snapshot.current.onSelect(d.id)),
     );
-    L.marker([51.105, 71.533], {
-      icon: L.divIcon({
-        className: "real-district-marker unmodeled",
-        html: '<span class="district-label"><span>Сарайшык</span><small>нет модели</small></span>',
-        iconSize: [128, 38],
-        iconAnchor: [64, 19],
-      }),
-    }).addTo(map);
+    const decisionMarkers = new Map<string, L.Marker>();
+    const cityCenter: L.LatLngExpression = [51.128, 71.43];
     const overlay = document.createElement("canvas");
     overlay.className = "resident-overlay";
     const residentPane=map.createPane("residents");residentPane.style.zIndex="3";residentPane.style.pointerEvents="none";residentPane.appendChild(overlay);
@@ -137,13 +142,19 @@ export default function CityMap(props: Props) {
           : row
             ? p.index < row.yes
             : false;
-        ctx.globalAlpha =
-          s.selected && s.selected !== p.districtId ? 0.25 : 0.9;
+        const dimmed = s.selected ? s.selected !== p.districtId : false;
+        ctx.globalAlpha = dimmed ? 0.2 : 0.95;
+        // Mood halo: green when the current plan helps this resident, red when it does not.
         if (row || s.residentId === p.id) {
           ctx.fillStyle =
-            s.residentId === p.id ? "#fff59d" : yes ? "#6ca444" : "#d56b58";
+            s.residentId === p.id ? "#fff59d" : yes ? "#5fae3f" : "#d8584a";
           ctx.beginPath();
-          ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+          ctx.arc(point.x, point.y, map.getZoom() >= 13 ? 6 : 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (s.spotlight === p.districtId && !s.selected) {
+          ctx.fillStyle = "#e58a7a";
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 3.5, 0, Math.PI * 2);
           ctx.fill();
         }
         const next = residentState(p, s.minutes + 0.2, s.stayInside).point,
@@ -152,7 +163,13 @@ export default function CityMap(props: Props) {
           direction =
             Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 1) : dy < 0 ? 3 : 0,
           frame = state.moving ? Math.floor(s.minutes * 4 + p.id) % 3 : 1,
-          px = map.getZoom() >= 13 ? 10 : 6;
+          px = map.getZoom() >= 13 ? 12 : 7;
+        if (map.getZoom() < 12.5 && !row) {
+          // Zoomed out: residents are quiet dots, not a swarm of sprites.
+          ctx.fillStyle = "#3d5c4a";
+          ctx.fillRect(point.x - 1, point.y - 1, 2, 2);
+          continue;
+        }
         if (sprites.complete && sprites.naturalWidth)
           ctx.drawImage(
             sprites,
@@ -180,14 +197,56 @@ export default function CityMap(props: Props) {
           ([, k]) => k === feature?.properties.kato,
         )?.[0];
         const index = districts.findIndex((d) => d.id === id);
+        const spot = s.spotlight === id && !s.selected;
+        const delta =
+          index >= 0 && s.after && s.result
+            ? s.result.districts[index].score - baseline.districts[index].score
+            : 0;
         return {
-          weight: s.selected === id ? 3 : 1,
-          color: s.selected === id ? "#315c40" : "#637c68",
-          fillColor: s.after && s.result ? "#9bbe6e" : "#d4e6c7",
-          fillOpacity: s.selected === id ? 0.17 : 0.045,
+          weight: s.selected === id ? 3 : spot ? 3 : 1.2,
+          color: s.selected === id ? "#1f5a3c" : spot ? "#c9503b" : "#5a7562",
+          fillColor: delta > 0.05 ? "#7fb35a" : spot ? "#e07a68" : "#c9d9bf",
+          fillOpacity:
+            s.selected === id
+              ? 0.14
+              : delta > 0.05
+                ? Math.min(0.42, 0.08 + delta * 0.08)
+                : spot
+                  ? 0.16
+                  : 0.06,
           dashArray: index < 0 ? "5 5" : "",
         };
       });
+      // Decisions on the map: one chip list per district, city-wide ones near the centre.
+      const groups = new Map<string, string[]>();
+      for (const m of s.markers ?? []) {
+        const key = m.districtId ?? "city";
+        groups.set(key, [...(groups.get(key) ?? []), m.label]);
+      }
+      for (const [key, marker] of decisionMarkers)
+        if (!groups.has(key)) {
+          marker.remove();
+          decisionMarkers.delete(key);
+        }
+      for (const [key, labels] of groups) {
+        const html = `<ul class="map-markers${key === "city" ? " city" : ""}">${labels
+          .map((l) => `<li>${l}</li>`)
+          .join("")}</ul>`;
+        const existing = decisionMarkers.get(key);
+        if (existing) {
+          const el = existing.getElement();
+          if (el && el.innerHTML !== html) el.innerHTML = html;
+          continue;
+        }
+        const at =
+          key === "city" ? cityCenter : geoCenters[key as DistrictId];
+        const created = L.marker(at, {
+          keyboard: false,
+          interactive: false,
+          icon: L.divIcon({ className: "decision-marker", html, iconSize: [160, 20], iconAnchor: [80, -14] }),
+        }).addTo(map);
+        decisionMarkers.set(key, created);
+      }
       markers.forEach((marker, i) => {
         const el = marker.getElement();
         const button = el?.querySelector("button"),
@@ -197,6 +256,10 @@ export default function CityMap(props: Props) {
           String(s.selected === districts[i].id),
         );
         button?.classList.toggle("selected", s.selected === districts[i].id);
+        button?.classList.toggle(
+          "spotlight",
+          s.spotlight === districts[i].id && !s.selected,
+        );
         if (small)
           small.textContent = (
             s.after && s.result ? s.result.districts[i] : baseline.districts[i]
