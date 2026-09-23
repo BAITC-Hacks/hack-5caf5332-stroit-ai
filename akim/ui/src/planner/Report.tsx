@@ -360,10 +360,11 @@ function AkimAdvice({
     return (
       <div aria-busy="true">
         <PixelMayor
+          title={events.length ? events[events.length - 1].label : "Так-так…"}
           text={
             events.length
-              ? `${events[events.length - 1].label}. ${events[events.length - 1].detail}`
-              : "Так-так… Проверяю ваш план на данных города."
+              ? events[events.length - 1].detail
+              : "Проверяю ваш план на данных города."
           }
         />
       </div>
@@ -376,11 +377,19 @@ function AkimAdvice({
   const improvement = answer.result.score - score;
   return (
     <div className="swap" aria-live="polite">
-      <PixelMayor text={`${answer.title}. ${answer.why}`} />
+      <PixelMayor title={answer.title} text={answer.why} />
       {removed && added && (
         <>
           <p>
-            Замена от AI-акима даёт <b>{signed(improvement)}</b> к общему баллу.
+            {improvement > 0 ? (
+              <>
+                Замена от AI-акима даёт <b>{signed(improvement)}</b> к общему баллу.
+              </>
+            ) : (
+              <>
+                Замена не улучшает балл (<b>{signed(improvement)}</b>).
+              </>
+            )}
           </p>
           <div className="swap-row">
             <span className="swap-out">{choiceLabel(removed)}</span>

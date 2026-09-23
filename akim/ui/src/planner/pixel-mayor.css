@@ -1,13 +1,19 @@
+/* Portrait + nameplate above a full-width box; side by side only when the
+   column is wide enough to keep a readable line length. */
 .pixel-mayor {
+  container-type: inline-size;
+  margin: 12px 0;
+}
+.pixel-mayor-head {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
-  margin: 12px 0;
+  gap: 8px;
+  margin-bottom: -2px;
 }
 .pixel-mayor-sprite {
   flex: none;
-  width: 72px;
-  height: 72px;
+  width: 48px;
+  height: 48px;
   image-rendering: pixelated;
 }
 .pixel-mayor .mouth-open,
@@ -24,47 +30,79 @@
   animation: pixel-mayor-blink 3.6s steps(1) infinite;
 }
 @keyframes pixel-mayor-flap {
-  50% { opacity: 1; }
+  50% {
+    opacity: 1;
+  }
 }
 @keyframes pixel-mayor-fade {
-  50% { opacity: 0; }
+  50% {
+    opacity: 0;
+  }
 }
 @keyframes pixel-mayor-bob {
-  50% { transform: translateY(-0.5px); }
+  50% {
+    transform: translateY(-0.5px);
+  }
 }
 @keyframes pixel-mayor-blink {
-  0%, 94% { opacity: 0; }
-  95%, 100% { opacity: 1; }
+  0%,
+  94% {
+    opacity: 0;
+  }
+  95%,
+  100% {
+    opacity: 1;
+  }
 }
 
 .pixel-mayor-box {
-  position: relative;
-  flex: 1;
   min-width: 0;
-  padding: 16px 14px 12px;
-  background: #1f2433;
-  color: #f4f1e6;
-  border: 3px solid #f4f1e6;
-  box-shadow: 0 0 0 3px #1f2433, 4px 4px 0 3px #0003;
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  padding: 12px 14px;
+  background: #fbf8ef;
+  color: #1c2126;
+  border: 2px solid #1f2433;
+  box-shadow: 3px 3px 0 0 #1f2433;
   font-size: 14px;
   line-height: 1.5;
+}
+.pixel-mayor.talking .pixel-mayor-box {
+  cursor: pointer;
 }
 .pixel-mayor-box p {
   margin: 0;
   min-height: 3em;
 }
+.pixel-mayor-box b {
+  display: block;
+  margin-bottom: 4px;
+}
 .pixel-mayor-name {
-  position: absolute;
-  top: -12px;
-  left: 10px;
-  padding: 1px 8px;
+  padding: 2px 8px 1px;
   background: #e8b923;
   color: #1f2433;
   border: 2px solid #1f2433;
-  font-size: 11px;
+  border-bottom: 0;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
+}
+@container (min-width: 460px) {
+  .pixel-mayor-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .pixel-mayor-head {
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+  }
+  .pixel-mayor-name {
+    border-bottom: 2px solid #1f2433;
+  }
+  .pixel-mayor-box {
+    flex: 1;
+  }
 }
 .pixel-mayor-next {
   margin-left: 6px;
