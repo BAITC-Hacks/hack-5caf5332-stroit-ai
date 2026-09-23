@@ -12,12 +12,13 @@ import { getCityData } from "./city-data";
 import { createLlm, PublicError, publicMessage } from "./llm";
 import { askRequest, akimRequest, explainRequest } from "./schemas";
 import { askWithEvidence } from "./ask";
-import { ingestThreads } from "./threads";
+import { ingestThreads, useThreadsScraper } from "./threads";
+import { scrapeThreads } from "./threads-browser";
 import { threadsRequest } from "./schemas";
 import { explainPlan } from "./explain";
 import { runAkim } from "./akim";
 config({
-  path: fileURLToPath(new URL("../.env", import.meta.url)),
+  path: ["../../../.env", "../.env"].map((p) => fileURLToPath(new URL(p, import.meta.url))),
   quiet: true,
 });
 const app = express();
@@ -30,6 +31,7 @@ const llm = createLlm({
   model: process.env.OPENAI_MODEL,
   store,
 });
+useThreadsScraper(scrapeThreads);
 let active = 0;
 const hits: number[] = [];
 app.get("/api/health", (_req, res) =>
