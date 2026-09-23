@@ -1,0 +1,1178 @@
+/* Generated from planner.css: the same report styles scoped under .sheet for the map overlay. */
+.sheet {
+  --bg: #f3f5f6;
+  --surface: #ffffff;
+  --ink: #14222c;
+  --muted: #5a6873;
+  --line: #d8dfe3;
+  --line-strong: #b9c4ca;
+  --sky: #0a7f95;
+  --sky-strong: #07616f;
+  --sky-soft: #dcefF2;
+  --gold: #c98c00;
+  --gold-soft: #fbf0d0;
+  --red: #b8392a;
+  --red-soft: #f7e0db;
+  --green: #1e7d55;
+  --green-soft: #dcf0e6;
+  --low: #f4ecd9;
+  --mid: #eef2f3;
+  --high: #d6edf1;
+  --radius: 10px;
+  --font: "Golos Text", system-ui, sans-serif;
+  color-scheme: light;
+}
+
+.sheet * {
+  box-sizing: border-box;
+}
+
+.sheet {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.5 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet button {
+  font: inherit;
+  color: inherit;
+}
+
+.sheet :focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+.sheet .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.sheet .skip-link {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 6px;
+  z-index: 20;
+}
+.sheet .skip-link:focus {
+  top: 12px;
+}
+
+/* Top bar with the three-step path */
+.sheet .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 28px;
+  background: rgba(243, 245, 246, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.sheet .brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.sheet .brand b {
+  font-weight: 600;
+  font-size: 16px;
+}
+.sheet .brand span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.sheet .steps {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 3px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.sheet .steps button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+}
+.sheet .step-number {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--mid);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.sheet .steps button[aria-current="step"] {
+  background: var(--ink);
+  color: #fff;
+}
+.sheet .steps button[aria-current="step"] .step-number {
+  background: #fff;
+  color: var(--ink);
+}
+.sheet .steps button:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  opacity: 0.6;
+}
+.sheet .map-link {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sky-strong);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.sheet .map-link:hover {
+  text-decoration: underline;
+}
+
+.sheet main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 28px 72px;
+  outline: none;
+}
+
+.sheet h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.sheet h2 {
+  margin: 0 0 6px;
+  font-size: 21px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+.sheet h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.sheet .lead {
+  margin: 0 0 20px;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 16px;
+}
+.sheet .section-note {
+  margin: 0 0 16px;
+  max-width: 70ch;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Buttons */
+.primary,
+.sheet .secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sheet .primary {
+  border: 0;
+  background: var(--sky);
+  color: #fff;
+}
+.sheet .primary:hover {
+  background: var(--sky-strong);
+}
+.sheet .primary:disabled {
+  background: var(--line-strong);
+  cursor: not-allowed;
+}
+.sheet .secondary {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.sheet .secondary:hover {
+  border-color: var(--ink);
+}
+.sheet .wide {
+  width: 100%;
+}
+.sheet .link-button {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--sky-strong);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sheet .icon-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.sheet .icon-button:hover {
+  background: var(--mid);
+  color: var(--ink);
+}
+
+/* Score gauge: current value against the ghost baseline and the goal */
+.sheet .gauge {
+  margin: 0;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.sheet .gauge figcaption {
+  color: var(--muted);
+  font-size: 13px;
+}
+.sheet .gauge-number {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 2px 0 14px;
+}
+.sheet .gauge-number strong {
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.sheet .gauge-number span {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.sheet .gauge-number .up {
+  color: var(--green);
+}
+.sheet .gauge-number .down {
+  color: var(--red);
+}
+.sheet .gauge-track {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--mid);
+}
+.sheet .gauge-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--green-soft);
+  border-radius: 5px;
+}
+.sheet .gauge-mark {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 0;
+  border-left: 2px solid var(--muted);
+  transform: translateX(-1px);
+}
+.sheet .gauge-mark.ghost {
+  border-left-style: dashed;
+}
+.sheet .gauge-mark.target {
+  border-left-color: var(--gold);
+}
+.sheet .gauge-mark.bench {
+  border-left-color: var(--sky);
+  border-left-style: dotted;
+}
+.sheet .gauge-dot {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--ink);
+  transform: translate(-50%, -50%);
+  transition: left 0.35s ease;
+}
+.sheet .gauge-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.sheet .key {
+  display: inline-block;
+  width: 12px;
+  height: 0;
+  margin-right: -8px;
+  border-top: 2px solid var(--muted);
+  vertical-align: middle;
+}
+.sheet .key.ghost {
+  border-top-style: dashed;
+}
+.sheet .key.target {
+  border-top-color: var(--gold);
+}
+.sheet .key.bench {
+  border-top-color: var(--sky);
+  border-top-style: dotted;
+}
+.sheet .gauge.compact {
+  padding: 16px 18px;
+}
+.sheet .gauge.compact .gauge-number strong {
+  font-size: 44px;
+}
+
+/* City matrix: 5 districts x 10 indicators */
+.sheet .matrix-scroll {
+  margin: 0 0 32px;
+  padding: 18px 18px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.sheet .matrix {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.sheet .matrix caption {
+  caption-side: top;
+  margin-bottom: 8px;
+  text-align: left;
+  font-weight: 600;
+}
+.sheet .matrix th {
+  font-weight: 500;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: center;
+}
+.sheet .matrix-groups th {
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.matrix-groups .matrix-corner,
+.sheet .matrix-groups .matrix-score-head {
+  border-bottom: 0;
+  color: var(--muted);
+  vertical-align: bottom;
+}
+.sheet .matrix-corner {
+  text-align: left !important;
+}
+.sheet .matrix-ind {
+  padding: 4px 2px 6px;
+}
+.sheet .matrix tbody th {
+  text-align: left;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+.sheet .matrix-district {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 14px;
+}
+.sheet .matrix tbody th small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.sheet .cell {
+  position: relative;
+  height: 48px;
+  min-width: 56px;
+  padding: 4px;
+  border-radius: 6px;
+  text-align: center;
+  vertical-align: middle;
+}
+.sheet .cell-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.sheet .cell-delta {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.sheet .cell-delta.up {
+  color: var(--green);
+}
+.sheet .cell-delta.down {
+  color: var(--red);
+}
+.sheet .band-critical {
+  background: repeating-linear-gradient(
+      -45deg,
+      transparent 0 5px,
+      rgba(184, 57, 42, 0.12) 5px 7px
+    ),
+    var(--red-soft);
+  color: var(--red);
+}
+.sheet .band-low {
+  background: var(--low);
+}
+.sheet .band-mid {
+  background: var(--mid);
+}
+.sheet .band-high {
+  background: var(--high);
+}
+.sheet .cell.changed {
+  box-shadow: inset 0 0 0 2px var(--green);
+}
+.sheet .matrix-score {
+  padding-left: 10px;
+  text-align: right;
+  white-space: nowrap;
+}
+.sheet .matrix-score strong {
+  display: block;
+  font-size: 16px;
+}
+.sheet .matrix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.sheet .swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: -10px;
+  border-radius: 4px;
+  vertical-align: -2px;
+}
+
+/* Step 1: city */
+.sheet .city-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 32px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+.sheet .rules {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.sheet .rules div {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  align-items: baseline;
+  gap: 12px;
+}
+.sheet .rules dt {
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.sheet .rules dd {
+  margin: 0;
+  max-width: 56ch;
+}
+.sheet .focus p {
+  margin: 0 0 14px;
+  color: var(--muted);
+}
+.sheet .focus-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.sheet .focus-options button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  font-weight: 500;
+}
+.sheet .focus-options button[aria-pressed="true"] {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+.sheet .city-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Step 2: decisions workspace */
+.sheet .workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  align-items: start;
+}
+.sheet .rail {
+  position: sticky;
+  top: 76px;
+  display: grid;
+  gap: 14px;
+}
+.sheet .budget {
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.sheet .budget-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.sheet .budget-line b {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.sheet .budget-line small {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 13px;
+}
+.sheet .budget-bar {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  padding: 0;
+  border-radius: 4px;
+  background: var(--mid);
+  overflow: hidden;
+}
+.sheet .budget-bar span {
+  background: var(--sky);
+}
+.sheet .budget-bar span:nth-child(even) {
+  background: var(--sky-strong);
+}
+.sheet .budget-bar.over span {
+  background: var(--red);
+}
+.sheet .slots {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sheet .slots li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 8px 6px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.sheet .slots li.filled {
+  border-style: solid;
+  border-color: var(--line);
+  background: var(--surface);
+}
+.slot-id,
+.sheet .measure-id {
+  flex: none;
+  min-width: 34px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--mid);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.sheet .slot-name {
+  flex: 1;
+  line-height: 1.3;
+}
+.sheet .slot-empty {
+  color: var(--muted);
+}
+.sheet .mini-goals {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+.sheet .mini-goals li {
+  padding-left: 20px;
+  position: relative;
+}
+.sheet .mini-goals li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.sheet .mini-goals li.missed::before {
+  background: transparent;
+  border: 2px solid var(--red);
+  width: 5px;
+  height: 5px;
+}
+.sheet .rail-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.sheet .rail-hint.error {
+  color: var(--red);
+}
+.sheet .rail .link-button {
+  justify-self: center;
+}
+
+/* Catalog of 14 measures grouped by direction */
+.sheet .catalog {
+  display: grid;
+  gap: 28px;
+}
+.sheet .catalog-group header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+}
+.sheet .catalog-group h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.sheet .catalog-group header span {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.sheet .catalog-group header .cap-full {
+  color: var(--gold);
+  font-weight: 600;
+}
+.sheet .catalog-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sheet .measure {
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.sheet .measure-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.sheet .measure-head h4 {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.sheet .measure-cost {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sheet .measure-cost small {
+  color: var(--muted);
+  font-weight: 400;
+}
+.sheet .measure-effects {
+  margin: 4px 0 2px 44px;
+  font-weight: 500;
+}
+.sheet .measure-meta {
+  margin: 0 0 10px 44px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.sheet .measure-synergy {
+  color: var(--gold);
+  font-weight: 500;
+}
+.sheet .measure-ref {
+  color: var(--muted);
+}
+.sheet .measure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: 44px;
+}
+.sheet .option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 14px;
+}
+.sheet .option b {
+  font-variant-numeric: tabular-nums;
+  color: var(--green);
+}
+.sheet .option:hover:not(:disabled) {
+  border-color: var(--sky);
+  background: var(--sky-soft);
+}
+.sheet .option.is-best {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 1px var(--green);
+}
+.sheet .option:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: var(--bg);
+  border-style: dashed;
+}
+.sheet .option:disabled b {
+  color: var(--muted);
+}
+.sheet .measure.is-chosen {
+  background: linear-gradient(90deg, var(--sky-soft), transparent 70%);
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 8px;
+}
+.sheet .chosen-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sky-strong);
+  font-weight: 600;
+}
+.measure.is-blocked h4,
+.sheet .measure.is-blocked .measure-effects {
+  color: var(--muted);
+}
+.measure-block,
+.sheet .measure-note {
+  margin: 6px 0 0 44px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.sheet .measure-block {
+  color: var(--red);
+}
+
+/* Step 3: report */
+.sheet .report {
+  display: grid;
+  gap: 40px;
+}
+.sheet .report-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 32px;
+  align-items: start;
+}
+.sheet .goal-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sheet .goal-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.sheet .goal-list li > svg {
+  flex: none;
+  margin-top: 3px;
+  padding: 2px;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+}
+.sheet .goal-list li.met > svg {
+  background: var(--green);
+  color: #fff;
+}
+.sheet .goal-list li.missed {
+  border-color: var(--red);
+}
+.sheet .goal-list li.missed > svg {
+  background: var(--red);
+  color: #fff;
+}
+.sheet .goal-list b {
+  display: block;
+  font-weight: 600;
+}
+.sheet .goal-list span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.sheet .report-score {
+  display: grid;
+  gap: 12px;
+}
+.sheet .report-budget {
+  margin: 0;
+  color: var(--muted);
+}
+.sheet .report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sheet .report-section {
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.sheet .parts {
+  display: grid;
+  gap: 8px;
+  max-width: 880px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sheet .parts li {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) 1fr 64px;
+  align-items: center;
+  gap: 14px;
+}
+.sheet .part-name {
+  font-size: 14.5px;
+}
+.sheet .part-bar {
+  height: 14px;
+  background: var(--mid);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.sheet .part-bar span {
+  display: block;
+  height: 100%;
+  background: var(--sky);
+}
+.sheet .part-bar span.down {
+  background: var(--red);
+}
+.sheet .parts b {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.sheet .brief-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+.sheet .brief-columns h3 {
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--green);
+}
+.sheet .brief-columns > div:nth-child(2) h3 {
+  border-bottom-color: var(--red);
+}
+.sheet .brief-columns > div:nth-child(3) h3 {
+  border-bottom-color: var(--gold);
+}
+.sheet .brief-columns ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+}
+.sheet .brief-columns .empty {
+  color: var(--muted);
+}
+.sheet .ai-note {
+  margin: 20px 0 0;
+  max-width: 70ch;
+  color: var(--muted);
+  font-size: 14px;
+}
+.sheet .ai-brief {
+  margin-top: 22px;
+  padding: 18px 20px;
+  max-width: 880px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--sky);
+  border-radius: 8px;
+}
+.sheet .ai-brief p {
+  margin: 0 0 10px;
+}
+.sheet .ai-brief small {
+  color: var(--muted);
+}
+.sheet .inline-error {
+  margin: 10px 0 0;
+  color: var(--red);
+}
+.sheet .support {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sheet .support li {
+  display: grid;
+  grid-template-columns: 110px minmax(120px, 260px) 70px 1fr;
+  align-items: center;
+  gap: 14px;
+}
+.sheet .support-name {
+  font-weight: 600;
+}
+.sheet .support-bar {
+  height: 12px;
+  border-radius: 4px;
+  background: var(--mid);
+  overflow: hidden;
+}
+.sheet .support-bar span {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+.sheet .support-bar span.low {
+  background: var(--red);
+}
+.sheet .support b {
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+.sheet .support q {
+  color: var(--muted);
+  font-size: 14px;
+}
+.sheet .support-total {
+  margin: 14px 0 0;
+}
+.sheet .swap {
+  max-width: 880px;
+}
+.sheet .swap p {
+  margin: 0 0 12px;
+}
+.sheet .swap-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: var(--muted);
+}
+.swap-out,
+.sheet .swap-in {
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.sheet .swap-out {
+  background: var(--red-soft);
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+}
+.sheet .swap-in {
+  background: var(--green-soft);
+}
+
+.sheet .spin {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Compact plan summary pinned to the bottom when the rail drops below the catalog */
+.sheet .mobile-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(20, 34, 44, 0.08);
+}
+.sheet .mobile-bar div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.sheet .mobile-bar strong {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.sheet .mobile-bar span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.sheet .mobile-bar .primary {
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+@media (max-width: 1080px) {
+  .city-intro,
+  .report-hero,
+  .sheet .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sheet .mobile-bar {
+    display: flex;
+  }
+  .sheet .workspace {
+    padding-bottom: 72px;
+  }
+  .sheet .rail {
+    position: static;
+  }
+  .sheet .brief-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .sheet .topbar {
+    grid-template-columns: 1fr auto;
+    padding: 10px 16px;
+  }
+  .sheet .topbar nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .sheet .steps {
+    justify-content: space-between;
+  }
+  .sheet .brand span {
+    display: none;
+  }
+  .sheet main {
+    padding: 24px 16px 56px;
+  }
+  .sheet h1 {
+    font-size: 26px;
+  }
+  .sheet .gauge-number strong {
+    font-size: 44px;
+  }
+  .measure-effects,
+  .measure-meta,
+  .measure-actions,
+  .measure-block,
+  .sheet .measure-note {
+    margin-left: 0;
+  }
+  .sheet .parts li {
+    grid-template-columns: 1fr 56px;
+  }
+  .sheet .part-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .sheet .support li {
+    grid-template-columns: 90px 1fr 64px;
+  }
+  .sheet .support q {
+    grid-column: 1 / -1;
+  }
+  .sheet .rules div {
+    grid-template-columns: 48px 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet .gauge-dot {
+    transition: none;
+  }
+  .sheet .spin {
+    animation: none;
+  }
+}

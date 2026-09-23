@@ -51,14 +51,13 @@ export default function CityMap(props: Props) {
     }).setView([51.153, 71.427], 12);
     mapRef.current = map;
     L.control.zoom({ position: "bottomright" }).addTo(map);
-    // A muted basemap keeps street names quiet so districts, residents and decisions read first.
+    // OSM tiles, desaturated in CSS (.game .leaflet-tile-pane) so districts, residents and decisions read first.
     const tiles = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       {
         maxZoom: 19,
-        subdomains: "abcd",
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">CARTO</a>',
+          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
       },
     ).addTo(map);
     tiles.on("tileerror", () => setMapError(true));

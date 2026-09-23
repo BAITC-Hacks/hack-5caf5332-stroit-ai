@@ -266,7 +266,7 @@ export default function Game() {
           </div>
           <div className="brief-actions">
             <button type="button" className="cta" onClick={start}>
-              Начать с {districtName(weakest.id).replace(/а$/, "ы")} <ArrowRight size={17} />
+              Начать: район {districtName(weakest.id)} <ArrowRight size={17} />
             </button>
             <button type="button" className="text-button" onClick={() => setDialog("akim")}>
               <Sparkles size={14} /> Поручить AI-акиму
@@ -292,7 +292,7 @@ export default function Game() {
             ? plan.length === 5
               ? "Пять решений приняты. Подведите итог или замените решение в корзине."
               : "Нажмите на район на карте, чтобы добавить следующее решение."
-            : `Нажмите на ${districtName(weakest.id).replace(/а$/, "у")}: это самый слабый район.`}
+            : `Нажмите на район ${districtName(weakest.id)} на карте: он самый слабый.`}
         </div>
       )}
 
