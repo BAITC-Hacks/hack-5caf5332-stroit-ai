@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f5f6f8" />
+    <meta
+      name="description"
+      content="Beeline: демонстрационный интерфейс планирования тарифных кампаний."
+    />
+    <title>Аудитория — Beeline Campaign Studio</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23ffcf00'/%3E%3Cpath d='M0 12h32v7H0z' fill='%23202124'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="src/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Перейти к содержимому</a>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Рабочее пространство">
+        <a
+          class="brand"
+          href="?screen=audience"
+          data-screen="audience"
+          aria-label="Beeline Campaign Studio — аудитория"
+        >
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span
+            ><strong translate="no">beeline</strong
+            ><span class="brand-caption" translate="no"
+              >Campaign Studio</span
+            ></span
+          >
+        </a>
+        <div class="workspace-label">Тарифные кампании</div>
+        <nav class="main-nav" aria-label="Этапы кампании">
+          <a href="?screen=audience" data-screen="audience"
+            ><span class="nav-icon" aria-hidden="true">◫</span>Аудитория<span
+              class="nav-step"
+              >1</span
+            ></a
+          >
+          <a href="?screen=pilots" data-screen="pilots"
+            ><span class="nav-icon" aria-hidden="true">◎</span>Пилоты<span
+              class="nav-step"
+              >2</span
+            ></a
+          >
+          <a href="?screen=plan" data-screen="plan"
+            ><span class="nav-icon" aria-hidden="true">▤</span>План
+            кампаний<span class="nav-step">3</span></a
+          >
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="sandbox-note">
+            <span class="sandbox-dot" aria-hidden="true"></span
+            ><strong>Демо-пространство</strong>
+            <p>Синтетические данные.<br />Реальные рассылки не запускаются.</p>
+          </div>
+          <div class="profile">
+            <span class="avatar" aria-hidden="true">М</span
+            ><span
+              >Маркетинг<span class="small muted"
+                >Рабочее место аналитика</span
+              ></span
+            >
+          </div>
+        </div>
+      </aside>
+      <div class="workspace">
+        <header class="topbar">
+          <span
+            >Маркетинг
+            <span class="breadcrumb-slash" aria-hidden="true">/</span>
+            <strong id="breadcrumb">Аудитория</strong></span
+          ><span class="demo-badge">Демонстрация</span>
+        </header>
+        <main id="main" tabindex="-1"></main>
+        <footer class="workspace-footer">
+          <p>Прототип HackAlem. Не подключён к агенту или базе абонентов.</p>
+          <details class="demo-tools">
+            <summary>Проверка прототипа</summary>
+            <div class="state-control">
+              <label for="demo-state">Состояние экрана</label
+              ><select id="demo-state" name="demo-state" autocomplete="off">
+                <option value="ready">С данными</option>
+                <option value="loading">Загрузка</option>
+                <option value="empty">Пустой результат</option>
+                <option value="error">Ошибка</option>
+              </select>
+            </div>
+          </details>
+        </footer>
+      </div>
+    </div>
+    <div
+      id="announcer"
+      class="sr-only"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+    <div id="toast" class="toast" hidden></div>
+    <dialog id="detail-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-top">
+        <h2 id="dialog-title">Детали</h2>
+        <button
+          class="icon-button"
+          id="close-dialog"
+          type="button"
+          aria-label="Закрыть детали"
+        >
+          ×
+        </button>
+      </div>
+      <div id="dialog-content"></div>
+    </dialog>
+    <noscript
+      ><p class="noscript">
+        Для работы фильтров и экранов включите JavaScript. Это локальный
+        демонстрационный интерфейс, внешнее подключение не требуется.
+      </p></noscript
+    >
+  </body>
+</html>
