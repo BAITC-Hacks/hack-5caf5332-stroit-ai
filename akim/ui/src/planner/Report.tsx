@@ -9,6 +9,7 @@ import type { ActivityEvent } from "../city-data";
 import Matrix from "./Matrix";
 import StressTest from "./StressTest";
 import ScoreGauge from "./ScoreGauge";
+import PixelMayor from "./PixelMayor";
 import Comparison, { type ComparisonTarget } from "./Comparison";
 import { contributions, explain, fmt, goals, signed } from "./analysis";
 
@@ -357,20 +358,14 @@ function AkimAdvice({
 
   if (!answer)
     return (
-      <div className="activity" aria-live="polite" aria-busy="true">
-        {events.map((event, i) => (
-          <div className="done" key={i}>
-            <Check size={14} aria-hidden="true" />
-            <span>
-              {event.label}
-              <small className="event-detail">{event.detail}</small>
-            </span>
-          </div>
-        ))}
-        <div className="running">
-          <LoaderCircle size={14} className="spin" aria-hidden="true" />
-          <span>AI-аким проверяет план на данных города…</span>
-        </div>
+      <div aria-busy="true">
+        <PixelMayor
+          text={
+            events.length
+              ? `${events[events.length - 1].label}. ${events[events.length - 1].detail}`
+              : "Так-так… Проверяю ваш план на данных города."
+          }
+        />
       </div>
     );
 
@@ -381,10 +376,7 @@ function AkimAdvice({
   const improvement = answer.result.score - score;
   return (
     <div className="swap" aria-live="polite">
-      <p>
-        <b>{answer.title}</b>
-      </p>
-      <p>{answer.why}</p>
+      <PixelMayor text={`${answer.title}. ${answer.why}`} />
       {removed && added && (
         <>
           <p>
