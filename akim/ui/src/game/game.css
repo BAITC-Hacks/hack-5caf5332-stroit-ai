@@ -1036,3 +1036,10 @@
     animation: none;
   }
 }
+
+/* Keep the one variants entry reachable while the report is open. */
+@media (min-width: 801px) {
+  .game.stage-report .game-top { z-index: 8; }
+  .game.stage-report .sheet-backdrop { top: 78px; padding-top: 12px; }
+}
+.sheet-backdrop[hidden] { display: none; }

@@ -15,6 +15,14 @@ export default function Comparison({ plan, target, priorities }: {
   priorities: Direction[];
 }) {
   const comparison = useMemo(() => comparePlans(plan, target.plan, priorities), [plan, target.plan, priorities]);
+  const identical = plan.length === target.plan.length && plan.every(choice =>
+    target.plan.some(other => other.measureId === choice.measureId && other.districtId === choice.districtId));
+  if (identical) return (
+    <div className="comparison-empty" role="status">
+      <h3>«{target.name}» совпадает с текущим планом</h3>
+      <p>Измените меру и подведите итог, чтобы сравнить.</p>
+    </div>
+  );
   const rows: { label: string; value: ComparisonValue; format: (n: number) => string; neutral?: boolean; digits?: number }[] = [
     { label: "Балл (Score)", value: comparison.metrics.score, format: fmt },
     { label: "Бюджет", value: comparison.metrics.budget, format: (n) => `${money(n)} у.е.`, neutral: true, digits: 0 },

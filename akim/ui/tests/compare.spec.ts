@@ -17,7 +17,9 @@ test("save a scenario, edit through the district panel and compare results", asy
   const sheet = page.locator(".sheet");
   await sheet.getByRole("button", { name: "Сохранить как вариант", exact: true }).click();
   await expect(page.locator(".toast")).toHaveText("Сохранён как Вариант A");
-  await sheet.getByRole("button", { name: "Варианты (1)", exact: true }).click();
+  await expect(page.locator(".comparison-empty")).toContainText("Измените меру и подведите итог, чтобы сравнить");
+  await expect(page.getByRole("button", { name: "Варианты (1)", exact: true })).toHaveCount(1);
+  await page.getByRole("button", { name: "Варианты (1)", exact: true }).click();
   const variants = page.getByRole("dialog", { name: "Сохранённые варианты" });
   await expect(variants).toContainText("Балл 56,54 · Бюджет 95 у.е.");
   await variants.getByRole("textbox", { name: "Название варианта A" }).fill("Социальный план");
@@ -52,14 +54,13 @@ test("save a scenario, edit through the district panel and compare results", asy
   await page.goto(shared.toString());
   await expect(comparison).toBeVisible();
   await expect(page.locator(".comparison-conclusion")).toContainText("лучше на +0,66");
-  await sheet.getByRole("button", { name: "Варианты (1)", exact: true }).click();
+  await page.getByRole("button", { name: "Варианты (1)", exact: true }).click();
   await expect(variants.getByRole("textbox", { name: "Название варианта A" })).toHaveValue("Социальный план");
   await variants.getByRole("button", { name: "Сравнить", exact: true }).click();
   await expect(comparison).toContainText("Социальный план");
 
   await sheet.getByRole("button", { name: "Сравнить с эталоном автопилота", exact: true }).click();
-  await expect(comparison).toContainText("Эталон автопилота");
-  await expect(page.locator(".comparison-conclusion")).toContainText("показатели районов совпадают");
+  await expect(page.locator(".comparison-empty")).toContainText("Измените меру и подведите итог, чтобы сравнить");
   for (const name of ["B", "C"]) {
     await sheet.getByRole("button", { name: "Сохранить как вариант", exact: true }).click();
     await expect(page.locator(".toast")).toHaveText(`Сохранён как Вариант ${name}`);

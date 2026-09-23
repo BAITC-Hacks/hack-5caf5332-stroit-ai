@@ -260,7 +260,7 @@ export default function Game() {
         </div>
       </header>
 
-      {stage === "intro" && (
+      {stage === "intro" && !dialog && (
         <section className="intro glass" aria-labelledby="intro-title">
           <h1 id="intro-title">Пять решений для города</h1>
           <p>
@@ -283,7 +283,7 @@ export default function Game() {
         </section>
       )}
 
-      {stage === "brief" && (
+      {stage === "brief" && !dialog && (
         <section className="briefing glass" aria-labelledby="brief-title">
           <h1 id="brief-title">Город сейчас: {fmt(baseline.score)} из 100</h1>
           <ul className="briefing-facts">
@@ -318,7 +318,7 @@ export default function Game() {
         </section>
       )}
 
-      {stage === "turn" && selected && !resident && (
+      {stage === "turn" && selected && !resident && !dialog && (
         <DistrictPanel
           key={selected}
           districtId={selected}
@@ -334,7 +334,7 @@ export default function Game() {
         />
       )}
 
-      {stage === "turn" && !selected && !resident && (
+      {stage === "turn" && !selected && !resident && !dialog && (
         <div className="turn-hint glass" role="status">
           {plan.length
             ? plan.length === 5
@@ -368,7 +368,7 @@ export default function Game() {
       )}
 
       {stage === "report" && result && (
-        <div className="sheet-backdrop" onClick={() => setStage("turn")}>
+        <div className="sheet-backdrop" hidden={!!dialog} onClick={() => setStage("turn")}>
           <section
             className="sheet"
             role="dialog"
@@ -380,9 +380,6 @@ export default function Game() {
               <div className="sheet-actions">
                 <button type="button" className="secondary" onClick={saveVariant} disabled={variants.length >= 3} title={variants.length >= 3 ? "Сохранено максимум 3 варианта" : undefined}>
                   <Save size={15} /> Сохранить как вариант
-                </button>
-                <button type="button" className="secondary" onClick={() => setDialog("variants")}>
-                  Варианты ({fmt(variants.length, 0)})
                 </button>
                 <button type="button" className="secondary" onClick={() => openAsk(examples[2])}>
                   Спросить жителей
@@ -492,7 +489,7 @@ export default function Game() {
         </section>
       )}
 
-      {toast && (
+      {toast && !dialog && (
         <div className="toast glass" role="status">
           <Check size={16} />
           {toast}
