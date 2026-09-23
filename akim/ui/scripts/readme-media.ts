@@ -23,7 +23,6 @@ const build = (name: string) =>
 await page.goto(base + "/");
 await page.getByRole("heading", { name: "Пять решений для города" }).waitFor();
 await pause(2500);
-await shot("intro.png");
 await page.getByRole("button", { name: /Стать акимом/ }).click();
 await page.getByRole("heading", { name: /Город сейчас/ }).waitFor();
 await pause(2000);
@@ -31,7 +30,6 @@ await page.getByRole("button", { name: "Соцсфера", exact: true }).click(
 await pause();
 await page.getByRole("button", { name: /Начать: район Нура/ }).click();
 await pause(2500);
-await shot("map.png");
 await page.getByRole("button", { name: "Район Нура", exact: true }).click();
 await pause();
 await page.getByRole("button", { name: /Все 14 мер/ }).click();
