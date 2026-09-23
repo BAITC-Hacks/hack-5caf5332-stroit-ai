@@ -135,3 +135,56 @@ test("ready example, keyboard escape and invalid link fall back safely", async (
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
 });
+
+
+test("resident canvas survives all detail levels, double-click and interrupted zooms", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/?plan=M7.nura");
+  const canvas = page.locator(".resident-overlay");
+  await expect(canvas).toBeVisible();
+  await page.waitForFunction(() => !!(document.querySelector(".leaflet-host") as HTMLElement & { simMap?: unknown })?.simMap);
+  const setZoom = async (zoom: number) => page.evaluate((value) => {
+    const map = (document.querySelector(".leaflet-host") as HTMLElement & { simMap: import("leaflet").Map }).simMap;
+    map.setZoom(value, { animate: false });
+  }, zoom);
+  const visiblePixels = async () => {
+    await expect(canvas).toHaveCSS("opacity", "1");
+    await expect(canvas).toHaveCSS("pointer-events", "none");
+    await expect.poll(() => canvas.evaluate((node: HTMLCanvasElement) => {
+      const bytes = node.getContext("2d")!.getImageData(0, 0, node.width, node.height).data;
+      let pixels = 0;
+      for (let i = 3; i < bytes.length; i += 4) if (bytes[i] > 0) pixels++;
+      return pixels;
+    })).toBeGreaterThan(20);
+  };
+  for (const [zoom, detail] of [[11, "cluster"], [13, "sparse"], [15, "full"]] as const) {
+    await setZoom(zoom);
+    await expect(canvas).toHaveAttribute("data-detail", detail);
+    await visiblePixels();
+  }
+  await page.evaluate(() => {
+    const map = (document.querySelector(".leaflet-host") as HTMLElement & { simMap: import("leaflet").Map }).simMap;
+    map.setZoom(11, { animate: false });
+    map.setZoom(15, { animate: false });
+    map.setZoom(13, { animate: false });
+    // Also cover an interrupted transition whose final notification is moveend.
+    map.fire("zoomstart");
+    map.fire("moveend");
+  });
+  await expect(page.locator(".leaflet-host")).not.toHaveClass(/leaflet-zoom-anim/);
+  await visiblePixels();
+  await setZoom(13);
+  await expect(canvas).toHaveAttribute("data-detail", "sparse");
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await expect(canvas).toHaveAttribute("data-detail", "full");
+  await visiblePixels();
+  await setZoom(13);
+  await page.locator(".leaflet-host").dblclick({ position: { x: 750, y: 450 } });
+  await expect(canvas).toHaveAttribute("data-detail", "full");
+  await visiblePixels();
+  for (const name of ["Zoom out", "Zoom in", "Zoom out", "Zoom in"]) {
+    await page.getByRole("button", { name, exact: true }).click();
+  }
+  await expect(page.locator(".leaflet-host")).not.toHaveClass(/leaflet-zoom-anim/);
+  await visiblePixels();
+});

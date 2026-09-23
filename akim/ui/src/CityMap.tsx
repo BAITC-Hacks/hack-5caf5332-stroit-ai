@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "./residents-map.css";
 import { districts, type DistrictId } from "./data";
 import { baseline, type Projection } from "./engine";
 import { population, residentState, type Resident } from "./population";
@@ -11,6 +12,16 @@ import {
   toLatLng,
 } from "./geography";
 import type { Poll } from "./residents";
+import {
+  buildResidentsLod,
+  residentCellColor,
+  residentCellRadius,
+  snapResidentPixel,
+  RESIDENT_SMALL_SPRITE,
+  RESIDENT_FULL_SPRITE,
+  RESIDENT_SMALL_HALO,
+  RESIDENT_FULL_HALO,
+} from "./residentsLod";
 export interface Marker {
   id: string;
   districtId: DistrictId | null;
@@ -50,6 +61,9 @@ export default function CityMap(props: Props) {
       preferCanvas: true,
     }).setView([51.153, 71.427], 12);
     mapRef.current = map;
+    // Dev-only handle lets browser regressions exercise Leaflet's real zoom events.
+    const testHost = host.current! as HTMLDivElement & { simMap?: L.Map };
+    if (import.meta.env.DEV) testHost.simMap = map;
     L.control.zoom({ position: "bottomright" }).addTo(map);
     // OSM tiles, desaturated in CSS (.game .leaflet-tile-pane) so districts, residents and decisions read first.
     const tiles = L.tileLayer(
@@ -100,21 +114,24 @@ export default function CityMap(props: Props) {
     const cityCenter: L.LatLngExpression = [51.128, 71.43];
     const overlay = document.createElement("canvas");
     overlay.className = "resident-overlay";
+    overlay.style.pointerEvents = "none";
     const residentPane=map.createPane("residents");residentPane.style.zIndex="3";residentPane.style.pointerEvents="none";residentPane.appendChild(overlay);
     overlayRef.current = overlay;
     const ctx = overlay.getContext("2d")!,
       sprites = new Image();
     sprites.src = "/residents.png";
     const draw = () => {
+      // Never latch visibility to zoomstart: interrupted flyTo/zoom animations
+      // need not finish in the same order as they started.
+      overlay.style.opacity = "1";
       const s = snapshot.current,
         size = map.getSize(),
-        ratio = Math.min(devicePixelRatio, 2);
-      if (
-        overlay.width !== size.x * ratio ||
-        overlay.height !== size.y * ratio
-      ) {
-        overlay.width = size.x * ratio;
-        overlay.height = size.y * ratio;
+        ratio = Math.min(devicePixelRatio, 2),
+        width = Math.round(size.x * ratio),
+        height = Math.round(size.y * ratio);
+      if (overlay.width !== width || overlay.height !== height) {
+        overlay.width = width;
+        overlay.height = height;
         overlay.style.width = size.x + "px";
         overlay.style.height = size.y + "px";
       }
@@ -122,38 +139,61 @@ export default function CityMap(props: Props) {
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, size.x, size.y);
       ctx.imageSmoothingEnabled = false;
-      for (const p of population) {
-        const state = residentState(p, s.minutes, s.stayInside),
-          point = map.latLngToContainerPoint(toLatLng(state.point));
-        if (
-          point.x < -10 ||
-          point.y < -10 ||
-          point.x > size.x + 10 ||
-          point.y > size.y + 10
-        )
-          continue;
-        const cohort = s.poll?.cohorts?.find(
-            (c) => c.districtId === p.districtId && c.profileId === p.profileId,
-          ),
-          row = s.poll?.districts[p.districtIndex];
-        const yes = cohort
-          ? p.cohortIndex < cohort.yes
-          : row
-            ? p.index < row.yes
-            : false;
-        const dimmed = s.selected ? s.selected !== p.districtId : false;
-        ctx.globalAlpha = dimmed ? 0.2 : 0.95;
-        // Mood halo: green when the current plan helps this resident, red when it does not.
-        if (row || s.residentId === p.id) {
+      function* screenResidents() {
+        for (const p of population) {
+          const state = residentState(p, s.minutes, s.stayInside),
+            point = map.latLngToContainerPoint(toLatLng(state.point));
+          if (
+            point.x < -12 ||
+            point.y < -12 ||
+            point.x > size.x + 12 ||
+            point.y > size.y + 12
+          )
+            continue;
+          const cohort = s.poll?.cohorts?.find(
+              (c) => c.districtId === p.districtId && c.profileId === p.profileId,
+            ),
+            row = s.poll?.districts[p.districtIndex];
+          yield {
+            id: p.id,
+            x: point.x,
+            y: point.y,
+            vote: cohort
+              ? p.cohortIndex < cohort.yes
+              : row
+                ? p.index < row.yes
+                : null,
+            alpha: s.selected && s.selected !== p.districtId ? 0.2 : 0.95,
+            highlighted: s.residentId === p.id,
+            p,
+            state,
+          };
+        }
+      }
+      const lod = buildResidentsLod(map.getZoom(), screenResidents());
+      overlay.dataset.detail = lod.detail;
+      const snap = (value: number) => snapResidentPixel(value, ratio);
+      const drawResident = (point: NonNullable<typeof lod.highlighted>) => {
+        const { p, state } = point;
+        const full = lod.detail === "full" || point.highlighted;
+        const px = snap(full ? RESIDENT_FULL_SPRITE : RESIDENT_SMALL_SPRITE);
+        const halo = full ? RESIDENT_FULL_HALO : RESIDENT_SMALL_HALO;
+        ctx.globalAlpha = point.highlighted ? 1 : point.alpha;
+        if (point.vote !== null || point.highlighted) {
           ctx.fillStyle =
-            s.residentId === p.id ? "#fff59d" : yes ? "#5fae3f" : "#d8584a";
+            point.highlighted ? "#fff59d" : point.vote ? "#5fae3f" : "#d8584a";
           ctx.beginPath();
-          ctx.arc(point.x, point.y, map.getZoom() >= 13 ? 6 : 3.5, 0, Math.PI * 2);
+          ctx.arc(snap(point.x), snap(point.y), snap(halo), 0, Math.PI * 2);
           ctx.fill();
         } else if (s.spotlight === p.districtId && !s.selected) {
           ctx.fillStyle = "#e58a7a";
           ctx.beginPath();
-          ctx.arc(point.x, point.y, 3.5, 0, Math.PI * 2);
+          ctx.arc(snap(point.x), snap(point.y), snap(halo), 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "#d9e6cf";
+          ctx.beginPath();
+          ctx.arc(snap(point.x), snap(point.y), snap(halo), 0, Math.PI * 2);
           ctx.fill();
         }
         const next = residentState(p, s.minutes + 0.2, s.stayInside).point,
@@ -161,14 +201,7 @@ export default function CityMap(props: Props) {
           dy = next[1] - state.point[1],
           direction =
             Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 1) : dy < 0 ? 3 : 0,
-          frame = state.moving ? Math.floor(s.minutes * 4 + p.id) % 3 : 1,
-          px = map.getZoom() >= 13 ? 12 : 7;
-        if (map.getZoom() < 12.5 && !row) {
-          // Zoomed out: residents are quiet dots, not a swarm of sprites.
-          ctx.fillStyle = "#3d5c4a";
-          ctx.fillRect(point.x - 1, point.y - 1, 2, 2);
-          continue;
-        }
+          frame = state.moving ? Math.floor(s.minutes * 4 + p.id) % 3 : 1;
         if (sprites.complete && sprites.naturalWidth)
           ctx.drawImage(
             sprites,
@@ -176,16 +209,32 @@ export default function CityMap(props: Props) {
             Math.floor(p.sprite / 5) * 64 + direction * 16,
             16,
             16,
-            point.x - px / 2,
-            point.y - px,
+            snap(point.x - px / 2),
+            snap(point.y - px),
             px,
             px,
           );
         else {
           ctx.fillStyle = "#356749";
-          ctx.fillRect(point.x, point.y, 2, 3);
+          ctx.fillRect(snap(point.x), snap(point.y), snap(2), snap(3));
         }
+      };
+      for (const cell of lod.cells.values()) {
+        if (lod.detail === "sparse") {
+          drawResident(cell.resident);
+          continue;
+        }
+        ctx.globalAlpha = cell.alphaSum / cell.count;
+        ctx.fillStyle = residentCellColor(cell.yes, cell.votes);
+        ctx.beginPath();
+        ctx.arc(
+          snap(cell.x), snap(cell.y), snap(residentCellRadius(cell.count)),
+          0, Math.PI * 2,
+        );
+        ctx.fill();
       }
+      for (const point of lod.residents) drawResident(point);
+      if (lod.highlighted) drawResident(lod.highlighted);
       ctx.globalAlpha = 1;
     };
     const update = () => {
@@ -262,10 +311,18 @@ export default function CityMap(props: Props) {
         if (small)
           small.textContent = (
             s.after && s.result ? s.result.districts[i] : baseline.districts[i]
-          ).score.toFixed(1);
+          ).score.toLocaleString("ru-RU", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       });
     };
+    let settledFrame = 0;
+    const redrawSettled = () => {
+      draw();
+      cancelAnimationFrame(settledFrame);
+      settledFrame = requestAnimationFrame(draw);
+    };
     map.on("move zoom resize", draw);
+    map.on("zoomend moveend", redrawSettled);
+    sprites.onload = draw;
     const timer = window.setInterval(update, 100);
     update();
     setReady(true);
@@ -310,6 +367,11 @@ export default function CityMap(props: Props) {
     return () => {
       clearInterval(timer);
       resize.disconnect();
+      sprites.onload = null;
+      cancelAnimationFrame(settledFrame);
+      map.off("zoomend moveend", redrawSettled);
+      map.off("move zoom resize", draw);
+      delete testHost.simMap;
       host.current?.removeEventListener("click", click, true);
       overlay.remove();
       map.remove();
