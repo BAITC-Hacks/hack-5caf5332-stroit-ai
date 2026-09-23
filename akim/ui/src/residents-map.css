@@ -1,0 +1,8 @@
+/* Leaflet corner controls need a full-height containing block. */
+@media (min-width: 801px) {
+  .game .real-city-map .leaflet-control-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+}

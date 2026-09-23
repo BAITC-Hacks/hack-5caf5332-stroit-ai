@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "./residents-map.css";
 import { districts, type DistrictId } from "./data";
 import { baseline, type Projection } from "./engine";
 import { population, residentState, type Resident } from "./population";
@@ -60,6 +61,9 @@ export default function CityMap(props: Props) {
       preferCanvas: true,
     }).setView([51.153, 71.427], 12);
     mapRef.current = map;
+    // Dev-only handle lets browser regressions exercise Leaflet's real zoom events.
+    const testHost = host.current! as HTMLDivElement & { simMap?: L.Map };
+    if (import.meta.env.DEV) testHost.simMap = map;
     L.control.zoom({ position: "bottomright" }).addTo(map);
     // OSM tiles, desaturated in CSS (.game .leaflet-tile-pane) so districts, residents and decisions read first.
     const tiles = L.tileLayer(
@@ -116,9 +120,10 @@ export default function CityMap(props: Props) {
     const ctx = overlay.getContext("2d")!,
       sprites = new Image();
     sprites.src = "/residents.png";
-    let zooming = false;
     const draw = () => {
-      if (zooming) return;
+      // Never latch visibility to zoomstart: interrupted flyTo/zoom animations
+      // need not finish in the same order as they started.
+      overlay.style.opacity = "1";
       const s = snapshot.current,
         size = map.getSize(),
         ratio = Math.min(devicePixelRatio, 2),
@@ -166,6 +171,7 @@ export default function CityMap(props: Props) {
         }
       }
       const lod = buildResidentsLod(map.getZoom(), screenResidents());
+      overlay.dataset.detail = lod.detail;
       const snap = (value: number) => snapResidentPixel(value, ratio);
       const drawResident = (point: NonNullable<typeof lod.highlighted>) => {
         const { p, state } = point;
@@ -181,6 +187,11 @@ export default function CityMap(props: Props) {
           ctx.fill();
         } else if (s.spotlight === p.districtId && !s.selected) {
           ctx.fillStyle = "#e58a7a";
+          ctx.beginPath();
+          ctx.arc(snap(point.x), snap(point.y), snap(halo), 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "#d9e6cf";
           ctx.beginPath();
           ctx.arc(snap(point.x), snap(point.y), snap(halo), 0, Math.PI * 2);
           ctx.fill();
@@ -300,24 +311,17 @@ export default function CityMap(props: Props) {
         if (small)
           small.textContent = (
             s.after && s.result ? s.result.districts[i] : baseline.districts[i]
-          ).score.toFixed(1);
+          ).score.toLocaleString("ru-RU", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       });
     };
-    const hideForZoom = () => {
-      zooming = true;
-      // Hide immediately; fade in only after projection has caught up.
-      overlay.style.transition = "none";
-      overlay.style.opacity = "0";
-    };
-    const finishZoom = () => {
-      zooming = false;
+    let settledFrame = 0;
+    const redrawSettled = () => {
       draw();
-      overlay.style.transition = "opacity 80ms ease-out";
-      overlay.style.opacity = "1";
+      cancelAnimationFrame(settledFrame);
+      settledFrame = requestAnimationFrame(draw);
     };
-    map.on("zoomstart zoomanim", hideForZoom);
-    map.on("zoomend", finishZoom);
-    map.on("move zoom moveend resize", draw);
+    map.on("move zoom resize", draw);
+    map.on("zoomend moveend", redrawSettled);
     sprites.onload = draw;
     const timer = window.setInterval(update, 100);
     update();
@@ -364,9 +368,10 @@ export default function CityMap(props: Props) {
       clearInterval(timer);
       resize.disconnect();
       sprites.onload = null;
-      map.off("zoomstart zoomanim", hideForZoom);
-      map.off("zoomend", finishZoom);
-      map.off("move zoom moveend resize", draw);
+      cancelAnimationFrame(settledFrame);
+      map.off("zoomend moveend", redrawSettled);
+      map.off("move zoom resize", draw);
+      delete testHost.simMap;
       host.current?.removeEventListener("click", click, true);
       overlay.remove();
       map.remove();
