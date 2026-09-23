@@ -1,0 +1,72 @@
+history rows at exact segment boundaries 1000/5000: 0
+M0 rows 451 (mock module 451, matched 451, max |diff pct| 0.00e+00, conv 0.00e+00)
+M0 median pct +0.1107 median conv 0.0922; rows with pct < -0.5 (would be < -1 under x2): 56
+200-sms pilot noise sd in base units 0.0875; weight vs PRIOR_SD 0.3: 0.9217; posterior sd after one pilot 0.0840
+cell sizes: ('tariff_8', 'HIGH') n=4726, ('tariff_11', 'HIGH') n=1633
+local_eval seeds 0-9: median 3,745,392 min 1,214,596 max 4,649,285 pos 10/10
+
+[S0] oracle (analyst grid) net 5,422,900 contacts 10,483 cost 99,682 lam 8 ch {'push': 5196, 'sms': 924, 'digital_ads': 4363, 'call': 0} groups 17 | finer grid net 6,023,477 lam 12.0 ch {'push': 4564, 'sms': 5455, 'digital_ads': 2922, 'call': 0}
+  median |pct x conv| all (cell,target): HIGH 0.0117, LOW 0.0176, MID 0.0133
+  noexp plan: 7 campaigns, pre-truncation units 18 in 7 (target,channel,seg,data) groups; units dropped by 10-campaign cut: 0, their contacts 0
+  noexp top-5 units: tariff_4/MID->tariff_8 z +2.75; tariff_13/MID->tariff_8 z +2.93; tariff_8/LOW->tariff_9 z +5.52; tariff_12/MID->tariff_8 z +3.17; tariff_14/LOW->tariff_9 z +5.54 | median |z| 3.17
+
+[S2] oracle (analyst grid) net 10,917,279 contacts 14,822 cost 99,574 lam 16 ch {'push': 9922, 'sms': 457, 'digital_ads': 4443, 'call': 0} groups 16 | finer grid net 12,133,058 lam 25.0 ch {'push': 4564, 'sms': 5455, 'digital_ads': 2922, 'call': 0}
+  median |pct x conv| all (cell,target): HIGH 0.0234, LOW 0.0351, MID 0.0266
+  noexp plan: 7 campaigns, pre-truncation units 18 in 7 (target,channel,seg,data) groups; units dropped by 10-campaign cut: 0, their contacts 0
+  noexp top-5 units: tariff_4/MID->tariff_8 z +5.49; tariff_13/MID->tariff_8 z +5.86; tariff_8/LOW->tariff_9 z +11.05; tariff_12/MID->tariff_8 z +6.35; tariff_14/LOW->tariff_9 z +11.09 | median |z| 6.35
+
+[S4] oracle (analyst grid) net 3,166,221 contacts 9,516 cost 50,786 lam 8 ch {'push': 2881, 'sms': 5288, 'digital_ads': 1347, 'call': 0} groups 31 | finer grid net 3,476,290 lam 4.5 ch {'push': 6896, 'sms': 3337, 'digital_ads': 3163, 'call': 32}
+  median |pct x conv| all (cell,target): HIGH 0.0115, LOW 0.0176, MID 0.0136
+  noexp plan: 7 campaigns, pre-truncation units 18 in 7 (target,channel,seg,data) groups; units dropped by 10-campaign cut: 0, their contacts 0
+  noexp top-5 units: tariff_4/MID->tariff_8 z -0.34; tariff_13/MID->tariff_8 z +1.32; tariff_8/LOW->tariff_9 z -0.54; tariff_12/MID->tariff_8 z -1.53; tariff_14/LOW->tariff_9 z +3.65 | median |z| 1.32
+
+[S5] oracle (analyst grid) net 25,224,197 contacts 14,179 cost 0 lam 1000000000.0 ch {'push': 14179, 'sms': 0, 'digital_ads': 0, 'call': 0} groups 20 | finer grid net 37,252,857 lam 36.0 ch {'push': 4434, 'sms': 5319, 'digital_ads': 3491, 'call': 0}
+  median |pct x conv| all (cell,target): HIGH 0.0137, LOW 0.0155, MID 0.0126
+  noexp plan: 7 campaigns, pre-truncation units 18 in 7 (target,channel,seg,data) groups; units dropped by 10-campaign cut: 0, their contacts 0
+  noexp top-5 units: tariff_4/MID->tariff_8 z -1.53; tariff_13/MID->tariff_8 z +7.19; tariff_8/LOW->tariff_9 z -0.50; tariff_12/MID->tariff_8 z -2.16; tariff_14/LOW->tariff_9 z +0.35 | median |z| 1.53
+
+[S7] oracle (analyst grid) net 4,838,956 contacts 14,691 cost 58,764 lam 8 ch {'push': 0, 'sms': 14691, 'digital_ads': 0, 'call': 0} groups 18 | finer grid net 5,140,923 lam 6.0 ch {'push': 0, 'sms': 12572, 'digital_ads': 2152, 'call': 0}
+  median |pct x conv| all (cell,target): HIGH 0.0117, LOW 0.0176, MID 0.0133
+  noexp plan: 7 campaigns, pre-truncation units 18 in 7 (target,channel,seg,data) groups; units dropped by 10-campaign cut: 0, their contacts 0
+  noexp top-5 units: tariff_4/MID->tariff_8 z -2.75; tariff_13/MID->tariff_8 z -2.93; tariff_8/LOW->tariff_9 z -5.52; tariff_12/MID->tariff_8 z -3.17; tariff_14/LOW->tariff_9 z -5.54 | median |z| 3.17
+
+=== net by scenario x strategy (seeds 0-9; S4 confirm/slope seeds 0-2 only) ===
+S0 agent     median    3,745,392 min    1,214,596 max    4,649,285 pos 10/10 share +0.691 pilots 19 contacts 13,742 money 90,821 pilot_net 5,438
+S0 noexp     median    4,690,960 min    4,690,960 max    4,690,960 pos 10/10 share +0.865 pilots 0 contacts 4,680 money 98,580 pilot_net 0 beats agent 10/10
+S0 template  median     -357,948 min   -1,019,431 max      -76,493 pos 0/10 share -0.066 pilots 6 contacts 6,846 money 27,384 pilot_net -139,431 beats agent 0/10
+S0 confirm   median    4,206,682 min    2,760,603 max    4,887,124 pos 10/10 share +0.776 pilots 19 contacts 12,624 money 93,555 pilot_net 665,168 beats agent 7/10
+S0 slope     median    4,342,684 min    2,766,412 max    4,813,246 pos 10/10 share +0.801 pilots 19 contacts 12,096 money 89,116 pilot_net 665,168 beats agent 7/10 slope med +1.13
+S2 agent     median    6,731,942 min    2,494,611 max    9,321,680 pos 10/10 share +0.617 pilots 19 contacts 13,462 money 83,990 pilot_net 13,906
+S2 noexp     median    9,480,501 min    9,480,501 max    9,480,501 pos 10/10 share +0.868 pilots 0 contacts 4,680 money 98,580 pilot_net 0 beats agent 10/10
+S2 template  median     -648,647 min   -2,014,641 max     -134,075 pos 0/10 share -0.059 pilots 6 contacts 6,818 money 27,272 pilot_net -275,262 beats agent 0/10
+S2 confirm   median    9,530,107 min    7,951,740 max   10,323,896 pos 10/10 share +0.873 pilots 19 contacts 12,558 money 97,648 pilot_net 1,345,332 beats agent 9/10
+S2 slope     median    9,915,746 min    8,272,402 max   11,053,643 pos 10/10 share +0.908 pilots 19 contacts 12,246 money 97,690 pilot_net 1,345,332 beats agent 10/10 slope med +2.29
+S4 agent     median       26,082 min   -1,050,223 max      324,924 pos 6/10 share +0.008 pilots 19 contacts 13,022 money 97,659 pilot_net -532,147
+S4 noexp     median      629,039 min      629,039 max      629,039 pos 10/10 share +0.199 pilots 0 contacts 4,680 money 98,580 pilot_net 0 beats agent 10/10
+S4 template  median     -444,984 min   -2,538,038 max     -183,060 pos 0/10 share -0.141 pilots 6 contacts 6,846 money 27,384 pilot_net -232,943 beats agent 1/10
+S4 confirm   median      155,025 min   -1,060,049 max      653,567 pos 2/3 share +0.049 pilots 19 contacts 8,781 money 95,988 pilot_net -505,248 beats agent 2/3
+S4 slope     median     -444,179 min   -2,069,195 max       51,387 pos 1/3 share -0.140 pilots 19 contacts 7,631 money 78,314 pilot_net -505,248 beats agent 1/3 slope med +0.03
+S5 agent     median    2,684,977 min      766,209 max    4,663,563 pos 10/10 share +0.106 pilots 19 contacts 14,698 money 88,728 pilot_net 26,364
+S5 noexp     median    2,144,077 min    2,144,077 max    2,144,077 pos 10/10 share +0.085 pilots 0 contacts 4,680 money 98,580 pilot_net 0 beats agent 3/10
+S5 template  median   14,340,132 min   14,037,000 max   14,478,253 pos 10/10 share +0.569 pilots 6 contacts 8,732 money 34,928 pilot_net 873,706 beats agent 10/10
+S5 confirm   median    4,747,286 min    3,000,447 max    5,732,104 pos 10/10 share +0.188 pilots 19 contacts 13,994 money 78,320 pilot_net 234,249 beats agent 9/10
+S5 slope     median    4,606,136 min    2,672,213 max    5,369,398 pos 10/10 share +0.183 pilots 19 contacts 13,526 money 71,236 pilot_net 234,249 beats agent 7/10 slope med +0.21
+S7 agent     median   -3,620,003 min   -4,497,767 max   -1,430,052 pos 0/10 share -0.748 pilots 19 contacts 14,178 money 82,951 pilot_net 434
+S7 noexp     median   -4,888,120 min   -4,888,120 max   -4,888,120 pos 0/10 share -1.010 pilots 0 contacts 4,680 money 98,580 pilot_net 0 beats agent 0/10
+S7 template  median    1,912,385 min      989,991 max    2,157,950 pos 10/10 share +0.395 pilots 6 contacts 10,656 money 42,624 pilot_net 138,081 beats agent 10/10
+S7 confirm   median   -1,768,856 min   -2,091,911 max     -834,588 pos 0/10 share -0.366 pilots 19 contacts 13,192 money 79,817 pilot_net -678,811 beats agent 9/10
+S7 slope     median     -556,430 min     -818,729 max     -272,160 pos 0/10 share -0.115 pilots 19 contacts 13,058 money 64,638 pilot_net -678,811 beats agent 10/10 slope med -1.19
+
+=== agent diagnostics (pooled over seeds) ===
+S0: pilots HIGH 0.884, |z| med 0.11, |z|<1 0.953, true<0 0.511; bias med -0.021; pred 3,648,560 vs finals realized 3,701,006; tested money share 0.593; real/contact tested 48.2 untested 872.2; untested true<=0 realized per run median 0
+   hypotheses: median sd tested 0.085 untested 0.300 -> KAPPA*sd penalty 0.043 vs 0.150
+S2: pilots HIGH 0.895, |z| med 0.22, |z|<1 0.947, true<0 0.521; bias med -0.018; pred 4,278,694 vs finals realized 6,806,448; tested money share 0.608; real/contact tested 177.8 untested 1823.1; untested true<=0 realized per run median 0
+   hypotheses: median sd tested 0.085 untested 0.300 -> KAPPA*sd penalty 0.043 vs 0.150
+S4: pilots HIGH 0.858, |z| med 0.22, |z|<1 0.895, true<0 0.895; bias med -0.050; pred 2,342,522 vs finals realized 492,866; tested money share 0.587; real/contact tested -73.1 untested 158.7; untested true<=0 realized per run median -403,553
+   hypotheses: median sd tested 0.085 untested 0.300 -> KAPPA*sd penalty 0.043 vs 0.150
+S5: pilots HIGH 0.874, |z| med 0.22, |z|<1 0.826, true<0 0.684; bias med -0.020; pred 3,633,399 vs finals realized 2,652,697; tested money share 0.649; real/contact tested 154.5 untested 476.5; untested true<=0 realized per run median -871,727
+   hypotheses: median sd tested 0.085 untested 0.300 -> KAPPA*sd penalty 0.043 vs 0.150
+S7: pilots HIGH 0.868, |z| med 0.11, |z|<1 0.953, true<0 0.495; bias med -0.026; pred 3,116,715 vs finals realized -3,577,818; tested money share 0.603; real/contact tested -9.5 untested -902.2; untested true<=0 realized per run median -3,665,555
+   hypotheses: median sd tested 0.085 untested 0.300 -> KAPPA*sd penalty 0.043 vs 0.150
+
+S0 seed 6: tariff_8/HIGH->tariff_10 prior +0.009 obs +0.162 post +0.150 true +0.006; final money tested 41,088 untested 9,332; agent net 1,214,596

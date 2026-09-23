@@ -1,0 +1,535 @@
+M0 rows 451; median arpu_change_pct +0.1107; median conversion 0.0922
+  S0 mock       share of model rows with arpu_change_pct<0: 0.417
+  S1 x0.5       share of model rows with arpu_change_pct<0: 0.417
+  S2 x2         share of model rows with arpu_change_pct<0: 0.417
+  S3 downsell   share of model rows with arpu_change_pct<0: 0.499
+  S4 reversed   share of model rows with arpu_change_pct<0: 0.417
+  S5 permuted   share of model rows with arpu_change_pct<0: 0.417
+  S6 conv x3    share of model rows with arpu_change_pct<0: 0.417
+  S7 sign flip  share of model rows with arpu_change_pct<0: 0.583
+
+[S0 mock] oracle-lite net 5,422,900 (gross 5,522,582, cost 99,682, contacts 10,483, campaigns 10, money price 8); oracle contacts by channel {'push': 5196, 'sms': 924, 'digital_ads': 4363, 'call': 0}
+  cells with a positive push target: 61 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0117, LOW 0.0176, MID 0.0133
+  seed 0: agent    3,891,541 (pilots 19, finals 10, contacts 11,910, money   93,468) | noexp    4,690,960 | template   -1,019,431 | confirm    4,887,124 | slope    4,567,038 |     3s
+  seed 1: agent    4,649,285 (pilots 19, finals 10, contacts 11,033, money   88,174) | noexp    4,690,960 | template     -576,204 | confirm    4,693,004 | slope    4,813,246 |     5s
+  seed 2: agent    3,599,243 (pilots 19, finals 10, contacts 14,420, money   59,660) | noexp    4,690,960 | template     -338,971 | confirm    4,316,315 | slope    4,421,213 |     7s
+  seed 3: agent    4,593,847 (pilots 19, finals  9, contacts 10,070, money   96,886) | noexp    4,690,960 | template     -140,281 | confirm    3,864,942 | slope    3,864,942 |     9s
+  seed 4: agent    2,698,554 (pilots 19, finals 10, contacts 14,996, money   64,196) | noexp    4,690,960 | template   -1,019,237 | confirm    4,097,048 | slope    4,264,155 |    11s
+  seed 5: agent    3,444,820 (pilots 19, finals 10, contacts 14,480, money   98,096) | noexp    4,690,960 | template     -366,964 | confirm    4,545,369 | slope    4,575,363 |    13s
+  seed 6: agent    1,214,596 (pilots 19, finals 10, contacts 14,942, money   65,420) | noexp    4,690,960 | template     -320,312 | confirm    3,590,223 | slope    3,661,511 |    15s
+  seed 7: agent    3,349,093 (pilots 19, finals 10, contacts 13,038, money   96,216) | noexp    4,690,960 | template     -348,932 | confirm    4,771,308 | slope    4,591,665 |    18s
+  seed 8: agent    4,118,278 (pilots 19, finals 10, contacts 13,183, money   85,726) | noexp    4,690,960 | template      -76,493 | confirm    3,727,614 | slope    3,727,614 |    20s
+  seed 9: agent    3,972,592 (pilots 19, finals 10, contacts 14,302, money   96,412) | noexp    4,690,960 | template     -601,538 | confirm    2,760,603 | slope    2,766,412 |    22s
+
+[S1 x0.5] oracle-lite net 2,720,125 (gross 2,819,291, cost 99,166, contacts 11,217, campaigns 10, money price 4); oracle contacts by channel {'push': 5951, 'sms': 927, 'digital_ads': 4339, 'call': 0}
+  cells with a positive push target: 61 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0059, LOW 0.0088, MID 0.0067
+  seed 0: agent    1,918,657 (pilots 19, finals 10, contacts 14,971, money   93,094) | noexp    2,296,190 | template     -521,632 | confirm    2,140,571 | slope    2,002,564 |    25s
+  seed 1: agent    2,234,763 (pilots 19, finals 10, contacts 11,033, money   81,294) | noexp    2,296,190 | template     -323,294 | confirm    2,198,802 | slope    2,059,347 |    27s
+  seed 2: agent    1,737,476 (pilots 19, finals 10, contacts 14,322, money   59,088) | noexp    2,296,190 | template     -189,057 | confirm    1,701,863 | slope    1,485,981 |    29s
+  seed 3: agent    2,248,368 (pilots 19, finals  9, contacts 10,070, money   96,886) | noexp    2,296,190 | template     -537,146 | confirm    1,740,315 | slope    1,210,768 |    31s
+  seed 4: agent    1,317,179 (pilots 19, finals 10, contacts 14,996, money   64,196) | noexp    2,296,190 | template     -521,534 | confirm    1,897,736 | slope    1,808,140 |    33s
+  seed 5: agent    1,823,803 (pilots 19, finals 10, contacts 14,868, money   99,684) | noexp    2,296,190 | template     -194,622 | confirm    1,545,922 | slope    1,047,568 |    35s
+  seed 6: agent      552,883 (pilots 19, finals 10, contacts 14,942, money   82,754) | noexp    2,296,190 | template     -179,064 | confirm    1,583,080 | slope    1,442,489 |    37s
+  seed 7: agent    1,629,559 (pilots 19, finals  9, contacts 13,038, money   96,392) | noexp    2,296,190 | template     -189,934 | confirm    2,148,505 | slope    2,056,030 |    40s
+  seed 8: agent    1,923,264 (pilots 19, finals 10, contacts 14,726, money   94,038) | noexp    2,296,190 | template      -47,703 | confirm    1,054,702 | slope      593,787 |    42s
+  seed 9: agent    1,978,339 (pilots 19, finals 10, contacts 14,302, money   58,468) | noexp    2,296,190 | template     -322,137 | confirm      520,125 | slope      350,905 |    44s
+
+[S2 x2] oracle-lite net 10,917,279 (gross 11,016,853, cost 99,574, contacts 14,822, campaigns 10, money price 16); oracle contacts by channel {'push': 9922, 'sms': 457, 'digital_ads': 4443, 'call': 0}
+  cells with a positive push target: 61 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0234, LOW 0.0351, MID 0.0266
+  seed 0: agent    9,321,680 (pilots 19, finals 10, contacts 13,741, money   88,174) | noexp    9,480,501 | template     -189,133 | confirm    9,923,641 | slope    9,834,717 |    46s
+  seed 1: agent    8,798,500 (pilots 19, finals 10, contacts 10,663, money   90,586) | noexp    9,480,501 | template   -1,102,792 | confirm   10,323,896 | slope   10,727,298 |    49s
+  seed 2: agent    4,008,390 (pilots 19, finals 10, contacts 11,789, money   53,360) | noexp    9,480,501 | template     -630,366 | confirm    9,422,674 | slope   10,216,019 |    51s
+  seed 3: agent    9,284,579 (pilots 19, finals  9, contacts 10,070, money   96,886) | noexp    9,480,501 | template     -276,962 | confirm   10,030,990 | slope   10,327,833 |    53s
+  seed 4: agent    3,605,668 (pilots 19, finals 10, contacts 14,948, money   81,572) | noexp    9,480,501 | template   -2,014,641 | confirm    8,127,851 | slope    9,027,317 |    55s
+  seed 5: agent    6,099,682 (pilots 19, finals 10, contacts 14,978, money   99,782) | noexp    9,480,501 | template     -711,648 | confirm    9,016,785 | slope    9,577,484 |    57s
+  seed 6: agent    2,494,611 (pilots 19, finals 10, contacts 14,942, money   65,420) | noexp    9,480,501 | template     -602,808 | confirm    9,637,540 | slope    9,996,774 |    59s
+  seed 7: agent    7,364,202 (pilots 19, finals 10, contacts 14,669, money   54,724) | noexp    9,480,501 | template     -666,927 | confirm   10,304,821 | slope   11,053,643 |    61s
+  seed 8: agent    8,250,110 (pilots 19, finals 10, contacts 13,183, money   85,726) | noexp    9,480,501 | template     -134,075 | confirm    7,951,740 | slope    8,850,532 |    64s
+  seed 9: agent    4,418,475 (pilots 19, finals 10, contacts 11,721, money   82,254) | noexp    9,480,501 | template   -1,160,339 | confirm    8,393,340 | slope    8,272,402 |    66s
+
+[S3 downsell] oracle-lite net 4,526,686 (gross 4,626,618, cost 99,932, contacts 9,332, campaigns 10, money price 8); oracle contacts by channel {'push': 3843, 'sms': 1157, 'digital_ads': 4332, 'call': 0}
+  cells with a positive push target: 54 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0161, LOW 0.0204, MID 0.0159
+  seed 0: agent    3,226,696 (pilots 19, finals 10, contacts 13,613, money   94,702) | noexp    3,848,092 | template     -262,638 | confirm    3,309,242 | slope    3,380,257 |    68s
+  seed 1: agent    3,223,120 (pilots 19, finals 10, contacts 10,663, money   68,860) | noexp    3,848,092 | template   -1,101,026 | confirm    3,559,075 | slope    3,571,129 |    71s
+  seed 2: agent    2,531,420 (pilots 19, finals 10, contacts 14,443, money   63,532) | noexp    3,848,092 | template     -618,213 | confirm    2,917,425 | slope    2,995,172 |    73s
+  seed 3: agent    3,400,474 (pilots 19, finals  8, contacts  9,700, money   96,886) | noexp    3,848,092 | template     -258,922 | confirm    2,489,213 | slope    2,415,309 |    75s
+  seed 4: agent    1,490,548 (pilots 19, finals 10, contacts 14,843, money   64,988) | noexp    3,848,092 | template   -1,932,100 | confirm    2,889,175 | slope    2,947,371 |    77s
+  seed 5: agent    2,281,914 (pilots 19, finals 10, contacts 14,444, money   97,304) | noexp    3,848,092 | template     -608,633 | confirm    3,037,550 | slope    3,034,195 |    79s
+  seed 6: agent      352,783 (pilots 19, finals 10, contacts 10,596, money   79,668) | noexp    3,848,092 | template     -731,704 | confirm    2,546,660 | slope    2,643,429 |    81s
+  seed 7: agent    2,882,985 (pilots 19, finals  9, contacts 12,650, money   56,426) | noexp    3,848,092 | template     -750,620 | confirm    3,395,273 | slope    3,549,635 |    84s
+  seed 8: agent    3,083,845 (pilots 19, finals 10, contacts 13,412, money   97,622) | noexp    3,848,092 | template     -252,386 | confirm    2,493,410 | slope    2,456,912 |    86s
+  seed 9: agent    2,739,794 (pilots 19, finals 10, contacts 14,382, money   96,588) | noexp    3,848,092 | template   -1,113,220 | confirm    1,751,459 | slope    1,776,690 |    88s
+
+[S4 reversed] oracle-lite net 3,166,221 (gross 3,217,007, cost 50,786, contacts 9,516, campaigns 10, money price 8); oracle contacts by channel {'push': 2881, 'sms': 5288, 'digital_ads': 1347, 'call': 0}
+  cells with a positive push target: 61 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0115, LOW 0.0176, MID 0.0136
+  seed 0: agent     -171,360 (pilots 19, finals 10, contacts 11,861, money   97,424) | noexp      629,039 | template     -183,060 | confirm      653,567 | slope       51,387 |    91s
+  seed 1: agent       19,510 (pilots 19, finals 10, contacts 11,421, money   98,628) | noexp      629,039 | template     -653,853 | confirm      155,025 | slope     -444,179 |    93s
+  seed 2: agent       46,679 (pilots 19, finals 10, contacts 14,785, money   74,908) | noexp      629,039 | template     -416,620 | confirm   -1,060,049 | slope   -2,069,195 |    95s
+  seed 3: agent       38,949 (pilots 19, finals  9, contacts  9,700, money   96,758) | noexp      629,039 | template     -234,742 | confirm      453,821 | slope     -138,360 |    97s
+  seed 4: agent     -893,742 (pilots 19, finals 10, contacts 14,814, money   97,086) | noexp      629,039 | template   -2,538,038 | confirm     -814,719 | slope   -1,332,879 |    99s
+  seed 5: agent      249,812 (pilots 19, finals  9, contacts 13,038, money   97,894) | noexp      629,039 | template     -453,600 | confirm       84,878 | slope     -433,282 |   101s
+  seed 6: agent   -1,050,223 (pilots 19, finals 10, contacts 14,996, money   83,690) | noexp      629,039 | template     -471,657 | confirm     -237,611 | slope     -757,471 |   103s
+  seed 7: agent       32,654 (pilots 19, finals  9, contacts 13,006, money   99,778) | noexp      629,039 | template     -436,367 | confirm      511,714 | slope      -96,538 |   105s
+  seed 8: agent      324,924 (pilots 19, finals  9, contacts 13,038, money   97,894) | noexp      629,039 | template     -232,599 | confirm     -143,826 | slope     -618,337 |   107s
+  seed 9: agent     -209,636 (pilots 19, finals 10, contacts 12,771, money   99,898) | noexp      629,039 | template     -607,556 | confirm     -275,613 | slope   -1,564,917 |   110s
+
+[S5 permuted] oracle-lite net 25,224,197 (gross 25,224,197, cost 0, contacts 14,179, campaigns 10, money price 1000000000.0); oracle contacts by channel {'push': 14179, 'sms': 0, 'digital_ads': 0, 'call': 0}
+  cells with a positive push target: 63 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0137, LOW 0.0155, MID 0.0126
+  seed 0: agent    4,023,076 (pilots 19, finals 10, contacts 14,036, money   70,850) | noexp    2,144,077 | template   14,430,533 | confirm    4,173,858 | slope    3,814,275 |   112s
+  seed 1: agent    1,940,921 (pilots 19, finals 10, contacts 13,669, money   93,898) | noexp    2,144,077 | template   14,090,084 | confirm    4,852,804 | slope    4,471,977 |   114s
+  seed 2: agent    2,106,057 (pilots 19, finals 10, contacts 14,776, money   60,148) | noexp    2,144,077 | template   14,335,748 | confirm    5,732,104 | slope    5,369,398 |   116s
+  seed 3: agent    3,796,311 (pilots 19, finals 10, contacts 14,936, money   83,702) | noexp    2,144,077 | template   14,435,164 | confirm    5,277,934 | slope    5,301,245 |   119s
+  seed 4: agent    4,663,563 (pilots 19, finals 10, contacts 14,940, money   63,972) | noexp    2,144,077 | template   14,429,208 | confirm    4,641,767 | slope    4,238,295 |   121s
+  seed 5: agent    2,449,874 (pilots 19, finals 10, contacts 14,669, money   98,894) | noexp    2,144,077 | template   14,344,516 | confirm    3,921,968 | slope    4,740,295 |   123s
+  seed 6: agent      766,209 (pilots 19, finals 10, contacts 14,942, money   94,814) | noexp    2,144,077 | template   14,241,203 | confirm    5,293,362 | slope    4,972,652 |   125s
+  seed 7: agent    2,300,709 (pilots 19, finals 10, contacts  9,566, money   97,754) | noexp    2,144,077 | template   14,175,695 | confirm    5,663,652 | slope    5,342,668 |   127s
+  seed 8: agent    2,920,080 (pilots 19, finals 10, contacts 14,726, money   89,880) | noexp    2,144,077 | template   14,478,253 | confirm    4,452,076 | slope    4,203,921 |   129s
+  seed 9: agent    2,954,095 (pilots 19, finals 10, contacts 14,405, money   87,576) | noexp    2,144,077 | template   14,037,000 | confirm    3,000,447 | slope    2,672,213 |   131s
+
+[S6 conv x3] oracle-lite net 17,342,476 (gross 17,431,990, cost 89,514, contacts 13,189, campaigns 10, money price 16); oracle contacts by channel {'push': 3937, 'sms': 6335, 'digital_ads': 2917, 'call': 0}
+  cells with a positive push target: 61 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0351, LOW 0.0527, MID 0.0400
+  seed 0: agent   12,629,821 (pilots 19, finals 10, contacts 10,663, money   99,820) | noexp   11,389,846 | template     -277,684 | confirm   13,236,032 | slope   14,108,171 |   134s
+  seed 1: agent   12,805,376 (pilots 19, finals 10, contacts 10,070, money   90,586) | noexp   11,389,846 | template   -1,629,379 | confirm   12,931,591 | slope   14,345,817 |   136s
+  seed 2: agent    8,667,254 (pilots 19, finals 10, contacts 12,834, money   84,978) | noexp   11,389,846 | template     -930,193 | confirm   12,198,801 | slope   12,699,426 |   138s
+  seed 3: agent   13,228,292 (pilots 19, finals 10, contacts 12,178, money   96,886) | noexp   11,389,846 | template     -361,073 | confirm   12,515,790 | slope   13,568,673 |   141s
+  seed 4: agent    5,556,217 (pilots 19, finals 10, contacts 14,980, money   94,606) | noexp   11,389,846 | template     -277,653 | confirm   10,329,297 | slope   11,613,247 |   143s
+  seed 5: agent    8,799,222 (pilots 19, finals 10, contacts 14,979, money   99,804) | noexp   11,389,846 | template   -1,005,823 | confirm   11,897,872 | slope   13,570,696 |   145s
+  seed 6: agent    6,744,241 (pilots 19, finals 10, contacts 14,357, money   90,734) | noexp   11,389,846 | template     -885,304 | confirm   11,840,311 | slope   13,246,835 |   147s
+  seed 7: agent   11,128,797 (pilots 19, finals 10, contacts 14,737, money   66,468) | noexp   11,389,846 | template     -984,923 | confirm   13,714,990 | slope   14,324,112 |   149s
+  seed 8: agent   12,046,750 (pilots 19, finals 10, contacts 13,385, money   78,640) | noexp   11,389,846 | template     -191,656 | confirm   10,715,323 | slope   12,489,180 |   152s
+  seed 9: agent    9,543,359 (pilots 19, finals 10, contacts 13,087, money   90,940) | noexp   11,389,846 | template   -1,019,553 | confirm   10,856,823 | slope   12,832,542 |   154s
+
+[S7 sign flip] oracle-lite net 4,838,956 (gross 4,897,720, cost 58,764, contacts 14,691, campaigns 10, money price 8); oracle contacts by channel {'push': 0, 'sms': 14691, 'digital_ads': 0, 'call': 0}
+  cells with a positive push target: 60 of 63
+  median |true base effect pct x conv| over all (cell, target) by segment: HIGH 0.0117, LOW 0.0176, MID 0.0133
+  seed 0: agent   -3,687,207 (pilots 19, finals 10, contacts 14,971, money   80,170) | noexp   -4,888,120 | template    1,958,805 | confirm   -2,091,911 | slope     -759,133 |   156s
+  seed 1: agent   -3,581,112 (pilots 19, finals 10, contacts 11,893, money   85,732) | noexp   -4,888,120 | template    2,157,950 | confirm   -1,776,372 | slope     -392,963 |   158s
+  seed 2: agent   -1,430,052 (pilots 19, finals 10, contacts 13,560, money   95,514) | noexp   -4,888,120 | template    1,908,337 | confirm   -1,895,600 | slope     -469,664 |   161s
+  seed 3: agent   -4,497,767 (pilots 19, finals 10, contacts 12,296, money   94,706) | noexp   -4,888,120 | template    1,966,471 | confirm   -1,201,161 | slope     -272,160 |   163s
+  seed 4: agent   -2,564,218 (pilots 19, finals 10, contacts 14,892, money   61,908) | noexp   -4,888,120 | template    1,958,330 | confirm   -1,486,803 | slope     -556,165 |   165s
+  seed 5: agent   -3,997,964 (pilots 19, finals 10, contacts 14,796, money   73,638) | noexp   -4,888,120 | template    1,916,433 | confirm   -1,833,128 | slope     -818,729 |   167s
+  seed 6: agent   -2,497,784 (pilots 19, finals 10, contacts 14,993, money   79,376) | noexp   -4,888,120 | template    1,197,931 | confirm   -1,916,949 | slope     -680,620 |   169s
+  seed 7: agent   -3,424,419 (pilots 19, finals  9, contacts 10,930, money   96,216) | noexp   -4,888,120 | template    1,282,902 | confirm   -1,761,341 | slope     -556,694 |   171s
+  seed 8: agent   -3,737,932 (pilots 19, finals 10, contacts 14,999, money   74,198) | noexp   -4,888,120 | template      989,991 | confirm   -1,549,330 | slope     -650,557 |   173s
+  seed 9: agent   -3,658,894 (pilots 19, finals 10, contacts 12,681, money   90,126) | noexp   -4,888,120 | template    1,501,976 | confirm     -834,588 | slope     -354,880 |   175s
+
+agent constants: 200-sms pilot noise sd in base units 0.0875; prior sd 0.3; weight a single 200-pilot gets vs the prior 0.922
+
+=== TABLE A: net by scenario x strategy (seeds 0-9) ===
+scenario      strategy        median          min          max pos/10
+S0 mock       agent        3,745,392    1,214,596    4,649,285  10/10
+S0 mock       noexp        4,690,960    4,690,960    4,690,960  10/10
+S0 mock       template      -357,948   -1,019,431      -76,493   0/10
+S0 mock       nothing              0            0            0   0/10
+S0 mock       oracle       5,422,900    5,422,900    5,422,900  10/10
+S0 mock       confirm      4,206,682    2,760,603    4,887,124  10/10
+S0 mock       slope        4,342,684    2,766,412    4,813,246  10/10
+S1 x0.5       agent        1,871,230      552,883    2,248,368  10/10
+S1 x0.5       noexp        2,296,190    2,296,190    2,296,190  10/10
+S1 x0.5       template      -258,379     -537,146      -47,703   0/10
+S1 x0.5       nothing              0            0            0   0/10
+S1 x0.5       oracle       2,720,125    2,720,125    2,720,125  10/10
+S1 x0.5       confirm      1,721,089      520,125    2,198,802  10/10
+S1 x0.5       slope        1,464,235      350,905    2,059,347  10/10
+S2 x2         agent        6,731,942    2,494,611    9,321,680  10/10
+S2 x2         noexp        9,480,501    9,480,501    9,480,501  10/10
+S2 x2         template      -648,647   -2,014,641     -134,075   0/10
+S2 x2         nothing              0            0            0   0/10
+S2 x2         oracle      10,917,279   10,917,279   10,917,279  10/10
+S2 x2         confirm      9,530,107    7,951,740   10,323,896  10/10
+S2 x2         slope        9,915,746    8,272,402   11,053,643  10/10
+S3 downsell   agent        2,811,390      352,783    3,400,474  10/10
+S3 downsell   noexp        3,848,092    3,848,092    3,848,092  10/10
+S3 downsell   template      -674,959   -1,932,100     -252,386   0/10
+S3 downsell   nothing              0            0            0   0/10
+S3 downsell   oracle       4,526,686    4,526,686    4,526,686  10/10
+S3 downsell   confirm      2,903,300    1,751,459    3,559,075  10/10
+S3 downsell   slope        2,971,271    1,776,690    3,571,129  10/10
+S4 reversed   agent           26,082   -1,050,223      324,924   6/10
+S4 reversed   noexp          629,039      629,039      629,039  10/10
+S4 reversed   template      -444,984   -2,538,038     -183,060   0/10
+S4 reversed   nothing              0            0            0   0/10
+S4 reversed   oracle       3,166,221    3,166,221    3,166,221  10/10
+S4 reversed   confirm        -29,474   -1,060,049      653,567   5/10
+S4 reversed   slope         -531,258   -2,069,195       51,387   1/10
+S5 permuted   agent        2,684,977      766,209    4,663,563  10/10
+S5 permuted   noexp        2,144,077    2,144,077    2,144,077  10/10
+S5 permuted   template    14,340,132   14,037,000   14,478,253  10/10
+S5 permuted   nothing              0            0            0   0/10
+S5 permuted   oracle      25,224,197   25,224,197   25,224,197  10/10
+S5 permuted   confirm      4,747,286    3,000,447    5,732,104  10/10
+S5 permuted   slope        4,606,136    2,672,213    5,369,398  10/10
+S6 conv x3    agent       10,336,078    5,556,217   13,228,292  10/10
+S6 conv x3    noexp       11,389,846   11,389,846   11,389,846  10/10
+S6 conv x3    template      -907,748   -1,629,379     -191,656   0/10
+S6 conv x3    nothing              0            0            0   0/10
+S6 conv x3    oracle      17,342,476   17,342,476   17,342,476  10/10
+S6 conv x3    confirm     12,048,337   10,329,297   13,714,990  10/10
+S6 conv x3    slope       13,407,754   11,613,247   14,345,817  10/10
+S7 sign flip  agent       -3,620,003   -4,497,767   -1,430,052   0/10
+S7 sign flip  noexp       -4,888,120   -4,888,120   -4,888,120   0/10
+S7 sign flip  template     1,912,385      989,991    2,157,950  10/10
+S7 sign flip  nothing              0            0            0   0/10
+S7 sign flip  oracle       4,838,956    4,838,956    4,838,956  10/10
+S7 sign flip  confirm     -1,768,856   -2,091,911     -834,588   0/10
+S7 sign flip  slope         -556,430     -818,729     -272,160   0/10
+
+=== TABLE B: agent usage and share of oracle ===
+scenario      pilots  contacts     money finals    agent_med       oracle   share noexp_share agent<noexp
+S0 mock         19.0    13,742    90,821   10.0    3,745,392    5,422,900   0.691       0.865       10/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median 4,206,682 min 2,760,603 share 0.776 pos 10/10 beats agent 7/10 beats noexp 3/10 pilots 19.0 contacts 12,624 money 93,555 pilot-only net 665,168 (agent 5,438)
+              counterfactual slope  : median 4,342,684 min 2,766,412 share 0.801 pos 10/10 beats agent 7/10 beats noexp 1/10 pilots 19.0 contacts 12,096 money 89,116 pilot-only net 665,168 (agent 5,438) median slope b +1.13
+S1 x0.5         19.0    14,524    87,924   10.0    1,871,230    2,720,125   0.688       0.844       10/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median 1,721,089 min 520,125 share 0.633 pos 10/10 beats agent 4/10 beats noexp 0/10 pilots 19.0 contacts 11,948 money 84,345 pilot-only net 326,320 (agent -4,781)
+              counterfactual slope  : median 1,464,235 min 350,905 share 0.538 pos 10/10 beats agent 4/10 beats noexp 0/10 pilots 19.0 contacts 13,691 money 89,177 pilot-only net 326,320 (agent -4,781) median slope b +0.55
+S2 x2           19.0    13,462    83,990   10.0    6,731,942   10,917,279   0.617       0.868       10/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median 9,530,107 min 7,951,740 share 0.873 pos 10/10 beats agent 9/10 beats noexp 5/10 pilots 19.0 contacts 12,558 money 97,648 pilot-only net 1,345,332 (agent 13,906)
+              counterfactual slope  : median 9,915,746 min 8,272,402 share 0.908 pos 10/10 beats agent 10/10 beats noexp 7/10 pilots 19.0 contacts 12,246 money 97,690 pilot-only net 1,345,332 (agent 13,906) median slope b +2.29
+S3 downsell     19.0    13,512    87,185   10.0    2,811,390    4,526,686   0.621       0.850       10/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median 2,903,300 min 1,751,459 share 0.641 pos 10/10 beats agent 7/10 beats noexp 0/10 pilots 19.0 contacts 12,770 money 83,372 pilot-only net 339,978 (agent -219,677)
+              counterfactual slope  : median 2,971,271 min 1,776,690 share 0.656 pos 10/10 beats agent 7/10 beats noexp 0/10 pilots 19.0 contacts 12,420 money 92,733 pilot-only net 339,978 (agent -219,677) median slope b +0.96
+S4 reversed     19.0    13,022    97,659   10.0       26,082    3,166,221   0.008       0.199       10/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median -29,474 min -1,060,049 share -0.009 pos 5/10 beats agent 6/10 beats noexp 1/10 pilots 19.0 contacts 8,804 money 93,520 pilot-only net -505,952 (agent -532,147)
+              counterfactual slope  : median -531,258 min -2,069,195 share -0.168 pos 1/10 beats agent 2/10 beats noexp 0/10 pilots 19.0 contacts 7,676 money 81,085 pilot-only net -505,952 (agent -532,147) median slope b -0.15
+S5 permuted     19.0    14,698    88,728   10.0    2,684,977   25,224,197   0.106       0.085        3/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median 4,747,286 min 3,000,447 share 0.188 pos 10/10 beats agent 9/10 beats noexp 10/10 pilots 19.0 contacts 13,994 money 78,320 pilot-only net 234,249 (agent 26,364)
+              counterfactual slope  : median 4,606,136 min 2,672,213 share 0.183 pos 10/10 beats agent 7/10 beats noexp 10/10 pilots 19.0 contacts 13,526 money 71,236 pilot-only net 234,249 (agent 26,364) median slope b +0.21
+S6 conv x3      19.0    13,236    90,837   10.0   10,336,078   17,342,476   0.596       0.657        6/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median 12,048,337 min 10,329,297 share 0.695 pos 10/10 beats agent 8/10 beats noexp 7/10 pilots 19.0 contacts 12,526 money 97,179 pilot-only net 1,890,214 (agent -59,211)
+              counterfactual slope  : median 13,407,754 min 11,613,247 share 0.773 pos 10/10 beats agent 10/10 beats noexp 10/10 pilots 19.0 contacts 11,634 money 93,092 pilot-only net 1,890,214 (agent -59,211) median slope b +3.00
+S7 sign flip    19.0    14,178    82,951   10.0   -3,620,003    4,838,956  -0.748      -1.010        0/10   | noexp contacts 4,680 money 98,580
+              counterfactual confirm: median -1,768,856 min -2,091,911 share -0.366 pos 0/10 beats agent 9/10 beats noexp 10/10 pilots 19.0 contacts 13,192 money 79,817 pilot-only net -678,811 (agent 434)
+              counterfactual slope  : median -556,430 min -818,729 share -0.115 pos 0/10 beats agent 10/10 beats noexp 10/10 pilots 19.0 contacts 13,058 money 64,638 pilot-only net -678,811 (agent 434) median slope b -1.19
+
+=== TABLE C: agent diagnostics (pooled over seeds) ===
+scenario      |prior-true| |post-true| sign_ok pilot_true<0 bias_med  pilot_net    pred_plan  real_finals tested_ctc tested_mny real/ctc_T real/ctc_U
+S0 mock              0.008       0.049   0.584        0.511   -0.021      5,438    3,648,560    3,701,006      0.605      0.593       48.2      872.2
+   final-contact channel mix: call 0.000, digital_ads 0.192, push 0.047, sms 0.760
+S1 x0.5              0.007       0.049   0.547        0.511   -0.022     -4,781    3,561,722    1,862,845      0.619      0.577       14.8      432.1
+   final-contact channel mix: call 0.000, digital_ads 0.172, push 0.093, sms 0.734
+S2 x2                0.018       0.050   0.632        0.521   -0.018     13,906    4,278,694    6,806,448      0.689      0.608      177.8     1823.1
+   final-contact channel mix: call 0.002, digital_ads 0.164, push 0.074, sms 0.760
+S3 downsell          0.018       0.047   0.621        0.832   -0.032   -219,677    3,028,513    2,994,196      0.592      0.540      -15.7      744.8
+   final-contact channel mix: call 0.000, digital_ads 0.192, push 0.055, sms 0.753
+S4 reversed          0.026       0.049   0.679        0.895   -0.050   -532,147    2,342,522      492,866      0.554      0.587      -73.1      158.7
+   final-contact channel mix: call 0.000, digital_ads 0.296, push 0.189, sms 0.515
+S5 permuted          0.020       0.048   0.647        0.684   -0.020     26,364    3,633,399    2,652,697      0.654      0.649      154.5      476.5
+   final-contact channel mix: call 0.000, digital_ads 0.154, push 0.030, sms 0.816
+S6 conv x3           0.029       0.047   0.711        0.558   -0.018    -59,211    5,141,055   10,336,316      0.652      0.690      347.9     2499.0
+   final-contact channel mix: call 0.000, digital_ads 0.233, push 0.066, sms 0.701
+S7 sign flip         0.015       0.048   0.547        0.495   -0.026        434    3,116,715   -3,577,818      0.632      0.603       -9.5     -902.2
+   final-contact channel mix: digital_ads 0.166, push 0.017, sms 0.817
+
+=== TABLE D: where pilots go vs what the plan relies on (agent, pooled over seeds) ===
+  z = true sms lift ratio / (0.804/sqrt(n)): expected z-score of the pilot signal; |z|<1 = pilot mostly measures noise
+scenario      pil_HIGH pil_|z|med pil_|z|<1 pil_ctc pil_money FP_units    FP_real untestNeg_real plan_top5_|z200|
+S0 mock          0.884       0.11     0.953   3,750    15,000      1.0    -44,521              0             3.17
+S1 x0.5          0.884       0.06     1.000   3,750    15,000      1.0    -29,305              0             1.59
+S2 x2            0.895       0.22     0.947   3,750    15,000      1.0    -39,358              0             6.35
+S3 downsell      0.884       0.20     1.000   3,750    15,000      2.0   -268,877              0             2.49
+S4 reversed      0.858       0.22     0.895   3,750    15,000      2.0   -163,079       -403,553             1.32
+S5 permuted      0.874       0.22     0.826   3,750    15,000      1.0    -52,703       -871,727             1.53
+S6 conv x3       0.937       0.33     0.863   3,750    15,000      0.5    -19,709              0             9.01
+S7 sign flip     0.868       0.11     0.953   3,750    15,000      1.0   -166,861     -3,665,555             3.17
+  no-exploration plan: top-5 units by prior mass-weighted effect (same prior in every scenario), true base effect / z of a 200-sms pilot:
+   S0 mock       tariff_4/MID/ALL->tariff_8 mu0 +0.232 true +0.240 z +2.7; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true +0.256 z +2.9; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true +0.483 z +5.5; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true +0.278 z +3.2; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true +0.485 z +5.5
+   S1 x0.5       tariff_4/MID/ALL->tariff_8 mu0 +0.232 true +0.120 z +1.4; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true +0.128 z +1.5; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true +0.242 z +2.8; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true +0.139 z +1.6; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true +0.242 z +2.8
+   S2 x2         tariff_4/MID/ALL->tariff_8 mu0 +0.232 true +0.480 z +5.5; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true +0.513 z +5.9; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true +0.966 z +11.0; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true +0.555 z +6.3; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true +0.970 z +11.1
+   S3 downsell   tariff_4/MID/ALL->tariff_8 mu0 +0.232 true +0.173 z +2.0; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true +0.195 z +2.2; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true +0.461 z +5.3; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true +0.218 z +2.5; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true +0.441 z +5.0
+   S4 reversed   tariff_4/MID/ALL->tariff_8 mu0 +0.232 true -0.030 z -0.3; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true +0.116 z +1.3; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true -0.047 z -0.5; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true -0.134 z -1.5; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true +0.319 z +3.6
+   S5 permuted   tariff_4/MID/ALL->tariff_8 mu0 +0.232 true -0.134 z -1.5; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true +0.629 z +7.2; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true -0.044 z -0.5; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true -0.189 z -2.2; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true +0.031 z +0.4
+   S6 conv x3    tariff_4/MID/ALL->tariff_8 mu0 +0.232 true +0.721 z +6.9; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true +0.769 z +8.1; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true +1.449 z +16.6; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true +0.833 z +9.0; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true +1.455 z +16.6
+   S7 sign flip  tariff_4/MID/ALL->tariff_8 mu0 +0.232 true -0.240 z -2.7; tariff_13/MID/ALL->tariff_8 mu0 +0.251 true -0.256 z -2.9; tariff_8/LOW/ALL->tariff_9 mu0 +0.385 true -0.483 z -5.5; tariff_12/MID/ALL->tariff_8 mu0 +0.230 true -0.278 z -3.2; tariff_14/LOW/ALL->tariff_9 mu0 +0.397 true -0.485 z -5.5
+
+=== FAILURE MODES: agent net < 0, or agent < no-exploration ===
+  S0 mock       seed 0: agent   3,891,541 noexp   4,690,960 gap    -799,420 | pilot_net     5,677 bias -0.021 | finals predicted   1,798,062 realized   3,788,088 (tested   -358,247, untested  4,146,335) money tested  16,026 untested  62,442
+  S0 mock       seed 1: agent   4,649,285 noexp   4,690,960 gap     -41,675 | pilot_net    -8,648 bias +0.010 | finals predicted   2,318,855 realized   4,643,312 (tested    371,198, untested  4,272,113) money tested  10,732 untested  62,442
+  S0 mock       seed 2: agent   3,599,243 noexp   4,690,960 gap  -1,091,717 | pilot_net     6,813 bias +0.013 | finals predicted   4,764,133 realized   3,613,925 (tested     95,545, untested  3,518,380) money tested  26,136 untested  18,524
+  S0 mock       seed 3: agent   4,593,847 noexp   4,690,960 gap     -97,114 | pilot_net    -5,530 bias -0.021 | finals predicted   2,679,717 realized   4,655,997 (tested    621,922, untested  4,034,076) money tested  37,840 untested  44,046
+  S0 mock       seed 4: agent   2,698,554 noexp   4,690,960 gap  -1,992,407 | pilot_net     5,199 bias -0.021 | finals predicted   4,645,798 realized   2,670,827 (tested    194,396, untested  2,476,431) money tested  33,868 untested  15,328
+  S0 mock       seed 5: agent   3,444,820 noexp   4,690,960 gap  -1,246,140 | pilot_net     5,751 bias -0.024 | finals predicted   3,709,055 realized   3,475,683 (tested    253,794, untested  3,221,890) money tested  66,490 untested  16,606
+  --- detail S0 mock worst seed 6 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs +0.162 post +0.150 true +0.006
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs -0.219 post -0.202 true +0.004
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.107 post -0.099 true +0.004
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.020 post -0.019 true -0.008
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs +0.118 post +0.112 true -0.001
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs +0.038 post +0.036 true -0.020
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.035 post +0.034 true +0.010
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs +0.046 post +0.044 true -0.002
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs -0.077 post -0.073 true +0.017
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.105 post -0.100 true -0.031
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs -0.070 post -0.067 true -0.020
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs +0.128 post +0.119 true +0.017
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs +0.150 post +0.143 true -0.007
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs -0.021 post -0.020 true -0.019
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs -0.104 post -0.099 true -0.025
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs +0.025 post +0.031 true +0.097
+    pilot tariff_8/MID/tariff_11     n=200 prior +0.030 obs +0.056 post +0.054 true +0.031
+    pilot tariff_8/MID/tariff_9      n=200 prior +0.019 obs -0.133 post -0.121 true +0.007
+    pilot tariff_12/HIGH/tariff_9    n=150 prior +0.003 obs +0.035 post +0.033 true -0.000
+    unit  tariff_8/LOW/ALL->tariff_9       sms         n=  457 tested=False mu0 +0.385 mu +0.373 true +0.483 money   1,828 realized     410,182
+    unit  tariff_14/LOW/ALL->tariff_9      sms         n=  231 tested=False mu0 +0.397 mu +0.385 true +0.485 money     924 realized     226,628
+    unit  tariff_11/HIGH/ALL->tariff_12    sms         n= 1633 tested=True  mu0 +0.017 mu +0.119 true +0.017 money   6,532 realized     147,137
+    unit  tariff_8/HIGH/ALL->tariff_10     sms         n= 4726 tested=True  mu0 +0.009 mu +0.150 true +0.006 money  18,904 realized     135,713
+    unit  tariff_1/LOW/ALL->tariff_9       digital_ads n=   40 tested=False mu0 +0.650 mu +0.638 true +0.689 money     880 realized      76,527
+    unit  tariff_3/MID/ALL->tariff_8       sms         n=   87 tested=False mu0 +0.303 mu +0.291 true +0.315 money     348 realized      72,032
+  S0 mock       seed 6: agent   1,214,596 noexp   4,690,960 gap  -3,476,365 | pilot_net     8,729 bias -0.012 | finals predicted   5,284,083 realized   1,128,356 (tested    222,276, untested    906,081) money tested  41,088 untested   9,332
+  S0 mock       seed 7: agent   3,349,093 noexp   4,690,960 gap  -1,341,867 | pilot_net    11,184 bias -0.047 | finals predicted   2,248,867 realized   3,323,336 (tested        121, untested  3,323,215) money tested  64,900 untested  16,316
+  S0 mock       seed 8: agent   4,118,278 noexp   4,690,960 gap    -572,682 | pilot_net     4,550 bias -0.022 | finals predicted   3,588,065 realized   4,187,758 (tested    828,546, untested  3,359,212) money tested  51,238 untested  19,488
+  S0 mock       seed 9: agent   3,972,592 noexp   4,690,960 gap    -718,369 | pilot_net   -32,076 bias +0.017 | finals predicted   6,192,659 realized   3,987,987 (tested    532,636, untested  3,455,351) money tested  63,640 untested  17,772
+  S1 x0.5       seed 0: agent   1,918,657 noexp   2,296,190 gap    -377,533 | pilot_net    -4,662 bias -0.022 | finals predicted   2,106,337 realized   1,878,955 (tested   -162,991, untested  2,041,946) money tested  15,652 untested  62,442
+  S1 x0.5       seed 1: agent   2,234,763 noexp   2,296,190 gap     -61,427 | pilot_net   -11,824 bias +0.009 | finals predicted   2,120,233 realized   2,233,734 (tested    128,899, untested  2,104,836) money tested   3,852 untested  62,442
+  S1 x0.5       seed 2: agent   1,737,476 noexp   2,296,190 gap    -558,714 | pilot_net    -4,093 bias +0.012 | finals predicted   4,668,583 realized   1,752,317 (tested     34,704, untested  1,717,612) money tested  26,136 untested  17,952
+  S1 x0.5       seed 3: agent   2,248,368 noexp   2,296,190 gap     -47,822 | pilot_net   -10,377 bias -0.022 | finals predicted   2,366,707 realized   2,287,056 (tested    292,041, untested  1,995,015) money tested  37,840 untested  44,046
+  S1 x0.5       seed 4: agent   1,317,179 noexp   2,296,190 gap    -979,011 | pilot_net    -4,900 bias -0.023 | finals predicted   4,531,214 realized   1,310,816 (tested     80,264, untested  1,230,552) money tested  33,868 untested  15,328
+  S1 x0.5       seed 5: agent   1,823,803 noexp   2,296,190 gap    -472,387 | pilot_net    -4,624 bias -0.026 | finals predicted   3,600,569 realized   1,846,735 (tested     93,652, untested  1,753,083) money tested  66,490 untested  18,194
+  --- detail S1 x0.5 worst seed 6 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs +0.159 post +0.147 true +0.003
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs -0.221 post -0.204 true +0.002
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.109 post -0.100 true +0.002
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.016 post -0.015 true -0.004
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs +0.118 post +0.113 true -0.000
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs +0.047 post +0.045 true -0.010
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.030 post +0.029 true +0.005
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs +0.047 post +0.045 true -0.001
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs -0.085 post -0.082 true +0.008
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.090 post -0.086 true -0.016
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs -0.061 post -0.058 true -0.010
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs +0.120 post +0.111 true +0.008
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs +0.154 post +0.147 true -0.004
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs -0.012 post -0.011 true -0.009
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs -0.092 post -0.087 true -0.012
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs -0.023 post -0.014 true +0.048
+    pilot tariff_8/MID/tariff_11     n=200 prior +0.030 obs +0.040 post +0.039 true +0.016
+    pilot tariff_8/MID/tariff_9      n=200 prior +0.019 obs -0.137 post -0.124 true +0.003
+    pilot tariff_12/HIGH/tariff_9    n=150 prior +0.003 obs +0.036 post +0.034 true -0.000
+    unit  tariff_8/LOW/ALL->tariff_9       sms         n=  457 tested=False mu0 +0.385 mu +0.371 true +0.242 money   1,828 realized     204,177
+    unit  tariff_14/LOW/ALL->tariff_9      sms         n=  231 tested=False mu0 +0.397 mu +0.384 true +0.242 money     924 realized     112,852
+    unit  tariff_11/HIGH/ALL->tariff_12    sms         n= 1633 tested=True  mu0 +0.017 mu +0.111 true +0.008 money   6,532 realized      70,302
+    unit  tariff_8/HIGH/ALL->tariff_10     sms         n= 4726 tested=True  mu0 +0.009 mu +0.147 true +0.003 money  18,904 realized      58,405
+    unit  tariff_14/HIGH/ALL->tariff_21    digital_ads n=  963 tested=True  mu0 +0.003 mu +0.147 true -0.004 money  21,186 realized     -44,539
+    unit  tariff_1/LOW/ALL->tariff_9       digital_ads n=   40 tested=False mu0 +0.650 mu +0.636 true +0.344 money     880 realized      37,824
+  S1 x0.5       seed 6: agent     552,883 noexp   2,296,190 gap  -1,743,307 | pilot_net    -3,135 bias -0.013 | finals predicted   5,301,910 realized     516,139 (tested     67,765, untested    448,374) money tested  58,422 untested   9,332
+  S1 x0.5       seed 7: agent   1,629,559 noexp   2,296,190 gap    -666,631 | pilot_net    -1,908 bias -0.049 | finals predicted   2,204,694 realized   1,624,181 (tested    -32,390, untested  1,656,570) money tested  64,900 untested  16,492
+  S1 x0.5       seed 8: agent   1,923,264 noexp   2,296,190 gap    -372,926 | pilot_net    -5,225 bias -0.024 | finals predicted   3,522,875 realized   1,913,927 (tested    135,530, untested  1,778,396) money tested  57,368 untested  21,670
+  S1 x0.5       seed 9: agent   1,978,339 noexp   2,296,190 gap    -317,852 | pilot_net   -23,538 bias +0.017 | finals predicted   5,433,940 realized   1,994,314 (tested    275,524, untested  1,718,789) money tested  25,696 untested  17,772
+  S2 x2         seed 0: agent   9,321,680 noexp   9,480,501 gap    -158,821 | pilot_net    26,347 bias -0.018 | finals predicted   2,061,581 realized   9,377,807 (tested  1,022,696, untested  8,355,111) money tested  10,732 untested  62,442
+  S2 x2         seed 1: agent   8,798,500 noexp   9,480,501 gap    -682,001 | pilot_net    -2,356 bias +0.011 | finals predicted   2,729,700 realized   8,792,607 (tested  1,093,078, untested  7,699,528) money tested  37,840 untested  37,746
+  S2 x2         seed 2: agent   4,008,390 noexp   9,480,501 gap  -5,472,110 | pilot_net   -45,750 bias +0.013 | finals predicted   4,252,464 realized   4,218,000 (tested  1,155,796, untested  3,062,204) money tested  27,864 untested  10,496
+  S2 x2         seed 3: agent   9,284,579 noexp   9,480,501 gap    -195,921 | pilot_net     3,940 bias -0.020 | finals predicted   3,302,933 realized   9,393,881 (tested  1,281,684, untested  8,112,197) money tested  37,840 untested  44,046
+  S2 x2         seed 4: agent   3,605,668 noexp   9,480,501 gap  -5,874,833 | pilot_net    23,872 bias -0.019 | finals predicted   5,128,772 realized   3,691,596 (tested  1,424,827, untested  2,266,769) money tested  40,748 untested  25,824
+  S2 x2         seed 5: agent   6,099,682 noexp   9,480,501 gap  -3,380,818 | pilot_net    28,038 bias -0.022 | finals predicted   4,304,924 realized   6,298,919 (tested  1,564,682, untested  4,734,237) money tested  72,160 untested  12,622
+  --- detail S2 x2 worst seed 6 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs +0.168 post +0.156 true +0.013
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs -0.215 post -0.198 true +0.008
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.104 post -0.095 true +0.007
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.028 post -0.026 true -0.016
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs +0.117 post +0.112 true -0.001
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs +0.018 post +0.017 true -0.039
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.045 post +0.043 true +0.020
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs +0.044 post +0.042 true -0.004
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs -0.060 post -0.057 true +0.034
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.137 post -0.130 true -0.062
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs -0.090 post -0.086 true -0.039
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs +0.145 post +0.135 true +0.033
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs +0.143 post +0.137 true -0.014
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs -0.040 post -0.038 true -0.038
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs -0.129 post -0.123 true -0.050
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs +0.122 post +0.120 true +0.193
+    pilot tariff_8/MID/tariff_11     n=200 prior +0.030 obs +0.087 post +0.083 true +0.063
+    pilot tariff_8/MID/tariff_9      n=200 prior +0.019 obs -0.126 post -0.115 true +0.013
+    pilot tariff_12/HIGH/tariff_9    n=150 prior +0.003 obs +0.035 post +0.033 true -0.001
+    unit  tariff_8/LOW/ALL->tariff_9       sms         n=  457 tested=False mu0 +0.385 mu +0.375 true +0.966 money   1,828 realized     822,192
+    unit  tariff_14/LOW/ALL->tariff_9      sms         n=  231 tested=False mu0 +0.397 mu +0.388 true +0.970 money     924 realized     454,180
+    unit  tariff_11/HIGH/ALL->tariff_12    sms         n= 1633 tested=True  mu0 +0.017 mu +0.135 true +0.033 money   6,532 realized     300,806
+    unit  tariff_8/HIGH/ALL->tariff_10     sms         n= 4726 tested=True  mu0 +0.009 mu +0.156 true +0.013 money  18,904 realized     290,330
+    unit  tariff_1/LOW/ALL->tariff_9       digital_ads n=   40 tested=False mu0 +0.650 mu +0.640 true +1.378 money     880 realized     153,934
+    unit  tariff_3/MID/ALL->tariff_8       sms         n=   87 tested=False mu0 +0.303 mu +0.294 true +0.629 money     348 realized     144,413
+  S2 x2         seed 6: agent   2,494,611 noexp   9,480,501 gap  -6,985,889 | pilot_net    32,459 bias -0.009 | finals predicted   5,530,731 realized   2,307,133 (tested    485,639, untested  1,821,493) money tested  41,088 untested   9,332
+  S2 x2         seed 7: agent   7,364,202 noexp   9,480,501 gap  -2,116,298 | pilot_net    37,367 bias -0.045 | finals predicted   2,136,613 realized   7,313,977 (tested    222,197, untested  7,091,781) money tested  18,324 untested  21,400
+  S2 x2         seed 8: agent   8,250,110 noexp   9,480,501 gap  -1,230,390 | pilot_net   -63,618 bias -0.023 | finals predicted   4,398,224 realized   8,446,242 (tested  1,708,330, untested  6,737,912) money tested  51,238 untested  19,488
+  S2 x2         seed 9: agent   4,418,475 noexp   9,480,501 gap  -5,062,026 | pilot_net   -49,151 bias +0.016 | finals predicted   5,904,888 realized   4,437,376 (tested  1,458,702, untested  2,978,674) money tested  56,656 untested  10,598
+  S3 downsell   seed 0: agent   3,226,696 noexp   3,848,092 gap    -621,396 | pilot_net  -224,764 bias -0.032 | finals predicted   1,633,496 realized   3,364,885 (tested    -88,321, untested  3,453,207) money tested  10,732 untested  68,970
+  S3 downsell   seed 1: agent   3,223,120 noexp   3,848,092 gap    -624,973 | pilot_net  -268,808 bias -0.005 | finals predicted   1,881,088 realized   3,447,043 (tested    213,245, untested  3,233,798) money tested  10,732 untested  43,128
+  S3 downsell   seed 2: agent   2,531,420 noexp   3,848,092 gap  -1,316,672 | pilot_net  -211,747 bias +0.002 | finals predicted   4,348,998 realized   2,698,316 (tested   -255,453, untested  2,953,769) money tested  26,136 untested  22,396
+  S3 downsell   seed 3: agent   3,400,474 noexp   3,848,092 gap    -447,618 | pilot_net  -245,495 bias -0.033 | finals predicted   2,364,347 realized   3,687,279 (tested    443,505, untested  3,243,774) money tested  37,840 untested  44,046
+  S3 downsell   seed 4: agent   1,490,548 noexp   3,848,092 gap  -2,357,544 | pilot_net  -213,622 bias -0.032 | finals predicted   3,902,961 realized   1,543,821 (tested   -524,852, untested  2,068,673) money tested  33,868 untested  16,120
+  S3 downsell   seed 5: agent   2,281,914 noexp   3,848,092 gap  -1,566,178 | pilot_net  -213,262 bias -0.035 | finals predicted   3,147,138 realized   2,442,281 (tested   -223,940, untested  2,666,222) money tested  65,280 untested  17,024
+  --- detail S3 downsell worst seed 6 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs +0.127 post +0.118 true -0.029
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs -0.236 post -0.217 true -0.012
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.121 post -0.111 true -0.010
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.030 post -0.029 true -0.018
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs +0.107 post +0.103 true -0.011
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs +0.027 post +0.026 true -0.030
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.025 post +0.024 true -0.000
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs +0.036 post +0.034 true -0.012
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs -0.087 post -0.083 true +0.007
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.115 post -0.110 true -0.041
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs -0.080 post -0.077 true -0.030
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs +0.104 post +0.097 true -0.007
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs +0.140 post +0.134 true -0.017
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs -0.031 post -0.030 true -0.029
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs -0.114 post -0.109 true -0.035
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs -0.001 post +0.006 true +0.071
+    pilot tariff_8/MID/tariff_11     n=200 prior +0.030 obs +0.042 post +0.041 true +0.017
+    pilot tariff_8/MID/tariff_9      n=200 prior +0.019 obs -0.136 post -0.124 true +0.004
+    pilot tariff_12/HIGH/tariff_9    n=150 prior +0.003 obs +0.035 post +0.033 true -0.001
+    unit  tariff_8/HIGH/ALL->tariff_10     sms         n= 4726 tested=True  mu0 +0.009 mu +0.118 true -0.029 money  18,904 realized    -704,661
+    unit  tariff_8/LOW/ALL->tariff_9       digital_ads n=  457 tested=False mu0 +0.385 mu +0.362 true +0.461 money  10,054 realized     504,040
+    unit  tariff_14/LOW/ALL->tariff_9      digital_ads n=  231 tested=False mu0 +0.397 mu +0.374 true +0.441 money   5,082 realized     265,576
+    unit  tariff_4/LOW/LITE->tariff_9      digital_ads n=  199 tested=False mu0 +0.326 mu +0.303 true +0.398 money   4,378 realized     194,682
+    unit  tariff_14/HIGH/ALL->tariff_21    digital_ads n=  963 tested=True  mu0 +0.003 mu +0.134 true -0.017 money  21,186 realized    -133,899
+    unit  tariff_1/LOW/ALL->tariff_9       digital_ads n=   40 tested=False mu0 +0.650 mu +0.627 true +0.651 money     880 realized      72,240
+  S3 downsell   seed 6: agent     352,783 noexp   3,848,092 gap  -3,495,309 | pilot_net  -206,716 bias -0.023 | finals predicted   2,941,113 realized     408,026 (tested   -838,560, untested  1,246,586) money tested  40,090 untested  24,578
+  S3 downsell   seed 7: agent   2,882,985 noexp   3,848,092 gap    -965,107 | pilot_net  -274,408 bias -0.051 | finals predicted   1,859,264 realized   3,122,862 (tested    101,676, untested  3,021,186) money tested  11,800 untested  29,626
+  S3 downsell   seed 8: agent   3,083,845 noexp   3,848,092 gap    -764,247 | pilot_net  -214,590 bias -0.034 | finals predicted   3,115,914 realized   3,274,565 (tested    333,098, untested  2,941,467) money tested  59,854 untested  22,768
+  S3 downsell   seed 9: agent   2,739,794 noexp   3,848,092 gap  -1,108,298 | pilot_net  -263,547 bias +0.003 | finals predicted   5,543,711 realized   2,865,530 (tested    -10,813, untested  2,876,344) money tested  63,640 untested  17,948
+  S4 reversed   seed 0: agent    -171,360 noexp     629,039 gap    -800,399 | pilot_net  -538,919 bias -0.049 | finals predicted   1,437,868 realized     267,511 (tested   -386,560, untested    654,070) money tested  32,986 untested  49,438
+  S4 reversed   seed 1: agent      19,510 noexp     629,039 gap    -609,529 | pilot_net  -644,863 bias -0.024 | finals predicted   1,668,380 realized     619,268 (tested    -83,304, untested    702,572) money tested  21,186 untested  62,442
+  S4 reversed   seed 2: agent      46,679 noexp     629,039 gap    -582,360 | pilot_net  -525,632 bias -0.014 | finals predicted   3,111,573 realized     485,431 (tested    -92,411, untested    577,841) money tested  27,112 untested  32,796
+  S4 reversed   seed 3: agent      38,949 noexp     629,039 gap    -590,090 | pilot_net  -538,663 bias -0.050 | finals predicted   1,584,467 realized     500,301 (tested   -142,003, untested    642,304) money tested  37,840 untested  43,918
+  S4 reversed   seed 4: agent    -893,742 noexp     629,039 gap  -1,522,780 | pilot_net  -522,614 bias -0.057 | finals predicted   2,213,936 realized    -630,912 (tested -1,324,934, untested    694,022) money tested  46,376 untested  35,710
+  S4 reversed   seed 5: agent     249,812 noexp     629,039 gap    -379,227 | pilot_net  -558,114 bias -0.056 | finals predicted   2,471,108 realized     805,124 (tested    160,560, untested    644,563) money tested  58,176 untested  24,718
+  --- detail S4 reversed worst seed 6 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs +0.089 post +0.083 true -0.066
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs -0.291 post -0.268 true -0.068
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.188 post -0.173 true -0.078
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.020 post -0.019 true -0.008
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs +0.118 post +0.112 true -0.001
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs +0.038 post +0.036 true -0.020
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.035 post +0.034 true +0.010
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs +0.046 post +0.044 true -0.002
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs -0.077 post -0.073 true +0.017
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.105 post -0.100 true -0.031
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs -0.070 post -0.067 true -0.020
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs +0.004 post +0.005 true -0.107
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs +0.150 post +0.143 true -0.007
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs -0.021 post -0.020 true -0.019
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs -0.104 post -0.099 true -0.025
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs -0.189 post -0.167 true -0.117
+    pilot tariff_8/MID/tariff_11     n=200 prior +0.030 obs +0.009 post +0.011 true -0.015
+    pilot tariff_8/MID/tariff_9      n=200 prior +0.019 obs -0.148 post -0.135 true -0.008
+    pilot tariff_12/HIGH/tariff_9    n=150 prior +0.003 obs +0.035 post +0.033 true -0.000
+    unit  tariff_8/HIGH/ALL->tariff_10     sms         n= 4726 tested=True  mu0 +0.009 mu +0.083 true -0.066 money  18,904 realized  -1,610,144
+    unit  tariff_13/MID/ALL->tariff_8      sms         n= 1022 tested=False mu0 +0.251 mu +0.210 true +0.116 money   4,088 realized     372,575
+    unit  tariff_13/LOW/ALL->tariff_8      sms         n=  251 tested=False mu0 +0.346 mu +0.305 true +0.574 money   1,004 realized     281,220
+    unit  tariff_14/LOW/ALL->tariff_9      digital_ads n=  231 tested=False mu0 +0.397 mu +0.357 true +0.319 money   5,082 realized     190,619
+    unit  tariff_4/LOW/ALL->tariff_9       sms         n=  299 tested=False mu0 +0.326 mu +0.285 true -0.134 money   1,196 realized     -76,165
+    unit  tariff_1/MID/ALL->tariff_8       digital_ads n=   32 tested=False mu0 +0.305 mu +0.265 true +0.528 money     704 realized      73,357
+  S4 reversed   seed 6: agent  -1,050,223 noexp     629,039 gap  -1,679,261 | pilot_net  -470,258 bias -0.040 | finals predicted   3,440,917 realized    -847,990 (tested -1,699,042, untested    851,052) money tested  51,890 untested  16,800
+  S4 reversed   seed 7: agent      32,654 noexp     629,039 gap    -596,384 | pilot_net  -524,222 bias -0.076 | finals predicted   1,964,704 realized     542,303 (tested        121, untested    542,182) money tested  64,900 untested  19,878
+  S4 reversed   seed 8: agent     324,924 noexp     629,039 gap    -304,115 | pilot_net  -483,379 bias -0.051 | finals predicted   2,612,519 realized     805,124 (tested    160,560, untested    644,563) money tested  58,176 untested  24,718
+  S4 reversed   seed 9: agent    -209,636 noexp     629,039 gap    -838,675 | pilot_net  -601,544 bias -0.012 | finals predicted   4,285,973 realized     238,447 (tested   -315,349, untested    553,796) money tested  67,562 untested  17,336
+  S5 permuted   seed 1: agent   1,940,921 noexp   2,144,077 gap    -203,156 | pilot_net    69,402 bias +0.007 | finals predicted   2,523,650 realized   1,649,945 (tested   -637,447, untested  2,287,392) money tested  22,756 untested  56,142
+  S5 permuted   seed 2: agent   2,106,057 noexp   2,144,077 gap     -38,020 | pilot_net     9,355 bias +0.010 | finals predicted   3,829,280 realized   2,136,688 (tested    460,227, untested  1,676,461) money tested  27,486 untested  17,662
+  --- detail S5 permuted worst seed 6 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs +0.134 post +0.124 true -0.022
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs -0.151 post -0.139 true +0.072
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.206 post -0.189 true -0.095
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.020 post -0.019 true -0.008
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs +0.118 post +0.112 true -0.001
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs +0.038 post +0.036 true -0.020
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.035 post +0.034 true +0.010
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs +0.046 post +0.044 true -0.002
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs -0.077 post -0.073 true +0.017
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.105 post -0.100 true -0.031
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs -0.070 post -0.067 true -0.020
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs +0.202 post +0.187 true +0.090
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs +0.150 post +0.143 true -0.007
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs -0.021 post -0.020 true -0.019
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs -0.104 post -0.099 true -0.025
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs +0.025 post +0.030 true +0.097
+    pilot tariff_8/MID/tariff_11     n=200 prior +0.030 obs +0.018 post +0.019 true -0.007
+    pilot tariff_8/MID/tariff_9      n=200 prior +0.019 obs -0.127 post -0.116 true +0.012
+    pilot tariff_12/HIGH/tariff_9    n=150 prior +0.003 obs +0.034 post +0.033 true -0.001
+    unit  tariff_11/HIGH/ALL->tariff_12    digital_ads n= 1633 tested=True  mu0 +0.017 mu +0.187 true +0.090 money  35,926 realized   1,051,991
+    unit  tariff_8/HIGH/ALL->tariff_10     sms         n= 4726 tested=True  mu0 +0.009 mu +0.124 true -0.022 money  18,904 realized    -539,961
+    unit  tariff_3/MID/ALL->tariff_8       sms         n=   87 tested=False mu0 +0.303 mu +0.290 true +0.756 money     348 realized     173,553
+    unit  tariff_1/MID/ALL->tariff_8       sms         n=   32 tested=False mu0 +0.305 mu +0.292 true +0.393 money     128 realized      42,071
+    unit  tariff_14/HIGH/ALL->tariff_21    sms         n=  963 tested=True  mu0 +0.003 mu +0.143 true -0.007 money   3,852 realized     -39,568
+    unit  tariff_8/LOW/ALL->tariff_9       sms         n=  457 tested=False mu0 +0.385 mu +0.372 true -0.044 money   1,828 realized     -39,453
+  S5 permuted   seed 6: agent     766,209 noexp   2,144,077 gap  -1,377,868 | pilot_net    28,852 bias -0.013 | finals predicted   5,666,668 realized     604,315 (tested    451,456, untested    152,859) money tested  70,482 untested   9,332
+  S6 conv x3    seed 2: agent   8,667,254 noexp  11,389,846 gap  -2,722,592 | pilot_net   -92,628 bias +0.015 | finals predicted   5,582,486 realized   8,970,012 (tested  2,180,408, untested  6,789,604) money tested  56,744 untested  13,234
+  --- detail S6 conv x3 worst seed 4 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs +0.004 post +0.004 true +0.019
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs +0.157 post +0.145 true +0.012
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.133 post -0.122 true +0.011
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.024 post -0.023 true -0.023
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs +0.011 post +0.011 true -0.002
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs -0.199 post -0.190 true -0.059
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.050 post +0.048 true +0.029
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs +0.132 post +0.126 true -0.006
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs +0.096 post +0.091 true +0.051
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.224 post -0.214 true -0.094
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs -0.226 post -0.216 true -0.059
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs +0.146 post +0.136 true +0.050
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs -0.099 post -0.094 true -0.022
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs -0.132 post -0.126 true -0.074
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs -0.024 post -0.022 true -0.057
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs +0.281 post +0.266 true +0.290
+    pilot tariff_12/HIGH/tariff_9    n=200 prior +0.003 obs -0.161 post -0.154 true -0.001
+    pilot tariff_12/HIGH/tariff_21   n=200 prior +0.001 obs -0.117 post -0.112 true -0.117
+    pilot tariff_10/HIGH/tariff_14   n=150 prior +0.000 obs +0.077 post +0.038 true -0.002
+    unit  tariff_8/MID/ALL->tariff_10      digital_ads n= 1720 tested=True  mu0 +0.092 mu +0.266 true +0.290 money  37,840 realized   1,941,446
+    unit  tariff_8/LOW/ALL->tariff_9       sms         n=  457 tested=False mu0 +0.385 mu +0.357 true +1.449 money   1,828 realized   1,234,202
+    unit  tariff_14/LOW/ALL->tariff_9      sms         n=  231 tested=False mu0 +0.397 mu +0.369 true +1.455 money     924 realized     681,732
+    unit  tariff_13/LOW/LITE->tariff_8     digital_ads n=  117 tested=False mu0 +0.346 mu +0.318 true +1.722 money   2,574 realized     473,404
+    unit  tariff_11/HIGH/ALL->tariff_12    sms         n= 1633 tested=True  mu0 +0.017 mu +0.136 true +0.050 money   6,532 realized     454,474
+    unit  tariff_8/HIGH/ALL->tariff_11     sms         n= 4726 tested=True  mu0 +0.006 mu +0.145 true +0.012 money  18,904 realized     264,987
+  S6 conv x3    seed 4: agent   5,556,217 noexp  11,389,846 gap  -5,833,629 | pilot_net  -100,658 bias -0.028 | finals predicted   6,117,184 realized   5,766,344 (tested  2,592,369, untested  3,173,976) money tested  71,708 untested   7,898
+  S6 conv x3    seed 5: agent   8,799,222 noexp  11,389,846 gap  -2,590,625 | pilot_net  -137,195 bias -0.027 | finals predicted   5,029,781 realized   9,216,270 (tested  2,383,104, untested  6,833,166) money tested  72,160 untested  12,644
+  S6 conv x3    seed 6: agent   6,744,241 noexp  11,389,846 gap  -4,645,606 | pilot_net   -52,194 bias -0.012 | finals predicted   6,058,460 realized   6,857,444 (tested  2,407,567, untested  4,449,877) money tested  65,562 untested  10,172
+  S6 conv x3    seed 7: agent  11,128,797 noexp  11,389,846 gap    -261,049 | pilot_net    63,551 bias -0.042 | finals predicted   2,429,731 realized  11,108,421 (tested    629,301, untested 10,479,121) money tested  20,232 untested  31,236
+  S6 conv x3    seed 9: agent   9,543,359 noexp  11,389,846 gap  -1,846,487 | pilot_net   -66,227 bias +0.015 | finals predicted   7,131,428 realized   9,564,211 (tested  2,216,381, untested  7,347,830) money tested  56,656 untested  19,284
+  S7 sign flip  seed 0: agent  -3,687,207 noexp  -4,888,120 gap  +1,200,913 | pilot_net    -8,751 bias -0.026 | finals predicted   2,408,978 realized  -3,645,579 (tested    252,342, untested -3,897,921) money tested  27,964 untested  37,206
+  S7 sign flip  seed 1: agent  -3,581,112 noexp  -4,888,120 gap  +1,307,008 | pilot_net     3,961 bias +0.007 | finals predicted   2,493,914 realized  -3,510,056 (tested    396,327, untested -3,906,383) money tested  32,986 untested  37,746
+  S7 sign flip  seed 2: agent  -1,430,052 noexp  -4,888,120 gap  +3,458,068 | pilot_net       245 bias +0.008 | finals predicted   4,455,591 realized  -1,497,693 (tested    -81,976, untested -1,415,717) money tested  69,564 untested  10,950
+  --- detail S7 sign flip worst seed 3 (base units = pct x conv; true for units at multiplier 1) ---
+    pilot tariff_8/HIGH/tariff_10    n=200 prior +0.009 obs -0.230 post -0.211 true -0.006
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs +0.033 post +0.031 true -0.004
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs -0.043 post -0.039 true -0.004
+    pilot tariff_10/HIGH/tariff_21   n=200 prior +0.000 obs -0.011 post -0.011 true +0.008
+    pilot tariff_10/HIGH/tariff_14   n=200 prior +0.000 obs -0.020 post -0.019 true +0.001
+    pilot tariff_10/HIGH/tariff_9    n=200 prior +0.001 obs -0.056 post -0.054 true +0.020
+    pilot tariff_4/HIGH/tariff_21    n=200 prior +0.001 obs +0.010 post +0.010 true -0.010
+    pilot tariff_4/HIGH/tariff_9     n=200 prior +0.002 obs -0.029 post -0.028 true +0.002
+    pilot tariff_4/HIGH/tariff_14    n=200 prior +0.000 obs -0.075 post -0.072 true -0.017
+    pilot tariff_11/HIGH/tariff_9    n=200 prior +0.001 obs -0.061 post -0.058 true +0.031
+    pilot tariff_11/HIGH/tariff_21   n=200 prior +0.001 obs +0.062 post +0.059 true +0.020
+    pilot tariff_11/HIGH/tariff_12   n=200 prior +0.017 obs -0.038 post -0.033 true -0.017
+    pilot tariff_14/HIGH/tariff_21   n=200 prior +0.003 obs -0.010 post -0.010 true +0.007
+    pilot tariff_14/HIGH/tariff_15   n=200 prior +0.001 obs +0.027 post +0.026 true +0.025
+    pilot tariff_14/HIGH/tariff_9    n=200 prior +0.007 obs +0.067 post +0.064 true +0.019
+    pilot tariff_8/HIGH/tariff_11    n=200 prior +0.006 obs -0.048 post -0.007 true -0.004
+    pilot tariff_8/HIGH/tariff_12    n=200 prior +0.004 obs +0.044 post +0.000 true -0.004
+    pilot tariff_8/MID/tariff_10     n=200 prior +0.092 obs +0.073 post +0.074 true -0.097
+    pilot tariff_8/MID/tariff_11     n=150 prior +0.030 obs -0.056 post -0.047 true -0.031
+    unit  tariff_13/MID/ALL->tariff_8      digital_ads n= 1022 tested=False mu0 +0.251 mu +0.224 true -0.256 money  22,484 realized  -1,112,327
+    unit  tariff_4/MID/ALL->tariff_8       sms         n= 1227 tested=False mu0 +0.232 mu +0.205 true -0.240 money   4,908 realized    -916,928
+    unit  tariff_8/LOW/ALL->tariff_9       digital_ads n=  457 tested=False mu0 +0.385 mu +0.358 true -0.483 money  10,054 realized    -548,836
+    unit  tariff_8/MID/ALL->tariff_10      sms         n= 1720 tested=True  mu0 +0.092 mu +0.074 true -0.097 money   6,880 realized    -511,404
+    unit  tariff_13/LOW/ALL->tariff_8      digital_ads n=  251 tested=False mu0 +0.346 mu +0.319 true -0.574 money   5,522 realized    -374,584
+    unit  tariff_4/LOW/ALL->tariff_9       digital_ads n=  299 tested=False mu0 +0.326 mu +0.299 true -0.418 money   6,578 realized    -311,465
+  S7 sign flip  seed 3: agent  -4,497,767 noexp  -4,888,120 gap    +390,353 | pilot_net    -6,387 bias -0.026 | finals predicted   1,675,961 realized  -4,519,547 (tested   -248,329, untested -4,271,219) money tested  17,264 untested  62,442
+  S7 sign flip  seed 4: agent  -2,564,218 noexp  -4,888,120 gap  +2,323,902 | pilot_net     4,482 bias -0.027 | finals predicted   4,168,641 realized  -2,653,949 (tested   -262,132, untested -2,391,817) money tested  33,868 untested  13,040
+  S7 sign flip  seed 5: agent  -3,997,964 noexp  -4,888,120 gap    +890,156 | pilot_net     1,061 bias -0.030 | finals predicted   2,981,177 realized  -4,057,653 (tested   -287,655, untested -3,769,998) money tested  27,402 untested  31,236
+  S7 sign flip  seed 6: agent  -2,497,784 noexp  -4,888,120 gap  +2,390,336 | pilot_net       624 bias -0.017 | finals predicted   4,988,809 realized  -2,493,003 (tested   -150,595, untested -2,342,408) money tested  51,890 untested  12,486
+  S7 sign flip  seed 7: agent  -3,424,419 noexp  -4,888,120 gap  +1,463,701 | pilot_net   -13,591 bias -0.053 | finals predicted   2,156,489 realized  -3,408,708 (tested    -52,861, untested -3,355,847) money tested  64,900 untested  16,316
+  S7 sign flip  seed 8: agent  -3,737,932 noexp  -4,888,120 gap  +1,150,188 | pilot_net     3,431 bias -0.028 | finals predicted   3,252,253 realized  -3,791,348 (tested     -8,619, untested -3,782,728) money tested  28,076 untested  31,122
+  S7 sign flip  seed 9: agent  -3,658,894 noexp  -4,888,120 gap  +1,229,227 | pilot_net       -21 bias +0.012 | finals predicted   4,730,910 realized  -3,709,624 (tested   -148,512, untested -3,561,112) money tested  56,760 untested  18,366
+
+CHART grouped-bar medians:
+[{"scenario":"S0 mock","strategy":"agent","net":3745391.8861394478},{"scenario":"S0 mock","strategy":"confirm","net":4206681.731340453},{"scenario":"S0 mock","strategy":"noexp","net":4690960.2553231642},{"scenario":"S0 mock","strategy":"nothing","net":0.0},{"scenario":"S0 mock","strategy":"oracle","net":5422899.9144874075},{"scenario":"S0 mock","strategy":"slope","net":4342684.3340480067},{"scenario":"S0 mock","strategy":"template","net":-357947.7963826433},{"scenario":"S1 x0.5","strategy":"agent","net":1871229.882327605},{"scenario":"S1 x0.5","strategy":"confirm","net":1721088.9020927139},{"scenario":"S1 x0.5","strategy":"noexp","net":2296190.1276615821},{"scenario":"S1 x0.5","strategy":"nothing","net":0.0},{"scenario":"S1 x0.5","strategy":"oracle","net":2720125.2509899493},{"scenario":"S1 x0.5","strategy":"slope","net":1464234.6573356916},{"scenario":"S1 x0.5","strategy":"template","net":-258379.3548375658},{"scenario":"S2 x2","strategy":"agent","net":6731942.39912879},{"scenario":"S2 x2","strategy":"confirm","net":9530107.140166156},{"scenario":"S2 x2","strategy":"noexp","net":9480500.5106463283},{"scenario":"S2 x2","strategy":"nothing","net":0.0},{"scenario":"S2 x2","strategy":"oracle","net":10917278.5248324554},{"scenario":"S2 x2","strategy":"slope","net":9915745.8577654287},{"scenario":"S2 x2","strategy":"template","net":-648646.6807156156},{"scenario":"S3 downsell","strategy":"agent","net":2811389.5368992221},{"scenario":"S3 downsell","strategy":"confirm","net":2903299.9179422311},{"scenario":"S3 downsell","strategy":"noexp","net":3848092.1749648536},{"scenario":"S3 downsell","strategy":"nothing","net":0.0},{"scenario":"S3 downsell","strategy":"oracle","net":4526685.8353877794},{"scenario":"S3 downsell","strategy":"slope","net":2971271.2799393497},{"scenario":"S3 downsell","strategy":"template","net":-674958.5731975199},{"scenario":"S4 reversed","strategy":"agent","net":26082.1443941416},{"scenario":"S4 reversed","strategy":"confirm","net":-29473.8926607409},{"scenario":"S4 reversed","strategy":"noexp","net":629038.5454416091},{"scenario":"S4 reversed","strategy":"nothing","net":0.0},{"scenario":"S4 reversed","strategy":"oracle","net":3166221.1660549147},{"scenario":"S4 reversed","strategy":"slope","net":-531257.7192078832},{"scenario":"S4 reversed","strategy":"template","net":-444983.8424634464},{"scenario":"S5 permuted","strategy":"agent","net":2684976.889141269},{"scenario":"S5 permuted","strategy":"confirm","net":4747285.8233776996},{"scenario":"S5 permuted","strategy":"noexp","net":2144076.8017522162},{"scenario":"S5 permuted","strategy":"nothing","net":0.0},{"scenario":"S5 permuted","strategy":"oracle","net":25224197.4936416298},{"scenario":"S5 permuted","strategy":"slope","net":4606135.9384717532},{"scenario":"S5 permuted","strategy":"template","net":14340132.416201802},{"scenario":"S6 conv x3","strategy":"agent","net":10336078.4044939931},{"scenario":"S6 conv x3","strategy":"confirm","net":12048336.5286515132},{"scenario":"S6 conv x3","strategy":"noexp","net":11389846.4091768079},{"scenario":"S6 conv x3","strategy":"nothing","net":0.0},{"scenario":"S6 conv x3","strategy":"oracle","net":17342476.3247471899},{"scenario":"S6 conv x3","strategy":"slope","net":13407753.9681057446},{"scenario":"S6 conv x3","strategy":"template","net":-907748.2221780911},{"scenario":"S7 sign flip","strategy":"agent","net":-3620002.808441042},{"scenario":"S7 sign flip","strategy":"confirm","net":-1768856.3253798336},{"scenario":"S7 sign flip","strategy":"noexp","net":-4888120.2553231642},{"scenario":"S7 sign flip","strategy":"nothing","net":0.0},{"scenario":"S7 sign flip","strategy":"oracle","net":4838956.1776913488},{"scenario":"S7 sign flip","strategy":"slope","net":-556429.8585843334},{"scenario":"S7 sign flip","strategy":"template","net":1912385.3054550642}]
+CHART agent share of oracle:
+[{"scenario":"S0 mock","agent_share":0.6907,"noexp_share":0.865},{"scenario":"S1 x0.5","agent_share":0.6879,"noexp_share":0.8441},{"scenario":"S2 x2","agent_share":0.6166,"noexp_share":0.8684},{"scenario":"S3 downsell","agent_share":0.6211,"noexp_share":0.8501},{"scenario":"S4 reversed","agent_share":0.0082,"noexp_share":0.1987},{"scenario":"S5 permuted","agent_share":0.1064,"noexp_share":0.085},{"scenario":"S6 conv x3","agent_share":0.596,"noexp_share":0.6568},{"scenario":"S7 sign flip","agent_share":-0.7481,"noexp_share":-1.0102}]
+
+total runtime 175s

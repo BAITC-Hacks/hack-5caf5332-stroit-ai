@@ -1,0 +1,30 @@
+=== (a) S5 permutation draws (env seeds 0-2) ===
+perm 2026: agent median 2,106,057 min 1,940,921 | noexp median 2,144,077 min 2,144,077 | template median 14,335,748 min 14,090,084 | template > agent 3/3, agent > noexp 1/3
+perm 1: agent median 9,662,550 min 6,772,248 | noexp median 4,664,829 min 4,664,829 | template median -382,501 min -628,166 | template > agent 0/3, agent > noexp 3/3
+perm 2: agent median 16,731,992 min 15,811,286 | noexp median 159,532 min 159,532 | template median -363,658 min -609,323 | template > agent 0/3, agent > noexp 3/3
+perm 3: agent median 5,757,155 min 3,512,285 | noexp median 1,152,493 min 1,152,493 | template median 6,286,648 min 6,146,172 | template > agent 3/3, agent > noexp 3/3
+perm 4: agent median 3,976,583 min 3,704,702 | noexp median 5,653,637 min 5,653,637 | template median 18,340,837 min 18,192,242 | template > agent 3/3, agent > noexp 1/3
+
+=== (b) template hypotheses: true sms lift ratio in S0 and S7 ===
+  tariff_8/HIGH (n=4726) -> tariff_9: in-model False; S0 -0.0063 S7 +0.0063
+  tariff_10/HIGH (n=2950) -> tariff_8: in-model True; S0 -0.0416 S7 +0.0416
+  tariff_10/HIGH (n=2950) -> tariff_9: in-model False; S0 -0.0127 S7 +0.0127
+  tariff_4/HIGH (n=2108) -> tariff_8: in-model True; S0 -0.0620 S7 +0.0620
+  tariff_4/HIGH (n=2108) -> tariff_9: in-model False; S0 -0.0013 S7 +0.0013
+  tariff_8/MID (n=1720) -> tariff_9: in-model True; S0 +0.0044 S7 -0.0044
+  template hypotheses with negative true effect in S0: 5 of 6
+
+=== (c) fallback exposure of the agent's hypothesis set ===
+  hypotheses 135; resolved by fallback (not in model) 16 (0.119); share of prior mass-weighted value mu0*mass>0 on fallback 0.019
+  S4: model rows whose pct is unchanged by the reversal 33 of 451
+  S4: agent hypotheses whose true effect is unchanged vs S0 28 of 135
+  prior top target = true top target (pct x conv): S0 36/45, S4 4/45
+
+=== (d) call channel check ===
+  S0: best channel per cell with money unconstrained: {'call': 37, 'digital_ads': 19, 'sms': 4, 'push': 3}; max incremental value per extra money unit, call vs digital_ads: 5.77
+  S6 conv x3: best channel per cell with money unconstrained: {'call': 39, 'digital_ads': 17, 'sms': 5, 'push': 2}; max incremental value per extra money unit, call vs digital_ads: 14.24
+
+=== (e) S0 true |pct x conv| by segment: all (cell,target) vs agent's top-3 hypotheses ===
+  all pairs median: HIGH 0.0117, LOW 0.0176, MID 0.0133
+  agent hypotheses median: HIGH 0.0112, LOW 0.1987, MID 0.0400; overall 0.0376; max LOW/MID 0.6888, max HIGH 0.0922
+  agent hypotheses median |prior mu0 - true| 0.0132
