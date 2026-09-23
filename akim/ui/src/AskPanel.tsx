@@ -113,6 +113,7 @@ export default function AskPanel({
   return (
     <section
       className="ask-panel glass"
+      style={{ zIndex: 9 }}
       role="dialog"
       aria-labelledby="ask-title"
     >
@@ -136,7 +137,7 @@ export default function AskPanel({
           disabled={busy || ingesting || !health?.configured}
           className="threads-ingest"
         >
-          {ingesting ? "Ищем публикации…" : "Ingest Threads"}
+          {ingesting ? "Ищем публикации…" : "Найти публичные посты"}
         </button>
         <label>
           <input
@@ -145,7 +146,7 @@ export default function AskPanel({
             disabled={busy || ingesting || mode !== "live"}
             onChange={(e) => setUseThreads(e.target.checked)}
           />
-          Учитывать при опросе
+          Учитывать посты в ответе жителей
         </label>
       </div>
       {ingesting && (
@@ -292,6 +293,10 @@ export default function AskPanel({
                 <Send size={18} />
               </button>
             </div>
+            <p className="demo-note">
+              Синтетические жители отвечают по модели. Публичные посты из
+              Threads добавляют реальные голоса по теме.
+            </p>
           </form>
           {error && (
             <p className="inline-error" role="alert">

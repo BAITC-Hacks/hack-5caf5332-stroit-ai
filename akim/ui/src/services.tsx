@@ -10,6 +10,7 @@ import type { Choice } from "./data";
 import type { Poll } from "./residents";
 import type { ActivityEvent, CityData, ServiceHealth } from "./city-data";
 import type { AkimResult } from "../server/akim";
+import type { GoalConstraints } from "../server/schemas";
 interface Services {
   health: ServiceHealth | null;
   mode: "live" | "local";
@@ -122,13 +123,20 @@ export async function askApi(
   return response.json();
 }
 export async function akimApi(
-  mode: "advisor" | "autopilot",
+  mode: "advisor" | "autopilot" | "goal",
   plan: Choice[],
   token: string,
   onEvent: (event: ActivityEvent) => void,
   signal: AbortSignal,
+  goal?: string,
+  constraints?: Partial<GoalConstraints>,
 ): Promise<AkimResult> {
-  const response = await post("/api/akim", { mode, plan }, token, signal);
+  const response = await post(
+    "/api/akim",
+    { mode, plan, goal, constraints },
+    token,
+    signal,
+  );
   if (!response.body) throw Error("Пустой ответ сервера.");
   const reader = response.body.getReader(),
     decoder = new TextDecoder();
