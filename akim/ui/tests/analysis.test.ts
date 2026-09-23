@@ -111,6 +111,11 @@ test("Jev gates city relevance, complaint relevance, categories and geolocation 
 });
 test("unknown or ambiguous places stay unlocated; shortened street names resolve locally", () => {
   assert.ok(locationCandidates("Астана улица А. Бектурова").length > 0);
+  assert.equal(
+    locationCandidates("Астана улица А. Бектурова, проезд закрыт").length,
+    1,
+  );
+  assert.equal(locationCandidates("В Астане закрыт проезд").length, 0);
   assert.ok(
     locationCandidates("Астана Сыганак и Толе би").some((l) =>
       /Толе|Төле/.test(l.name),

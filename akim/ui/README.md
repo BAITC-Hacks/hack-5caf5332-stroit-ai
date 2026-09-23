@@ -23,6 +23,8 @@ Choose a district → create a plan or load the example → compare before/after
 
 ![City view](docs/desktop.png)
 
+[Mobility desktop](docs/mobility-desktop.png) · [Mobility mobile](docs/mobility-mobile.png) · [Complaint map](docs/complaints-desktop.png) · [Complaint popup on mobile](docs/complaints-mobile.png)
+
 [Mobile](docs/mobile.png) · [Real data panel](docs/sources.png) · [Resident profile](docs/resident.png)
 
 ## Real city data
@@ -151,3 +153,5 @@ npm run data:check
 Live verification on 2026-09-23: all five city endpoints responded; `gpt-6-luna` returned valid 30-cohort school and free-text park polls and tool-based advisor/autopilot plans. Secrets are excluded from source, artifacts and browser bundles.
 
 Cloudflare verification on 2026-09-23: public desktop/mobile pages loaded without JavaScript errors, OSM tiles rendered, all five city sources were available, Seifullin Threads search executed all six queries and returned zero indexed matches, Luna produced a resident poll and a validated one-change advisor plan. 29 unit tests, 20 browser cases, TypeScript and the Worker dry-run pass.
+
+Mobility/Jev verification on 2026-09-23: production ingestion executed 12 searches and classified four real news reports citing Threads; all four met a direction threshold, with one supported Bekturov Street pin. The other locations remained unconfirmed. Direct indexed Threads results were empty. The five isolated live Jev regression cases passed. Public desktop/mobile mobility showed 39.2 → 36.7 minutes average travel time and 57.9 → 70.9 km of modeled congestion for the example, demonstrating a tradeoff rather than guaranteed improvement.
