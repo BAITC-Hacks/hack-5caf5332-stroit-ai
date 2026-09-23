@@ -1,3 +1,8 @@
+import {
+  complaintRequest,
+  complaintSnapshot,
+  ingestComplaints,
+} from "../server/complaints";
 import { createLlm, PublicError, publicMessage } from "../server/llm";
 import { getCityData } from "../server/city-data";
 import { askWithEvidence } from "../server/ask";
@@ -94,11 +99,19 @@ export default {
             Math.floor(Date.now() / 3600000),
           ),
           threads: true,
+          jevConfigured: !!env.JEV_API_KEY,
         });
+      if (url.pathname === "/api/complaints" && request.method === "GET")
+        return json({ collection: await store.get(complaintSnapshot) });
       if (url.pathname === "/api/city" && request.method === "GET")
         return json(await getCityData(store));
       if (
-        !["/api/ask", "/api/akim", "/api/threads/ingest"].includes(url.pathname)
+        ![
+          "/api/ask",
+          "/api/akim",
+          "/api/threads/ingest",
+          "/api/complaints/ingest",
+        ].includes(url.pathname)
       )
         return json({ error: "Неизвестный API endpoint." }, 404);
       if (request.method !== "POST")
@@ -126,6 +139,23 @@ export default {
         request.signal,
         AbortSignal.timeout(180000),
       ]);
+      if (url.pathname === "/api/complaints/ingest") {
+        const parsed = complaintRequest.safeParse(body);
+        if (!parsed.success)
+          return json(
+            { error: "Некорректные ключевые слова или направление." },
+            400,
+          );
+        return json({
+          collection: await ingestComplaints(
+            llm,
+            env.JEV_API_KEY,
+            store,
+            parsed.data,
+            signal,
+          ),
+        });
+      }
       if (url.pathname === "/api/threads/ingest") {
         const parsed = threadsRequest.safeParse(body);
         if (!parsed.success)

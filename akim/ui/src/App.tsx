@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import MobilityPanel, { useMobility } from "./MobilityPanel";
+import ComplaintPanel from "./ComplaintPanel";
+import { mobilityState } from "./mobility";
+import type { ComplaintCollection, Complaint } from "./complaints";
+import type { Direction } from "./data";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
+  Route,
   Database,
   Pause,
   Play,
@@ -38,7 +44,8 @@ import ResidentCard from "./ResidentCard";
 import { useServices } from "./services";
 import { population, activityCounts, type Resident } from "./population";
 import { money, BUDGET_LIMIT } from "./money";
-type Panel = "plan" | "ask" | "akim" | "about" | "data" | null;
+type Panel =
+  "plan" | "ask" | "akim" | "about" | "data" | "mobility" | "complaints" | null;
 function loadPlan(): Choice[] {
   try {
     const raw: unknown = JSON.parse(
@@ -69,7 +76,7 @@ export default function App() {
   const stayInside =
     !!weather &&
     (weather.temperature < -10 || weather.wind > 40 || weather.code >= 51);
-  const counts = activityCounts(minutes, stayInside);
+
   const clock =
     `${Math.floor(minutes / 60) % 24}`.padStart(2, "0") +
     ":" +
@@ -92,6 +99,56 @@ export default function App() {
   const [poll, setPoll] = useState<Poll | null>(null);
   const [initialQuestion, setInitialQuestion] = useState("");
   const [toast, setToast] = useState("");
+  const [complaints, setComplaints] = useState<ComplaintCollection | null>(
+    null,
+  );
+  const [complaintFilter, setComplaintFilter] = useState<Direction | "">("");
+  const [complaintFocus, setComplaintFocus] = useState<Complaint | null>(null);
+  const [complaintVisible, setComplaintVisible] = useState(false);
+  const mappedComplaints = useMemo(
+    () =>
+      complaintVisible
+        ? (complaints?.posts ?? []).filter(
+            (p) =>
+              p.decision === "accepted" &&
+              (!complaintFilter || p.directions.includes(complaintFilter)),
+          )
+        : [],
+    [complaints, complaintVisible, complaintFilter],
+  );
+  const mobility = useMobility(plan, panel === "mobility");
+  const mobilityPhase =
+    panel === "mobility" && mobility.data
+      ? after
+        ? mobility.data.after
+        : mobility.data.before
+      : null;
+  const counts = mobilityPhase
+    ? population.reduce(
+        (acc, person) => {
+          const state = mobilityState(
+            person,
+            minutes,
+            mobilityPhase.trips[person.id],
+          );
+          if (state.moving) acc.moving++;
+          else if (state.activity === "дома") acc.home++;
+          else acc.busy++;
+          return acc;
+        },
+        { moving: 0, home: 0, busy: 0 },
+      )
+    : activityCounts(minutes, stayInside);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/complaints", { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (r?.collection) setComplaints(r.collection);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
   const { result } = simulate(plan);
   const currentDistrict = districts.find((d) => d.id === selected);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -153,6 +210,9 @@ export default function App() {
   return (
     <main className={`app ${panel ? "has-panel" : ""}`}>
       <CityMap
+        mobility={mobilityPhase}
+        complaints={mappedComplaints}
+        complaintFocus={complaintFocus}
         minutes={minutes}
         residentId={resident?.id ?? null}
         stayInside={stayInside}
@@ -247,6 +307,45 @@ export default function App() {
           {city?.air.data && <small>AQI {city.air.data.aqi}</small>}
         </button>
       </div>
+      <div className="map-tools glass" aria-label="Слои анализа">
+        <button
+          aria-pressed={panel === "mobility"}
+          onClick={() => {
+            if (panel === "mobility") close();
+            else {
+              open("mobility");
+              setMinutes(480);
+              setSpeed(6);
+            }
+          }}
+        >
+          <Route size={15} /> Мобильность
+        </button>
+        <button
+          aria-pressed={panel === "complaints"}
+          onClick={() => {
+            if (panel === "complaints") close();
+            else {
+              open("complaints");
+              setComplaintVisible(true);
+            }
+          }}
+        >
+          <MapPin size={15} /> Жалобы
+        </button>
+        {complaintVisible && (
+          <button
+            className="icon-button"
+            aria-label="Скрыть пины жалоб"
+            onClick={() => {
+              setComplaintVisible(false);
+              setComplaintFocus(null);
+            }}
+          >
+            <X size={13} />
+          </button>
+        )}
+      </div>
       {resident && !panel && (
         <ResidentCard
           resident={resident}
@@ -262,7 +361,7 @@ export default function App() {
           Весь город
         </button>
       )}
-      {!panel && !selected && !result && (
+      {!panel && !selected && !result && !complaintFocus && (
         <section className="welcome">
           <div className="eyebrow">
             <span className="tiny-line" />
@@ -347,58 +446,59 @@ export default function App() {
           </button>
         </section>
       )}
-      {panel !== "akim" && panel !== "ask" && (
-        <aside className={`score-card glass ${result ? "has-result" : ""}`}>
-          <div className="score-title">
-            <ChartNoAxesColumnIncreasing size={15} />
-            <span>КАЧЕСТВО ЖИЗНИ</span>
-            <button
-              className="icon-button"
-              onClick={() => open("about")}
-              aria-label="Как считается балл"
-            >
-              <HelpCircle size={14} />
-            </button>
-          </div>
-          <div className="score-value">
-            <strong>{fmt(result ? result.score : baseline.score)}</strong>
-            <span>
-              {result ? (
-                <b>+{fmt(result.score - baseline.score)}</b>
-              ) : (
-                <>
-                  из 100
-                  <br />
-                  на старте
-                </>
-              )}
-            </span>
-          </div>
-          <p>
-            {result
-              ? "Ваши пять решений меняют город"
-              : "У каждого решения есть последствия"}
-          </p>
-          {result && (
-            <div className="before-after">
+      {!complaintVisible &&
+        !["akim", "ask", "mobility", "complaints"].includes(panel ?? "") && (
+          <aside className={`score-card glass ${result ? "has-result" : ""}`}>
+            <div className="score-title">
+              <ChartNoAxesColumnIncreasing size={15} />
+              <span>КАЧЕСТВО ЖИЗНИ</span>
               <button
-                className={!after ? "active" : ""}
-                onClick={() => setAfter(false)}
-                aria-pressed={!after}
+                className="icon-button"
+                onClick={() => open("about")}
+                aria-label="Как считается балл"
               >
-                До
-              </button>
-              <button
-                className={after ? "active" : ""}
-                onClick={() => setAfter(true)}
-                aria-pressed={after}
-              >
-                После · 2 года
+                <HelpCircle size={14} />
               </button>
             </div>
-          )}
-        </aside>
-      )}
+            <div className="score-value">
+              <strong>{fmt(result ? result.score : baseline.score)}</strong>
+              <span>
+                {result ? (
+                  <b>+{fmt(result.score - baseline.score)}</b>
+                ) : (
+                  <>
+                    из 100
+                    <br />
+                    на старте
+                  </>
+                )}
+              </span>
+            </div>
+            <p>
+              {result
+                ? "Ваши пять решений меняют город"
+                : "У каждого решения есть последствия"}
+            </p>
+            {result && (
+              <div className="before-after">
+                <button
+                  className={!after ? "active" : ""}
+                  onClick={() => setAfter(false)}
+                  aria-pressed={!after}
+                >
+                  До
+                </button>
+                <button
+                  className={after ? "active" : ""}
+                  onClick={() => setAfter(true)}
+                  aria-pressed={after}
+                >
+                  После · 2 года
+                </button>
+              </div>
+            )}
+          </aside>
+        )}
       {result && !panel && !selected && (
         <div className="result-nudge glass">
           <span className="success-icon">
@@ -450,6 +550,40 @@ export default function App() {
           initialQuestion={initialQuestion}
         />
       )}
+      {panel === "mobility" && (
+        <MobilityPanel
+          plan={plan}
+          data={mobility.data}
+          error={mobility.error}
+          after={after}
+          onAfter={setAfter}
+          onClose={close}
+          onExample={changePlan}
+          onReplay={() => {
+            setMinutes(455);
+            setPlaying(true);
+            setSpeed(6);
+          }}
+        />
+      )}
+      {panel === "complaints" && (
+        <ComplaintPanel
+          collection={complaints}
+          onCollection={(c) => {
+            setComplaints(c);
+            setComplaintVisible(true);
+            setComplaintFocus(null);
+          }}
+          filter={complaintFilter}
+          onFilter={setComplaintFilter}
+          onFocus={(p) => {
+            setComplaintFocus({ ...p });
+            setComplaintVisible(true);
+            if (window.innerWidth <= 700) setPanel(null);
+          }}
+          onClose={close}
+        />
+      )}
       {panel === "data" && <CityDataPanel onClose={close} />}
       {panel === "about" && (
         <section
@@ -494,9 +628,11 @@ export default function App() {
             <b>Честная демосимуляция</b>
             <p>
               2 000 жителей имеют синтетические профили, дом, занятия и
-              маршруты. Карта OpenStreetMap и геопортал показывают шесть реальных районов. Сценарные показатели рассчитаны для пяти. Погода, воздух, население и ДТП загружаются из
-              открытых источников. Ответы GPT-6 Luna — прогнозы модели, а не
-              реальный опрос. Можно явно переключиться на локальную демомодель.
+              маршруты. Карта OpenStreetMap и геопортал показывают шесть
+              реальных районов. Сценарные показатели рассчитаны для пяти.
+              Погода, воздух, население и ДТП загружаются из открытых
+              источников. Ответы GPT-6 Luna — прогнозы модели, а не реальный
+              опрос. Можно явно переключиться на локальную демомодель.
             </p>
           </div>
           <p className="attribution">

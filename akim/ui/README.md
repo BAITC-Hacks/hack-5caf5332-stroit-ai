@@ -11,7 +11,7 @@ Node.js 22+; run from `akim/ui`:
 ```sh
 npm ci
 cp .env.example .env
-# Set OPENAI_API_KEY in .env. Never put it in VITE_* variables.
+# Set OPENAI_API_KEY and JEV_API_KEY in .env. Never put it in VITE_* variables.
 npm run dev
 ```
 
@@ -49,6 +49,22 @@ Search uses OpenAI Responses `web_search`, restricted to public `threads.com` / 
 
 This searches **web-indexed public posts**, not the complete Threads feed or a representative public survey. No matches means insufficient indexed evidence, not no complaints. Search results are reused within a 30-minute cache window. No Meta account/token is needed; no private posts or personal profiles are collected.
 
+## Complaint map with Jev
+
+Open **Жалобы**, optionally enter a street/problem or choose one of the five directions, then press **Ingest Threads → карта**. Luna searches and paraphrases public sources; **Jev `jev-1.13.0`** independently judges Astana relevance, whether a complaint exists, all five municipal directions, and a supported location. The latest completed collection is shared in Cloudflare KV for 24 hours and loads on reopening the app. Search results cache for 30 minutes.
+
+Public Threads indexing is sparse. The enabled **СМИ с цитатами из Threads** option supplements fewer than three direct results with actual search sources from five named news domains. These cards and popups explicitly say **СМИ → Threads**, link to the article and retain official replies when present. Turn the option off for direct Threads posts only. Jev classifies AI paraphrases; neither full original posts, publication dates nor current unresolved status are verified. A historical complaint can already be resolved. Results are not a representative survey or a measure of complaint prevalence.
+
+The classifier follows [Jev 1.13 guidance](https://docs.typesafe.ai/model-jaggedness/jev-1.13): one post per request, literal independent questions, untrusted evidence instructions, no model arithmetic, and a bounded choice of locally matched street/district names. At most four Jev requests run concurrently. Acceptance requires Astana probability ≥0.80, complaint probability ≥0.75 and at least one direction ≥0.75. Mapping additionally requires Choice confidence ≥0.65 and selected-location probability ≥0.75. These are application thresholds, not empirically validated accuracy guarantees. Uncertain items appear under review; unsupported or ambiguous locations stay off the map. Pins are approximate street/district points, not home addresses. Selecting a card focuses its pin; mobile closes the panel to reveal it.
+
+The key is stored only in server environment variables / Worker secrets. No Jev output can supply arbitrary coordinates, source URLs or execute instructions. `npx tsx server/check-jev.ts` runs five explicitly synthetic, paid integration checks (Astana traffic, another city, an ad, praise/negation and an injected instruction). These fixtures never enter the complaint store and are a small regression sample, not a robustness benchmark.
+
+## Before/after mobility
+
+Open **Мобильность**, apply a plan or the bus-lanes/traffic-lights example, then switch **До / После** and replay the morning commute. The comparison keeps the same **2,000 synthetic home/work pairs** and departure times. It shows average and p90 trip duration, car share, congested street length, district differences and rerouted trips, with road loads drawn on the real OSM street graph. Computation runs in a Web Worker.
+
+M1 changes bus speed/waiting, shifts a fixed share of travelers to buses and reduces car capacity in the chosen district. M2 reduces junction delay. M3 models idealized transit improvements along the existing street graph, **not the actual LRT alignment**. Other measures have no invented mobility effect. Speeds, demand, capacities, mode shifts and congestion costs are stated assumptions. Two deterministic assignment passes allow rerouting; they do not solve traffic equilibrium. Trips remain within the five modeled district components; one-way/access rules and inter-district commuting are omitted. This is a scenario comparison, **not a calibrated traffic forecast**. The example can improve average travel time while increasing some congestion, so the UI reports both.
+
 ## Cloudflare deployment
 
 The frontend and `/api/*` share one Worker origin; static assets are served by Cloudflare. `wrangler.jsonc` defines the deployment and KV/rate-limit bindings. OpenAI credentials are Worker secrets and never enter the browser bundle.
@@ -56,13 +72,14 @@ The frontend and `/api/*` share one Worker origin; static assets are served by C
 ```sh
 # Authenticate Wrangler to the Cloudflare account first.
 npx wrangler secret put OPENAI_API_KEY
+npx wrangler secret put JEV_API_KEY
 npx wrangler secret put SESSION_SECRET # random, high-entropy value
 npm run deploy
 ```
 
 For another account, create a KV namespace with `npx wrangler kv namespace create CACHE` and replace the ID in `wrangler.jsonc`. The current deployment was uploaded through the authenticated Cloudflare API. `OPENAI_MODEL` remains `gpt-6-luna`.
 
-Local Worker preview: copy the API key and a random `SESSION_SECRET` into ignored `.dev.vars`, run `npm run build`, then `npm run dev:cloud` at **http://127.0.0.1:8792**. Run `npm run types:cloud` after binding changes and `npm run check:cloud` before publishing. The separate Express/Vite workflow above remains available.
+Local Worker preview: copy both API keys and a random `SESSION_SECRET` into ignored `.dev.vars`, run `npm run build`, then `npm run dev:cloud` at **http://127.0.0.1:8792**. Run `npm run types:cloud` after binding changes and `npm run check:cloud` before publishing. The separate Express/Vite workflow above remains available.
 
 ## Million tenge, with price provenance
 
@@ -109,9 +126,11 @@ In live mode, Luna chooses through a bounded loop of at most eight tool requests
 
 API routes:
 
-- `GET /api/health`: model, configured flag, local session token; never the API key.
+- `GET /api/health`: model, configured and jevConfigured flags, session token; never the API key.
 - `GET /api/city`: dated source records.
 - `POST /api/ask`: `{ question, plan, useThreads? }` → `{ poll, evidence?, notice? }`.
+- `GET /api/complaints`: latest completed shared collection or null.
+- `POST /api/complaints/ingest`: `{ keywords?, direction?, includePress? }` → `{ collection }`.
 - `POST /api/threads/ingest`: `{ question, plan }` → `{ evidence }`.
 - `POST /api/akim`: `{ mode: "advisor" | "autopilot", plan }` → NDJSON activity/result/error events.
 
@@ -127,8 +146,8 @@ npm run build
 npm run data:check
 ```
 
-23 unit tests cover calculations, prices, validity, resident paths/schedules, population parsing, district deduplication, malformed cohort rejection and safe errors. 16 browser cases cover desktop/mobile plan flows, clock and profiles, source display, real-mode API contracts, streaming proposals, explicit application, failure handling, persistence and keyboard access. Browser API fixtures make tests deterministic and avoid paid calls. Screenshots/traces go to ignored `test-results/`.
+29 unit tests cover calculations, prices, validity, resident paths/schedules, population parsing, district deduplication, malformed cohort rejection, weighted routing, fixed mobility demand, Jev gates, geolocation, source verification and safe errors. 20 browser cases cover desktop/mobile plan flows, clock and profiles, source display, real-mode API contracts, streaming proposals, explicit application, failure handling, persistence, keyboard access, mobility comparison and complaint filtering/failure preservation. Browser API fixtures make tests deterministic and avoid paid calls. Screenshots/traces go to ignored `test-results/`.
 
 Live verification on 2026-09-23: all five city endpoints responded; `gpt-6-luna` returned valid 30-cohort school and free-text park polls and tool-based advisor/autopilot plans. Secrets are excluded from source, artifacts and browser bundles.
 
-Cloudflare verification on 2026-09-23: public desktop/mobile pages loaded without JavaScript errors, OSM tiles rendered, all five city sources were available, Seifullin Threads search executed all six queries and returned zero indexed matches, Luna produced a resident poll and a validated one-change advisor plan. 23 unit tests, 16 browser cases, TypeScript and the Worker dry-run pass.
+Cloudflare verification on 2026-09-23: public desktop/mobile pages loaded without JavaScript errors, OSM tiles rendered, all five city sources were available, Seifullin Threads search executed all six queries and returned zero indexed matches, Luna produced a resident poll and a validated one-change advisor plan. 29 unit tests, 20 browser cases, TypeScript and the Worker dry-run pass.
