@@ -68,6 +68,8 @@ class Agent:
     def __init__(self, verbose=True):
         self.verbose = verbose
         self.records = []   # our own pilot log incl. filters (env.pilot_history lacks them)
+        self.calibration = None
+        self.plan_detail = []
 
     def log(self, *a):
         if self.verbose:
@@ -197,7 +199,8 @@ class Agent:
             self.records.append(dict(tariff=row["tariff"], seg=row["seg"], target=row["target"],
                                      channel=PILOT_CHANNEL, n=n_act, cost=res["cost"],
                                      observed=res["observed_lift_ratio"], prior_mu=row["mu0"],
-                                     post_mu=h.loc[i, "mu"], post_sd=h.loc[i, "sd"]))
+                                     post_mu=h.loc[i, "mu"], post_sd=h.loc[i, "sd"],
+                                     budget_after=res["remaining_budget"], contacts_after=res["remaining_contacts"]))
             self.log(f"pilot {len(self.records):2d} {row['tariff']:>9}/{row['seg']:<4} -> {row['target']:<9} "
                      f"n={n_act:3d} obs={res['observed_lift_ratio']:+.3f} prior={row['mu0']:+.3f} "
                      f"post={h.loc[i, 'mu']:+.3f}±{h.loc[i, 'sd']:.3f}")
@@ -213,6 +216,7 @@ class Agent:
         sd = max(PRIOR_SD, float(resid.std()))
         h.loc[~tested, "mu"] = h.loc[~tested, "mu0"] + bias
         h.loc[~tested, "sd"] = np.maximum(h.loc[~tested, "sd0"], sd)
+        self.calibration = dict(bias=bias, sd=sd, n_tested=int(tested.sum()))
         self.log(f"calibration: prior bias {bias:+.3f}, residual sd {sd:.3f} applied to untested hypotheses")
 
     # ----------------------------------------------------------------- plan
@@ -345,4 +349,7 @@ class Agent:
             self.log(f"campaign {c['campaign_name']:<52} n={s:5d} value~{c['_value']:>12,.0f}")
         self.log(f"plan: {len(campaigns)} campaigns, {sum(sizes)} contacts, {sum(costs):,.0f} money "
                  f"(limits {R} / {B:,.0f})")
-        return [{k: v for k, v in c.items() if not k.startswith("_")} for c in campaigns]
+        plan = [{k: v for k, v in c.items() if not k.startswith("_")} for c in campaigns]
+        self.plan_detail = [dict(c, n=s, cost=k, value=raw["_value"])
+                            for c, raw, s, k in zip(plan, campaigns, sizes, costs)]
+        return plan

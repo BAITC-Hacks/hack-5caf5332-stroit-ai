@@ -27,6 +27,20 @@ python make_submission.py         # regenerates submission.csv
 Runtime is about one second per run. The agent prints a `[agent] ...` trace of every
 pilot, the calibration step and the final plan.
 
+### Visual flow
+
+```bash
+python export_trace.py            # runs the agent (seed 42) and writes flow_trace.js
+open flow.html                    # or double-click it — no server needed
+```
+
+`flow.html` is a single static page (vanilla JS, inline SVG, no build step) that shows
+the run stage by stage: the pipeline strip with key numbers, every pilot in purchase
+order with prior / observed / posterior and ±1 sd, pilot spend against the agent's own
+caps, the belief table after calibration with the deployment decision per hypothesis,
+the plan as contact bars per campaign with money and reach usage, and the mock scorer's
+verdict per campaign.
+
 ## Method
 
 Effects in the scorer are keyed by `(current_tariff, arpu_segment, target_tariff)` and
