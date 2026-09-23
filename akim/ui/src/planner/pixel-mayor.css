@@ -1,0 +1,80 @@
+.pixel-mayor {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 12px 0;
+}
+.pixel-mayor-sprite {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  image-rendering: pixelated;
+}
+.pixel-mayor .mouth-open,
+.pixel-mayor .eyes-shut {
+  opacity: 0;
+}
+.pixel-mayor.talking .mouth-open {
+  animation: pixel-mayor-flap 0.24s steps(1) infinite;
+}
+.pixel-mayor.talking .bob {
+  animation: pixel-mayor-bob 0.48s steps(1) infinite;
+}
+.pixel-mayor .eyes-shut {
+  animation: pixel-mayor-blink 3.6s steps(1) infinite;
+}
+@keyframes pixel-mayor-flap {
+  50% { opacity: 1; }
+}
+@keyframes pixel-mayor-fade {
+  50% { opacity: 0; }
+}
+@keyframes pixel-mayor-bob {
+  50% { transform: translateY(-0.5px); }
+}
+@keyframes pixel-mayor-blink {
+  0%, 94% { opacity: 0; }
+  95%, 100% { opacity: 1; }
+}
+
+.pixel-mayor-box {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 16px 14px 12px;
+  background: #1f2433;
+  color: #f4f1e6;
+  border: 3px solid #f4f1e6;
+  box-shadow: 0 0 0 3px #1f2433, 4px 4px 0 3px #0003;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.pixel-mayor-box p {
+  margin: 0;
+  min-height: 3em;
+}
+.pixel-mayor-name {
+  position: absolute;
+  top: -12px;
+  left: 10px;
+  padding: 1px 8px;
+  background: #e8b923;
+  color: #1f2433;
+  border: 2px solid #1f2433;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.pixel-mayor-next {
+  margin-left: 6px;
+  font-size: 10px;
+  animation: pixel-mayor-fade 0.8s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-mayor *,
+  .pixel-mayor.talking * {
+    animation: none !important;
+  }
+}
