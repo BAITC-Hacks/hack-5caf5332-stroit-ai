@@ -15,7 +15,8 @@ export function compactContext(data: CityData) {
         data: s.data,
         observedAt: s.observedAt,
         fetchedAt: s.fetchedAt,
-        status: s.status,
+        // live vs cached is the same data; exposing it would bust result and prompt caches.
+        status: s.status === "unavailable" ? "unavailable" : "available",
         note: s.note,
         url: s.url,
       },

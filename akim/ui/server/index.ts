@@ -192,6 +192,7 @@ app.post("/api/explain", async (req, res) => {
   try {
     const brief = await explainPlan(
       llm,
+      store,
       parsed.data.plan,
       parsed.data.priorities,
       signal,

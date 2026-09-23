@@ -128,4 +128,5 @@ export const planBriefSchema = z.object({
   summary: z.string(),
   tradeoff: z.string(),
   nextStep: z.string(),
+  evidence: z.string(),
 });

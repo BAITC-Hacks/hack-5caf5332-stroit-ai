@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { choiceLabel, districts, type Choice, type Direction } from "../data";
 import { advise, autopilot, budget, simulate } from "../engine";
 import { pollProposal } from "../residents";
-import { useServices } from "../services";
+import { akimApi, useServices } from "../services";
+import type { AkimResult } from "../../server/akim";
+import type { ActivityEvent } from "../city-data";
 import Matrix from "./Matrix";
 import StressTest from "./StressTest";
 import ScoreGauge from "./ScoreGauge";
@@ -14,6 +16,9 @@ interface AiBrief {
   summary: string;
   tradeoff: string;
   nextStep: string;
+  evidence: string;
+  sources: { name: string; status: "live" | "cached" | "unavailable"; observedAt: string | null }[];
+  complaintsUsed: number;
   model: string;
   cached: boolean;
 }
@@ -76,6 +81,7 @@ export default function Report({
       <section className="report-next advice" aria-labelledby="advice-title">
         <h2 id="advice-title">Что улучшить</h2>
         <p className="next-priority">{checklist.find(g => !g.met)?.detail ?? brief.risks[0] ?? "Все цели выполнены. Сравните план с альтернативой и проверьте его при ЧП."}</p>
+        <AkimAdvice plan={plan} score={result.score} onApply={onApply}>
         {alternative && alternative.improvement > 0.005 ? (
           <div className="swap">
             <p>
@@ -94,6 +100,7 @@ export default function Report({
         ) : (
           <p>Ни одна замена одного решения не повышает балл. План устойчив.</p>
         )}
+        </AkimAdvice>
         <p className="section-note">
           Для сравнения: лучший план, найденный последовательными заменами,
           даёт {fmt(benchmark.score)}. Это ориентир, а не доказанный максимум.
@@ -206,42 +213,45 @@ function BriefList({ title, items, empty }: { title: string; items: string[]; em
 }
 
 function AiExplain({ plan, priorities }: { plan: Choice[]; priorities: Direction[] }) {
-  const { health } = useServices();
-  const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const { health, mode } = useServices();
+  const [state, setState] = useState<"loading" | "done" | "error">("loading");
   const [answer, setAnswer] = useState<AiBrief | null>(null);
   const [error, setError] = useState("");
-  const abort = useRef<AbortController | null>(null);
-  useEffect(() => () => abort.current?.abort(), []);
-  useEffect(() => {
-    setState("idle");
-    setAnswer(null);
-  }, [plan]);
+  const [attempt, setAttempt] = useState(0);
+  const token = mode === "live" && health?.configured ? health.token : null;
 
-  const run = async () => {
-    if (!health) return;
-    abort.current?.abort();
-    abort.current = new AbortController();
+  // Every plan change on the report fetches a fresh server analysis; the
+  // debounce keeps rapid swaps under the 5/min AI rate limit.
+  useEffect(() => {
+    if (!token) return;
+    const controller = new AbortController();
     setState("loading");
     setError("");
-    try {
-      const response = await fetch("/api/explain", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Sim-Token": health.token },
-        body: JSON.stringify({ plan, priorities }),
-        signal: abort.current.signal,
-      });
-      const body = await response.json();
-      if (!response.ok) throw Error(body.error || "Сервер не ответил.");
-      setAnswer(body.brief);
-      setState("done");
-    } catch (e) {
-      if ((e as Error).name === "AbortError") return;
-      setError((e as Error).message);
-      setState("error");
-    }
-  };
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch("/api/explain", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Sim-Token": token },
+          body: JSON.stringify({ plan, priorities }),
+          signal: controller.signal,
+        });
+        const body = await response.json();
+        if (!response.ok) throw Error(body.error || "Сервер не ответил.");
+        setAnswer(body.brief);
+        setState("done");
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return;
+        setError((e as Error).message);
+        setState("error");
+      }
+    }, 700);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [plan, priorities, token, attempt]);
 
-  if (!health?.configured)
+  if (!token)
     return (
       <p className="ai-note">
         Разбор выше посчитан моделью по правилам задания. AI-аким добавит к нему
@@ -250,33 +260,159 @@ function AiExplain({ plan, priorities }: { plan: Choice[]; priorities: Direction
     );
 
   return (
-    <div className="ai-brief" aria-live="polite">
-      {state === "done" && answer ? (
+    <div className="ai-brief" aria-live="polite" aria-busy={state === "loading"}>
+      <h3>Вывод AI-акима</h3>
+      {state === "loading" && (
+        <p className="ai-note">
+          <LoaderCircle size={15} className="spin" aria-hidden="true" /> AI-аким
+          сверяет план с данными города и жалобами жителей…
+        </p>
+      )}
+      {state === "done" && answer && (
         <>
-          <h3>Вывод AI-акима</h3>
           <p>{answer.summary}</p>
           <p>
             <b>Главный компромисс.</b> {answer.tradeoff}
           </p>
           <p>
+            <b>Что говорят данные города.</b> {answer.evidence}
+          </p>
+          <p>
             <b>Что сделать дальше.</b> {answer.nextStep}
           </p>
           <small>
-            Текст {answer.model}{answer.cached ? ", сохранённый ответ" : ""}. Все
-            числа посчитаны моделью выше, AI их только пересказывает.
+            Источники:{" "}
+            {answer.sources
+              .map((s) => `${s.name} (${s.status === "live" ? "сейчас" : s.status === "cached" ? "снимок" : "недоступен"})`)
+              .join(", ")}
+            ; жалоб по направлениям плана: {answer.complaintsUsed}. Текст {answer.model}
+            {answer.cached ? ", сохранённый ответ" : ""}. Балл посчитан по правилам
+            задания, AI его не меняет.
           </small>
         </>
-      ) : (
-        <button type="button" className="secondary" onClick={run} disabled={state === "loading"}>
-          {state === "loading" && <LoaderCircle size={15} className="spin" aria-hidden="true" />}
-          {state === "loading" ? "AI-аким читает разбор…" : "Получить вывод AI-акима"}
-        </button>
       )}
       {state === "error" && (
-        <p className="inline-error" role="alert">
-          {error}
-        </p>
+        <>
+          <p className="inline-error" role="alert">
+            {error}
+          </p>
+          <button type="button" className="secondary" onClick={() => setAttempt((n) => n + 1)}>
+            Повторить
+          </button>
+        </>
       )}
+    </div>
+  );
+}
+
+// Runs the server AI akim (advisor mode: simulate, ask residents, submit one
+// swap) for the plan; the local exhaustive swap search is the fallback.
+function AkimAdvice({
+  plan,
+  score,
+  onApply,
+  children,
+}: {
+  plan: Choice[];
+  score: number;
+  onApply: (plan: Choice[]) => void;
+  children: ReactNode;
+}) {
+  const { health, mode } = useServices();
+  const token = mode === "live" && health?.configured ? health.token : null;
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
+  const [answer, setAnswer] = useState<AkimResult | null>(null);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    const controller = new AbortController();
+    setEvents([]);
+    setAnswer(null);
+    setError("");
+    akimApi("advisor", plan, token, (e) => setEvents((old) => [...old, e]), controller.signal)
+      .then((result) => !controller.signal.aborted && setAnswer(result))
+      .catch((e: Error) => {
+        if (e.name !== "AbortError" && !controller.signal.aborted) setError(e.message);
+      });
+    return () => controller.abort();
+  }, [plan, token, attempt]);
+
+  if (!token) return <>{children}</>;
+
+  if (error)
+    return (
+      <>
+        <p className="inline-error" role="alert">
+          AI-аким не ответил: {error}{" "}
+          <button type="button" className="secondary" onClick={() => setAttempt((n) => n + 1)}>
+            Повторить
+          </button>
+        </p>
+        <p className="section-note">Пока показан локальный расчёт замены.</p>
+        {children}
+      </>
+    );
+
+  if (!answer)
+    return (
+      <div className="activity" aria-live="polite" aria-busy="true">
+        {events.map((event, i) => (
+          <div className="done" key={i}>
+            <Check size={14} aria-hidden="true" />
+            <span>
+              {event.label}
+              <small className="event-detail">{event.detail}</small>
+            </span>
+          </div>
+        ))}
+        <div className="running">
+          <LoaderCircle size={14} className="spin" aria-hidden="true" />
+          <span>AI-аким проверяет план на данных города…</span>
+        </div>
+      </div>
+    );
+
+  const same = (a: Choice, b: Choice) =>
+    a.measureId === b.measureId && a.districtId === b.districtId;
+  const removed = plan.find((a) => !answer.plan.some((b) => same(a, b)));
+  const added = answer.plan.find((a) => !plan.some((b) => same(a, b)));
+  const improvement = answer.result.score - score;
+  return (
+    <div className="swap" aria-live="polite">
+      <p>
+        <b>{answer.title}</b>
+      </p>
+      <p>{answer.why}</p>
+      {removed && added && (
+        <>
+          <p>
+            Замена от AI-акима даёт <b>{signed(improvement)}</b> к общему баллу.
+          </p>
+          <div className="swap-row">
+            <span className="swap-out">{choiceLabel(removed)}</span>
+            <span aria-hidden="true">заменить на</span>
+            <span className="swap-in">{choiceLabel(added)}</span>
+          </div>
+        </>
+      )}
+      <p>
+        <b>Сильные стороны.</b> {answer.strengths}
+      </p>
+      <p>
+        <b>Риски.</b> {answer.risks}
+      </p>
+      {removed && added && (
+        <button type="button" className="primary" onClick={() => onApply(answer.plan)}>
+          Применить замену
+        </button>
+      )}
+      <small>
+        {answer.model}
+        {answer.cached ? ", сохранённый ответ" : ""} · {answer.events.length} шагов
+        проверки. Балл пересчитан по правилам задания.
+      </small>
     </div>
   );
 }

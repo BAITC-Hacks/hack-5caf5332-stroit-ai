@@ -1,12 +1,12 @@
 export const RESIDENT_DETAIL_ZOOM = 12.5;
 export const RESIDENT_FULL_ZOOM = 14;
 export const RESIDENT_CLUSTER_CELL = 12;
-export const RESIDENT_SPRITE_CELL = 8;
+export const RESIDENT_SPRITE_CELL = 10;
 export const RESIDENT_CLUSTER_MAX_RADIUS = 3.5;
-export const RESIDENT_SMALL_SPRITE = 8;
-export const RESIDENT_FULL_SPRITE = 12;
-export const RESIDENT_SMALL_HALO = 2;
-export const RESIDENT_FULL_HALO = 6;
+export const RESIDENT_SMALL_SPRITE = 11;
+export const RESIDENT_FULL_SPRITE = 16;
+export const RESIDENT_SMALL_HALO = 3;
+export const RESIDENT_FULL_HALO = 8;
 
 export interface ResidentScreenPoint {
   id: number;
