@@ -1,7 +1,6 @@
 // Budget and costs follow akim/file.md: 100 conventional units (у.е.), the same for every team.
 // Million-KZT figures are reference estimates only; they never drive validation or scoring.
 export const BUDGET_LIMIT = 100;
-export const UNIT = "у.е.";
 export const money = (amount: number) =>
   amount.toLocaleString("ru-RU", { maximumFractionDigits: 1 });
 export const budgetSource = {
@@ -15,7 +14,7 @@ const schoolSource =
   "https://primeminister.kz/ru/news/asset_recovery/novaya-shkola-na-1200-uchenicheskih-mest-budet-postroena-v-astane-na-sredstva-iz-vozvrashchennyh-aktivov-31773";
 const clinicSource =
   "https://www.gov.kz/memleket/entities/astana/documents/details/533548?lang=ru";
-export interface CostEstimate {
+interface CostEstimate {
   units: number;
   referenceMln: number;
   basis: string;
