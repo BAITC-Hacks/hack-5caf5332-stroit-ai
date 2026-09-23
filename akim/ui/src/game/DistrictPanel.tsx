@@ -13,6 +13,9 @@ import { baseline, type Projection } from "../engine";
 import { blockReason, fmt, previewGain, signed } from "../planner/analysis";
 import { shortNames } from "./labels";
 
+const lowerFirst = (text: string) =>
+  /^M\d/.test(text) ? text : text.charAt(0).toLocaleLowerCase("ru") + text.slice(1);
+
 interface Props {
   districtId: DistrictId;
   plan: Choice[];
@@ -20,10 +23,11 @@ interface Props {
   onAdd: (choice: Choice) => void;
   onClose: () => void;
   onAsk: () => void;
+  onJump: (id: DistrictId) => void;
 }
 
 /** The turn panel: what hurts in this district and which decisions help it most. */
-export default function DistrictPanel({ districtId, plan, projection, onAdd, onClose, onAsk }: Props) {
+export default function DistrictPanel({ districtId, plan, projection, onAdd, onClose, onAsk, onJump }: Props) {
   const index = districts.findIndex((d) => d.id === districtId);
   const district = districts[index];
   const row = projection.districts[index];
@@ -94,7 +98,7 @@ export default function DistrictPanel({ districtId, plan, projection, onAdd, onC
                 <b>{shortNames[measure.id]}</b>
                 <small>
                   {measure.type === "city" ? "весь город" : "этот район"}, {measure.cost} у.е.
-                  {blocked ? ` — ${chosen ? "уже в плане" : blocked.toLocaleLowerCase("ru")}` : ""}
+                  {blocked ? ` — ${chosen ? "уже в плане" : lowerFirst(blocked)}` : ""}
                 </small>
               </div>
               <button type="button" className="build" disabled={!!blocked} onClick={() => onAdd(choice)}>
@@ -112,6 +116,16 @@ export default function DistrictPanel({ districtId, plan, projection, onAdd, onC
       <button type="button" className="text-button" onClick={onAsk}>
         <MessageCircle size={14} /> Что скажут жители?
       </button>
+      <nav className="jump" aria-label="Другие районы">
+        <span>Другие районы</span>
+        {districts
+          .filter((d) => d.id !== districtId)
+          .map((d) => (
+            <button key={d.id} type="button" onClick={() => onJump(d.id)}>
+              {d.name}
+            </button>
+          ))}
+      </nav>
     </section>
   );
 }

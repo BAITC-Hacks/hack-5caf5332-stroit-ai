@@ -277,12 +277,17 @@ export default function Game() {
 
       {stage === "turn" && selected && !resident && (
         <DistrictPanel
+          key={selected}
           districtId={selected}
           plan={plan}
           projection={projection}
           onAdd={add}
           onClose={() => setSelected(null)}
           onAsk={() => openAsk(plan.length ? examples[2] : examples[0])}
+          onJump={(id) => {
+            setResident(null);
+            setSelected(id);
+          }}
         />
       )}
 
