@@ -241,9 +241,9 @@ export default function Game() {
       )}
 
       {stage === "brief" && (
-        <section className="brief glass" aria-labelledby="brief-title">
+        <section className="briefing glass" aria-labelledby="brief-title">
           <h1 id="brief-title">Город сейчас: {fmt(baseline.score)} из 100</h1>
-          <ul className="brief-facts">
+          <ul className="briefing-facts">
             <li>
               <b>70%</b> балла даёт средний район, <b>30%</b> — самый слабый. Сейчас это{" "}
               {districtName(weakest.id)}, {fmt(weakest.score, 1)}.
@@ -256,15 +256,15 @@ export default function Game() {
               <b>5</b> решений, не больше двух на направление, <b>100 у.е.</b> на всё.
             </li>
           </ul>
-          <p className="brief-focus">Что для вас главное? Необязательно, до двух направлений.</p>
-          <div className="brief-options">
+          <p className="briefing-focus">Что для вас главное? Необязательно, до двух направлений.</p>
+          <div className="briefing-options">
             {directions.map((d) => (
               <button key={d} type="button" aria-pressed={priorities.includes(d)} onClick={() => togglePriority(d)}>
                 {d}
               </button>
             ))}
           </div>
-          <div className="brief-actions">
+          <div className="briefing-actions">
             <button type="button" className="cta" onClick={start}>
               Начать: район {districtName(weakest.id)} <ArrowRight size={17} />
             </button>

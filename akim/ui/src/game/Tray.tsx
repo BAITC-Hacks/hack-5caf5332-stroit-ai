@@ -3,7 +3,8 @@ import { measureById, type Choice } from "../data";
 import { baseline, budget } from "../engine";
 import { BUDGET_LIMIT } from "../money";
 import { fmt, signed } from "../planner/analysis";
-import { shortLabel } from "./labels";
+import { shortLabel, shortNames } from "./labels";
+import { districtName } from "../planner/analysis";
 
 interface Props {
   plan: Choice[];
@@ -26,7 +27,7 @@ export default function Tray({ plan, score, errors, onRemove, onReport }: Props)
     <div className="tray glass" role="region" aria-label="Ваши решения">
       <div className="tray-score">
         <small>Качество жизни</small>
-        <strong>{fmt(score)}</strong>
+        <strong key={plan.length}>{fmt(score)}</strong>
         <span className={gain > 0.005 ? "up" : gain < -0.005 ? "down" : ""}>
           {Math.abs(gain) > 0.005 ? signed(gain) : `старт ${fmt(baseline.score)}`}
         </span>
@@ -39,7 +40,10 @@ export default function Tray({ plan, score, errors, onRemove, onReport }: Props)
               <li key={i} className={c ? "filled" : ""}>
                 {c ? (
                   <>
-                    <span>{shortLabel(c)}</span>
+                    <span>
+                      {shortNames[c.measureId]}
+                      <small>{c.districtId ? districtName(c.districtId) : "весь город"}</small>
+                    </span>
                     <button type="button" onClick={() => onRemove(c.measureId)} aria-label={`Убрать: ${shortLabel(c)}`}>
                       <X size={13} />
                     </button>
