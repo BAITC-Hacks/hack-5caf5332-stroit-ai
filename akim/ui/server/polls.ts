@@ -2,7 +2,7 @@ import type { ThreadsEvidence } from "../src/threads";
 import { districts, measures, type Choice } from "../src/data";
 import { projectEffects, validate, budget } from "../src/engine";
 import { BUDGET_LIMIT } from "../src/money";
-import { cohortSize, profiles } from "../src/profiles";
+import { AGENTS, cohortSize, profiles } from "../src/profiles";
 import { examples, type Poll } from "../src/residents";
 import type { CityData } from "../src/city-data";
 import { opinionsSchema, parsedQuestion } from "./schemas";
@@ -75,7 +75,7 @@ export function aggregateOpinions(
   });
   return {
     title,
-    approval: rows.reduce((n, r) => n + r.yes, 0) / 20,
+    approval: rows.reduce((n, r) => n + r.yes, 0) * 100 / AGENTS,
     districts: rows,
     cost: budget(plan),
     mode: "live",

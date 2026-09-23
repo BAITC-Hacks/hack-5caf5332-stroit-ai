@@ -20,7 +20,8 @@ export function inside(x: number, y: number, points: Point[]) {
   }
   return yes;
 }
-export { profiles, cohortSize } from "./profiles";
+export { profiles, cohortSize, AGENTS } from "./profiles";
+import { AGENTS } from "./profiles";
 export interface Resident {
   id: number;
   districtId: DistrictId;
@@ -89,7 +90,7 @@ export function generatePopulation(seed = 711): Resident[] {
     const graph = streetGraphs[d.id];
     const pick = () => Math.floor(rng() * graph.points.length);
     return Array.from(
-      { length: Math.round(d.population * 2000) },
+      { length: Math.round(d.population * AGENTS) },
       (_, index) => {
         const home = pick(),
           work = pick(),

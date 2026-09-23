@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, LoaderCircle, MessageCircle, Send, X } from "lucide-react";
 import { districts, type Choice } from "./data";
 import { askCity, examples, type Poll } from "./residents";
+import { AGENTS } from "./profiles";
 import { fmt } from "./PlanBuilder";
 interface Props {
   plan: Choice[];
@@ -21,7 +22,8 @@ export default function AskPanel({
   onClose,
   initialQuestion = "",
 }: Props) {
-  const { mode, health } = useServices();
+  const { mode, health, city } = useServices();
+  const people = city?.population.data?.total;
   const [evidence, setEvidence] = useState<ThreadsEvidence | null>(null);
   const [useThreads, setUseThreads] = useState(false);
   const [ingesting, setIngesting] = useState(false);
@@ -246,6 +248,8 @@ export default function AskPanel({
             {poll.mode === "live"
               ? `OpenAI ${poll.model}${poll.cached ? " · из кеша" : ""}`
               : "локальная модель"}{" "}
+            · {AGENTS.toLocaleString("ru")} агентов
+            {people ? ` · 1 ≈ ${Math.round(people / AGENTS).toLocaleString("ru")} чел.` : ""}{" "}
             · не реальный опрос
           </div>
           <button

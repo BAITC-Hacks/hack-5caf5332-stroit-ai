@@ -6,6 +6,7 @@ import { validateAdvisor } from "../server/akim";
 import { PublicError, publicMessage, type Llm } from "../server/llm";
 import { askRequest, akimRequest } from "../server/schemas";
 import { districts, samplePlan } from "../src/data";
+import { AGENTS } from "../src/profiles";
 import type { CityData } from "../src/city-data";
 const valid = {
   cohorts: districts.flatMap((d) =>
@@ -51,11 +52,11 @@ test("LLM cohort probabilities aggregate to actual resident votes and reject fab
   const poll = aggregateOpinions(valid, samplePlan, "test", "gpt-6-luna");
   assert.equal(
     poll.districts.reduce((n, r) => n + r.total, 0),
-    2000,
+    AGENTS,
   );
   assert.equal(
     poll.approval,
-    poll.cohorts!.reduce((n, c) => n + c.yes, 0) / 20,
+    poll.cohorts!.reduce((n, c) => n + c.yes, 0) * 100 / AGENTS,
   );
   assert.equal(poll.cost, 95);
   for (const mutate of [

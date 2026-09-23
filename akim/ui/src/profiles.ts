@@ -20,8 +20,10 @@ export const profiles: { name: string; needs: Indicator[]; routine: string }[] =
       routine: "Работа и отдых в парке",
     },
   ];
+// Simulated agents; each stands for city population / AGENTS real residents.
+export const AGENTS = 5000;
 export function cohortSize(districtId: DistrictId, profileId: number) {
   const d = districts.find((d) => d.id === districtId)!;
-  const total = Math.round(d.population * 2000);
+  const total = Math.round(d.population * AGENTS);
   return Math.floor(total / 6) + (profileId < total % 6 ? 1 : 0);
 }

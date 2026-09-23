@@ -1,4 +1,5 @@
 import { BUDGET_LIMIT } from "./money";
+import { AGENTS } from "./profiles";
 import {
   districts,
   indicators,
@@ -66,7 +67,7 @@ export function pollProposal(plan: Choice[], title: string): Poll {
         Math.min(0.94, 0.5 + gain * 0.075 - (cost / BUDGET_LIMIT) * 0.065),
       );
     });
-    const total = Math.round(d.population * 2000);
+    const total = Math.round(d.population * AGENTS);
     const yes = Math.round(
       (total * support.reduce((a, b) => a + b, 0)) / support.length,
     );
@@ -91,7 +92,7 @@ export function pollProposal(plan: Choice[], title: string): Poll {
   });
   return {
     title,
-    approval: rows.reduce((s, d) => s + d.yes, 0) / 20,
+    approval: rows.reduce((s, d) => s + d.yes, 0) * 100 / AGENTS,
     districts: rows,
     cost,
   };
