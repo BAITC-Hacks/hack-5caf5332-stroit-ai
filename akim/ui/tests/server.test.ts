@@ -254,3 +254,213 @@ test("advisor closes a prolonged search with a verified, consulted proposal", as
   assert.deepEqual(result.plan, candidate);
   assert.deepEqual(validateAdvisor(samplePlan, result.plan), []);
 });
+
+type GoalConstraints = import("../server/schemas").GoalConstraints;
+type Choice = import("../src/data").Choice;
+
+async function goalFixture(constraints: GoalConstraints, rejected?: Choice[], supported = true) {
+  const { validateGoal } = await import("../server/goal");
+  const state = { parses: 0, rounds: 0, narratives: 0, feedback: [] as string[], candidate: [] as Choice[] };
+  const llm: Llm = {
+    model: "goal-fixture",
+    search: async () => { throw new Error("Unexpected search"); },
+    cache: async (_kind, _input, run) => ({ value: await run(), hit: false }),
+    structured: async (name, schema, system, payload) => {
+      if (name === "akim_goal") {
+        state.parses++;
+        assert.equal(typeof (payload as { goal: string }).goal, "string");
+        assert.ok(system.includes("baseline"));
+        return schema.parse({ supported, constraints });
+      }
+      assert.equal(name, "akim_explanation");
+      state.narratives++;
+      assert.deepEqual((payload as { constraints: GoalConstraints }).constraints, constraints);
+      assert.ok(system.includes("пожертвовать"));
+      return schema.parse({ title: "Цель", strengths: "Резерв сохранён", risks: "Компромисс", why: "Приоритет транспорта" });
+    },
+    tools: async (input) => {
+      const message = input.find((item) => "role" in item && item.role === "user");
+      assert.ok(message && "content" in message && typeof message.content === "string");
+      state.candidate = JSON.parse(message.content).candidate;
+      assert.deepEqual(validateGoal(state.candidate, constraints), []);
+      assert.ok(input.some((item) => "role" in item && item.role === "system" &&
+        "content" in item && typeof item.content === "string" && item.content.includes(JSON.stringify(constraints))));
+      for (const item of input)
+        if (item.type === "function_call_output" && item.call_id?.endsWith("submit_plan")) {
+          assert.equal(typeof item.output, "string");
+          state.feedback.push(item.output as string);
+        }
+      const round = state.rounds++;
+      const plan = round === 0 && rejected ? rejected : state.candidate;
+      return {
+        output: ["simulate", "ask_residents", "submit_plan"].map((name) => ({
+          type: "function_call", name, call_id: `${round}-${name}`,
+          arguments: JSON.stringify({ choices: plan.map((choice) => ({ ...choice, districtId: choice.districtId ?? null })) }),
+        })),
+      } as import("openai/resources/responses/responses").Response;
+    },
+  };
+  return { llm, state };
+}
+
+test("goal request requires text or constraints and validates the complete constraint vocabulary", () => {
+  assert.ok(akimRequest.safeParse({ mode: "goal", plan: [], goal: "Защитить Нуру" }).success);
+  assert.ok(akimRequest.safeParse({ mode: "goal", plan: [], goal: "я".repeat(300) }).success);
+  const defaults = akimRequest.parse({ mode: "goal", plan: [], constraints: {} }).constraints!;
+  assert.deepEqual(defaults, { priorities: [], protectedDistricts: [], minSupportPercent: 0, reserveUnits: 0, mustInclude: [], mustExclude: [] });
+  for (const extra of [{}, { goal: " " }, { goal: "я".repeat(301) }])
+    assert.equal(akimRequest.safeParse({ mode: "goal", plan: [], ...extra }).success, false);
+  for (const constraints of [
+    { priorities: ["Финансы"] }, { protectedDistricts: ["unknown"] },
+    { minSupportPercent: -1 }, { minSupportPercent: 101 }, { minSupportPercent: "50" },
+    { reserveUnits: -1 }, { reserveUnits: 101 }, { reserveUnits: Infinity },
+    { mustInclude: ["M15"] }, { mustExclude: ["M0"] }, { unexpected: true },
+  ]) assert.equal(akimRequest.safeParse({ mode: "goal", plan: [], constraints }).success, false);
+});
+
+test("goal parses natural language, supplies a feasible candidate and returns a verified explanation", async () => {
+  const { runAkim } = await import("../server/akim");
+  const { constraintsInput } = await import("../server/schemas");
+  const { validateGoal } = await import("../server/goal");
+  const { simulate } = await import("../src/engine");
+  const constraints = constraintsInput.parse({
+    priorities: ["Транспорт"], protectedDistricts: ["nura", "esil"],
+    minSupportPercent: 55, reserveUnits: 20, mustInclude: ["M1"], mustExclude: ["M5"],
+  });
+  const { llm, state } = await goalFixture(constraints);
+  const events: import("../src/city-data").ActivityEvent[] = [];
+  const result = await runAkim(llm, "goal", [], null, (event) => events.push(event), undefined, {
+    goal: "Транспорт с автобусными полосами, без чистого топлива. Защитить Нуру и Есиль, резерв 20, поддержка 55%.",
+  });
+  assert.equal(state.parses, 1);
+  assert.equal(state.rounds, 1);
+  assert.equal(state.narratives, 1);
+  assert.deepEqual(result.constraints, constraints);
+  assert.deepEqual(validateGoal(result.plan, constraints), []);
+  assert.deepEqual(result.result, simulate(result.plan).result);
+  assert.equal(result.model, "goal-fixture");
+  assert.equal(result.cached, false);
+  assert.deepEqual(result.events, events);
+});
+
+test("goal rejects hard-constraint violations on submit and lets the model retry", async () => {
+  const { runAkim } = await import("../server/akim");
+  const { constraintsInput } = await import("../server/schemas");
+  const { validateGoal } = await import("../server/goal");
+  const constraints = constraintsInput.parse({
+    priorities: ["Транспорт"], minSupportPercent: 55, reserveUnits: 20,
+    mustInclude: ["M1"], mustExclude: ["M5"],
+  });
+  const { llm, state } = await goalFixture(constraints, samplePlan);
+  const result = await runAkim(llm, "goal", samplePlan, null, () => {}, undefined, { constraints });
+  assert.equal(state.parses, 0);
+  assert.equal(state.rounds, 2);
+  const feedback = JSON.parse(state.feedback[0]);
+  assert.equal(feedback.accepted, undefined);
+  for (const text of ["резерв", "Поддержка локальной модели", "Обязательная мера M1", "Мера M5 запрещена"])
+    assert.ok(feedback.errors.some((error: string) => error.includes(text)), text);
+  assert.deepEqual(validateGoal(result.plan, constraints), []);
+  assert.notDeepEqual(result.plan, samplePlan);
+});
+
+test("goal rejects unrelated language before the tool loop with a helpful public 400", async () => {
+  const { runAkim } = await import("../server/akim");
+  const { constraintsInput } = await import("../server/schemas");
+  const { llm, state } = await goalFixture(constraintsInput.parse({}), undefined, false);
+  await assert.rejects(runAkim(llm, "goal", [], null, () => {}, undefined, { goal: "Напиши рецепт торта" }),
+    (error: unknown) => error instanceof PublicError && error.status === 400 && error.message.includes("городских мер"));
+  assert.equal(state.parses, 1);
+  assert.equal(state.rounds, 0);
+  assert.equal(state.narratives, 0);
+});
+
+test("goal protection compares actual district scores with the city baseline", async () => {
+  const { validateGoal } = await import("../server/goal");
+  const { constraintsInput } = await import("../server/schemas");
+  const { measures } = await import("../src/data");
+  const { baseline, projectEffects, validate } = await import("../src/engine");
+  const plan: Choice[] = [
+    { measureId: "M1", districtId: "esil" }, { measureId: "M2" },
+    { measureId: "M8", districtId: "nura" }, { measureId: "M9", districtId: "nura" },
+    { measureId: "M11", districtId: "nura" },
+  ];
+  const measure = measures.find((item) => item.id === "M11")!;
+  const effects = measure.effects;
+  try {
+    measure.effects = { T1: -100 };
+    assert.deepEqual(validate(plan), []);
+    assert.ok(projectEffects(plan).districts.find((row) => row.id === "nura")!.score <
+      baseline.districts.find((row) => row.id === "nura")!.score);
+    assert.ok(validateGoal(plan, constraintsInput.parse({ protectedDistricts: ["nura"] }))
+      .some((error) => error.includes("защищённого района Нура")));
+    assert.deepEqual(validateGoal(plan, constraintsInput.parse({ protectedDistricts: ["esil"] })), []);
+  } finally {
+    measure.effects = effects;
+  }
+});
+
+test("goal hard checks use exact local approval and units, including threshold boundaries", async () => {
+  const { validateGoal } = await import("../server/goal");
+  const { constraintsInput } = await import("../server/schemas");
+  const { pollProposal } = await import("../src/residents");
+  const approval = pollProposal(samplePlan, "").approval;
+  assert.deepEqual(validateGoal(samplePlan, constraintsInput.parse({ minSupportPercent: approval, reserveUnits: 5 })), []);
+  assert.ok(validateGoal(samplePlan, constraintsInput.parse({ minSupportPercent: approval + 0.01 }))
+    .some((error) => error.includes("Поддержка")));
+  assert.ok(validateGoal(samplePlan, constraintsInput.parse({ reserveUnits: 5.01 }))
+    .some((error) => error.includes("резерв")));
+  assert.ok(validateGoal(samplePlan.slice(0, 4), constraintsInput.parse({}))
+    .some((error) => error.includes("ровно 5")));
+});
+
+test("goal without an OpenAI key runs entirely locally with deterministic constrained results", async () => {
+  const { runAkim } = await import("../server/akim");
+  const { validateGoal } = await import("../server/goal");
+  const { constraintsInput } = await import("../server/schemas");
+  const constraints = constraintsInput.parse({
+    priorities: ["Соцсфера"], protectedDistricts: districts.map((district) => district.id),
+    minSupportPercent: 50, reserveUnits: 20, mustInclude: ["M7"], mustExclude: ["M3"],
+  });
+  const first = await runAkim(null, "goal", [], null, () => {}, undefined, { constraints });
+  const second = await runAkim(null, "goal", [], null, () => {}, undefined, { constraints });
+  assert.equal(first.model, "local");
+  assert.equal(first.cached, false);
+  assert.equal(second.cached, false);
+  assert.deepEqual(first.constraints, constraints);
+  assert.deepEqual(validateGoal(first.plan, constraints), []);
+  assert.deepEqual(first.plan, second.plan);
+  assert.ok(first.events.some((event) => event.label === "Локальный поиск завершён"));
+});
+
+test("goal never silently relaxes impossible constraints or guesses text without a key", async () => {
+  const { runAkim } = await import("../server/akim");
+  for (const constraints of [
+    { reserveUnits: 100 }, { minSupportPercent: 100 },
+    { mustInclude: ["M1" as const, "M3" as const] },
+    { mustInclude: ["M7" as const], mustExclude: ["M7" as const] },
+  ]) await assert.rejects(runAkim(null, "goal", [], null, () => {}, undefined, { constraints }),
+    (error: unknown) => error instanceof PublicError && error.status === 400);
+  await assert.rejects(runAkim(null, "goal", [], null, () => {}, undefined, { goal: "Улучшить город" }),
+    (error: unknown) => error instanceof PublicError && error.status === 503 && error.message.includes("constraints"));
+});
+
+test("goal cache reuses identical constraints but isolates different goals", async () => {
+  const { runAkim } = await import("../server/akim");
+  const { constraintsInput } = await import("../server/schemas");
+  const { createCache, memoryStore } = await import("../server/storage");
+  const cache = createCache(memoryStore());
+  const firstConstraints = constraintsInput.parse({ reserveUnits: 5 });
+  const first = await goalFixture(firstConstraints);
+  first.llm.cache = cache;
+  await runAkim(first.llm, "goal", [], null, () => {}, undefined, { constraints: firstConstraints });
+  const cached = await runAkim(first.llm, "goal", [], null, () => {}, undefined, { constraints: firstConstraints });
+  assert.equal(cached.cached, true);
+  assert.equal(first.state.rounds, 1);
+  const secondConstraints = constraintsInput.parse({ reserveUnits: 20 });
+  const second = await goalFixture(secondConstraints);
+  second.llm.cache = cache;
+  const fresh = await runAkim(second.llm, "goal", [], null, () => {}, undefined, { constraints: secondConstraints });
+  assert.equal(fresh.cached, false);
+  assert.equal(second.state.rounds, 1);
+  assert.deepEqual(fresh.constraints, secondConstraints);
+});

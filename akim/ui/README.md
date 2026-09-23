@@ -6,6 +6,8 @@ Russian-language city decision simulator: React, TypeScript, Leaflet, Canvas and
 
 ## Run
 
+Live AI modes require an OpenAI key with access to the configured model. Everything else works without it, including local planning, resident simulation and goal search with structured constraints.
+
 Node.js 22+; run from `akim/ui`:
 
 ```sh
@@ -27,7 +29,7 @@ Choose a district → create a plan or load the example → compare before/after
 
 ## Real city data
 
-`server/city-data.ts` calls the JSON endpoints documented in `akim/INVENTORY.md` / `akim/README.md` in the source workspace. `GET /api/city` exposes normalized records with source URL, attribution, observation date, retrieval date and **live / cached / unavailable** status.
+`server/city-data.ts` calls the JSON endpoints listed below. Project context and requirements are in `akim/tz.md`, `akim/file.md` and `akim/PROJECT.md`. `GET /api/city` exposes normalized records with source URL, attribution, observation date, retrieval date and **live / cached / unavailable** status.
 
 | Source                                                                                                                                                                                                                                  | Usage                                                                | Limits                                                                                       |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -64,9 +66,9 @@ For another account, create a KV namespace with `npx wrangler kv namespace creat
 
 Local Worker preview: copy the API key and a random `SESSION_SECRET` into ignored `.dev.vars`, run `npm run build`, then `npm run dev:cloud` at **http://127.0.0.1:8792**. Run `npm run types:cloud` after binding changes and `npm run check:cloud` before publishing. The separate Express/Vite workflow above remains available.
 
-## Million tenge, with price provenance
+## Conventional budget units and reference prices
 
-All costs and limits are **million KZT (млн ₸)**. The game uses a **50,000 million ₸ investment envelope**, an explicit scenario assumption. It is not the city's whole budget or uncommitted cash.
+The game budget is **100 conventional units (у.е.)**, as specified in `akim/file.md`. Measure costs in these units drive validation and resident calculations. Million-tenge figures in `src/money.ts` (`referenceMln`) are **reference-only** estimates, not a currency conversion, spending limit or the city's available investment budget.
 
 - Published 2026 city costs: **1,286,453.4108 million ₸**. [Astana budget decision](https://old.adilet.zan.kz/rus/docs/G25AAZ3524M) states 1,286,453,410.8 **thousand** ₸; this app divides by 1,000. Source snapshot verified 2026-09-23, not refreshed automatically.
 - M7: **8,400 million ₸**. [Government school benchmark](https://primeminister.kz/ru/news/asset_recovery/novaya-shkola-na-1200-uchenicheskih-mest-budet-postroena-v-astane-na-sredstva-iz-vozvrashchennyh-aktivov-31773): 7,000 million for a 1,200-place school, plus an explicitly assumed 1,400 million for kindergarten/reserve.
@@ -91,21 +93,23 @@ Local mode supports the three examples and “мой план”. Its six concer
 
 ```text
 p(approval) = clamp(0.50 + 0.075 × weighted indicator gain
-                   − 0.065 × (proposal cost / 50,000), 0.08, 0.94)
+                   − 0.065 × (proposal cost in units / 100), 0.08, 0.94)
 ```
 
 Indicator concern starts at 1, adds 3 for district priorities and 4 for profile priorities, then normalizes. Quotes are local templates. This mode is labeled in the UI.
 
 ## AI Akim and the scoring engine
 
-`src/data.ts` / `src/engine.ts` preserve the brief's synthetic values, effects, lags, synergies and conflicts. A valid plan has exactly five unique decisions, cost ≤50,000 million ₸, at most two per direction and correct district assignments. Invalid plans have no displayed score.
+`src/data.ts` / `src/engine.ts` preserve the brief's synthetic values, effects, lags, synergies and conflicts. A valid plan has exactly five unique decisions, cost ≤100 у.е., at most two per direction and correct district assignments. Invalid plans have no displayed score.
 
 - Baseline **52.55768**.
-- Example M7 Nura, M8 Nura, M10 Nura, M12, M5 Saryarka: **20,700 million ₸**, score **56.54307**.
+- Example M7 Nura, M8 Nura, M10 Nura, M12, M5 Saryarka: **95 у.е.**, score **56.54307**.
 - Fixed synergy is not reduced by lag. Each district/indicator strictly below 40 incurs a penalty.
 - Local advisor checks every valid single replacement; local autopilot follows at most eight improving replacements. It does not claim a global optimum.
 
 In live mode, Luna chooses through a bounded loop of at most eight tool requests, with explicit completion from verified candidates near the limit. It uses a sequence of `simulate`, `ask_residents` and `submit_plan` function calls. `ask_residents` here is an explicitly described **local analytic approximation** to compare candidates; the separate resident polling UI uses the LLM cohort survey. Submission requires both simulation and consultation for that exact plan. Advisor must replace exactly one decision. The server recalculates all scores and costs, then asks Luna for a qualitative explanation. Activity rows report tool actions, not hidden model reasoning. Cached runs are labeled.
+
+Goal mode accepts a Russian `goal` (up to 300 characters), such as “Улучшить транспорт, защитить Нуру и оставить 20 у.е.”, or a structured `constraints` object (takes precedence over text). Fields: `priorities` (names from `src/data.ts`), `protectedDistricts` (district IDs), `minSupportPercent` (0–100, local `pollProposal` approval), `reserveUnits` (0–100), `mustInclude` / `mustExclude` (measure IDs). Omitted fields default to empty lists or zero. Priorities influence ranking; all other constraints are mandatory. District protection compares scores with the city's baseline, not the current plan. A bounded search (24 partial candidates, then up to eight single replacements from four seeds) supplies a feasible candidate when found; it does not prove global optimality or infeasibility. Live submissions are checked server-side and retried on violations; the explanation describes constraints and sacrifices. Without a key, send `constraints`: search runs entirely locally and returns `model:"local"`, `cached:false`. Text-only goals need OpenAI. Goal results include the resolved `constraints`; unmet constraints produce an explicit error, never a relaxed plan.
 
 API routes:
 
@@ -113,7 +117,8 @@ API routes:
 - `GET /api/city`: dated source records.
 - `POST /api/ask`: `{ question, plan, useThreads? }` → `{ poll, evidence?, notice? }`.
 - `POST /api/threads/ingest`: `{ question, plan }` → `{ evidence }`.
-- `POST /api/akim`: `{ mode: "advisor" | "autopilot", plan }` → NDJSON activity/result/error events.
+- `POST /api/akim`: `{ mode: "advisor" | "autopilot" | "goal", plan, goal?, constraints? }` → NDJSON activity/result/error events. Goal mode requires `goal` or `constraints`; e.g. `{ "mode": "goal", "plan": [], "constraints": { "priorities": ["Транспорт"], "reserveUnits": 20 } }`.
+- `POST /api/explain`: `{ plan, priorities }` → `{ brief: { summary, tradeoff, nextStep, model, cached } }`.
 
 POSTs require a session token and same-origin requests, with schema/body limits and cancellation/timeouts. The local Express server allows two concurrent requests and 30 requests per 15 minutes. The public Worker uses hourly IP-bound signed tokens and Cloudflare rate limits: 5 AI requests/minute per IP and 20/minute per serving location. These limits are abuse throttles, not login authentication or a global spending cap. Responses API calls use `store: false`.
 
@@ -127,7 +132,7 @@ npm run build
 npm run data:check
 ```
 
-23 unit tests cover calculations, prices, validity, resident paths/schedules, population parsing, district deduplication, malformed cohort rejection and safe errors. 16 browser cases cover desktop/mobile plan flows, clock and profiles, source display, real-mode API contracts, streaming proposals, explicit application, failure handling, persistence and keyboard access. Browser API fixtures make tests deterministic and avoid paid calls. Screenshots/traces go to ignored `test-results/`.
+Unit tests cover calculations, prices, validity, resident paths/schedules, population parsing, district deduplication, malformed cohort rejection, goal parsing/constraints/local search and safe errors. 16 browser cases cover desktop/mobile plan flows, clock and profiles, source display, real-mode API contracts, streaming proposals, explicit application, failure handling, persistence and keyboard access. Browser API fixtures make tests deterministic and avoid paid calls. Screenshots/traces go to ignored `test-results/`.
 
 Live verification on 2026-09-23: all five city endpoints responded; `gpt-6-luna` returned valid 30-cohort school and free-text park polls and tool-based advisor/autopilot plans. Secrets are excluded from source, artifacts and browser bundles.
 
