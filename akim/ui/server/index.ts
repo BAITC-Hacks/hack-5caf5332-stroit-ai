@@ -1,0 +1,186 @@
+import { config } from "dotenv";
+import { fileURLToPath } from "node:url";
+import { randomBytes, timingSafeEqual } from "node:crypto";
+import express from "express";
+import { getCityData } from "./city-data";
+import { createLlm, PublicError, publicMessage } from "./llm";
+import { askRequest, akimRequest } from "./schemas";
+import { askResidents } from "./polls";
+import { runAkim } from "./akim";
+config({
+  path: fileURLToPath(new URL("../.env", import.meta.url)),
+  quiet: true,
+});
+const app = express();
+app.disable("x-powered-by");
+app.use(express.json({ limit: "16kb" }));
+const token = randomBytes(32).toString("hex");
+const llm = createLlm();
+let active = 0;
+const hits: number[] = [];
+app.get("/api/health", (_req, res) =>
+  res
+    .set("Cache-Control", "no-store")
+    .json({
+      configured: !!process.env.OPENAI_API_KEY,
+      model: llm.model,
+      token,
+    }),
+);
+app.get("/api/city", async (_req, res) => {
+  try {
+    res.json(await getCityData());
+  } catch {
+    res.status(503).json({ error: "Городские источники временно недоступны." });
+  }
+});
+app.use("/api", (req, res, next) => {
+  if (req.method !== "POST") {
+    next();
+    return;
+  }
+  const supplied = req.get("X-Sim-Token") || "";
+  const origin = req.get("origin");
+  const allowed = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:5178",
+    "http://localhost:5178",
+    `http://127.0.0.1:${process.env.API_PORT || 8791}`,
+    `http://localhost:${process.env.API_PORT || 8791}`,
+  ];
+  if (origin && !allowed.includes(origin)) {
+    res.status(403).json({ error: "Недопустимый источник запроса." });
+    return;
+  }
+  if (
+    supplied.length !== token.length ||
+    !timingSafeEqual(Buffer.from(supplied), Buffer.from(token))
+  ) {
+    res.status(403).json({ error: "Обновите страницу для нового сеанса." });
+    return;
+  }
+  const now = Date.now();
+  while (hits.length && hits[0] < now - 15 * 60_000) hits.shift();
+  if (active >= 2 || hits.length >= 30) {
+    res
+      .status(429)
+      .json({ error: "Слишком много AI-запросов. Подождите и повторите." });
+    return;
+  }
+  hits.push(now);
+  active++;
+  res.once("close", () => {
+    active--;
+  });
+  next();
+});
+app.post("/api/ask", async (req, res) => {
+  const parsed = askRequest.safeParse(req.body);
+  if (!parsed.success) {
+    res
+      .status(400)
+      .json({
+        error:
+          "Укажите вопрос до 1000 символов и допустимые идентификаторы мер.",
+      });
+    return;
+  }
+  const abort = new AbortController();
+  res.once("close", () => {
+    if (!res.writableEnded) abort.abort();
+  });
+  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(120_000)]);
+  try {
+    const context = await getCityData();
+    const poll = await askResidents(
+      llm,
+      parsed.data.question,
+      parsed.data.plan,
+      context,
+      signal,
+    );
+    res.json({ poll });
+  } catch (error) {
+    if (!res.destroyed)
+      res
+        .status(error instanceof PublicError ? error.status : 502)
+        .json({ error: publicMessage(error) });
+  }
+});
+app.post("/api/akim", async (req, res) => {
+  const parsed = akimRequest.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Некорректный запрос к акиму." });
+    return;
+  }
+  const abort = new AbortController();
+  res.once("close", () => {
+    if (!res.writableEnded) abort.abort();
+  });
+  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(120_000)]);
+  res.set({
+    "Content-Type": "application/x-ndjson",
+    "Cache-Control": "no-store",
+    "X-Accel-Buffering": "no",
+  });
+  res.flushHeaders();
+  const send = (event: unknown) => {
+    if (!res.destroyed) res.write(JSON.stringify(event) + "\n");
+  };
+  try {
+    send({
+      type: "activity",
+      event: {
+        label: "Загрузка данных города",
+        detail: "Чтение доступных источников и дат наблюдения.",
+        at: new Date().toISOString(),
+      },
+    });
+    const context = await getCityData();
+    const result = await runAkim(
+      llm,
+      parsed.data.mode,
+      parsed.data.plan,
+      context,
+      (event) => send({ type: "activity", event }),
+      signal,
+    );
+    send({ type: "result", result });
+  } catch (error) {
+    send({ type: "error", error: publicMessage(error) });
+  } finally {
+    res.end();
+  }
+});
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "Неизвестный API endpoint." });
+});
+const dist = fileURLToPath(new URL("../dist/", import.meta.url));
+app.use(express.static(dist, { dotfiles: "deny" }));
+app.get("/", (_req, res) => res.sendFile(dist + "index.html"));
+app.use(
+  (
+    error: unknown,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    void error;
+    res.status(400).json({ error: "Некорректный запрос." });
+  },
+);
+const port = Number(process.env.API_PORT || 8791),
+  host = process.env.API_HOST || "127.0.0.1";
+const server = app.listen(port, host, () =>
+  console.log(
+    `Sim Astana API http://${host}:${port} · OpenAI ${process.env.OPENAI_API_KEY ? "configured" : "not configured"} · ${llm.model}`,
+  ),
+);
+
+server.on("error", () => {
+  console.error(
+    "API could not bind its port. Check API_PORT and Vite proxy configuration.",
+  );
+  process.exitCode = 1;
+});

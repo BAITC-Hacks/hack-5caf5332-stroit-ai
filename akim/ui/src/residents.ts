@@ -1,3 +1,4 @@
+import { BUDGET_LIMIT } from "./money";
 import {
   districts,
   indicators,
@@ -24,8 +25,20 @@ export interface Poll {
   title: string;
   approval: number;
   districts: PollDistrict[];
-  comparison?: { title: string; approval: number };
+  comparison?: { title: string; approval: number; cost?: number };
+  primaryLabel?: string;
   cost: number;
+  mode?: "live" | "local";
+  model?: string;
+  cached?: boolean;
+  cohorts?: {
+    districtId: DistrictId;
+    profileId: number;
+    yes: number;
+    total: number;
+    probability: number;
+    quote: string;
+  }[];
 }
 const profiles: Indicator[][] = [
   ["S1", "S2"],
@@ -50,7 +63,7 @@ export function pollProposal(plan: Choice[], title: string): Poll {
         concern.reduce((a, b) => a + b, 0);
       return Math.max(
         0.08,
-        Math.min(0.94, 0.5 + gain * 0.075 - cost * 0.00065),
+        Math.min(0.94, 0.5 + gain * 0.075 - (cost / BUDGET_LIMIT) * 0.065),
       );
     });
     const total = Math.round(d.population * 2000);
@@ -119,7 +132,11 @@ export function askCity(
       poll: {
         ...social,
         title: examples[1],
-        comparison: { title: lrt.title, approval: lrt.approval },
+        comparison: {
+          title: lrt.title,
+          approval: lrt.approval,
+          cost: lrt.cost,
+        },
       },
       error: null,
     };
@@ -137,6 +154,6 @@ export function askCity(
   return {
     poll: null,
     error:
-      "В деморежиме доступны три вопроса ниже и «мой план». Выберите пример — для него есть локальная модель. Свободные вопросы появятся с подключением API.",
+      "В деморежиме доступны три вопроса ниже и «мой план». Выберите пример — для него есть локальная модель. Для свободных вопросов включите OpenAI.",
   };
 }

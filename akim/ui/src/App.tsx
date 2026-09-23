@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
+  Database,
+  Pause,
+  Play,
   ArrowLeft,
   ArrowUpRight,
   ChartNoAxesColumnIncreasing,
@@ -30,7 +33,12 @@ import {
 import { baseline, simulate, validate } from "./engine";
 import { examples, type Poll } from "./residents";
 import "./styles.css";
-type Panel = "plan" | "ask" | "akim" | "about" | null;
+import CityDataPanel from "./CityDataPanel";
+import ResidentCard from "./ResidentCard";
+import { useServices } from "./services";
+import { population, activityCounts, type Resident } from "./population";
+import { money, BUDGET_LIMIT } from "./money";
+type Panel = "plan" | "ask" | "akim" | "about" | "data" | null;
 function loadPlan(): Choice[] {
   try {
     const raw: unknown = JSON.parse(
@@ -50,6 +58,33 @@ function loadPlan(): Choice[] {
   }
 }
 export default function App() {
+  const { city } = useServices();
+  const [minutes, setMinutes] = useState(480);
+  const [playing, setPlaying] = useState(
+    () => !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const [speed, setSpeed] = useState(6);
+  const [resident, setResident] = useState<Resident | null>(null);
+  const weather = city?.weather.data;
+  const stayInside =
+    !!weather &&
+    (weather.temperature < -10 || weather.wind > 40 || weather.code >= 51);
+  const counts = activityCounts(minutes, stayInside);
+  const clock =
+    `${Math.floor(minutes / 60) % 24}`.padStart(2, "0") +
+    ":" +
+    `${Math.floor(minutes) % 60}`.padStart(2, "0");
+  useEffect(() => {
+    if (!playing) return;
+    let last = performance.now();
+    const timer = window.setInterval(() => {
+      const now = performance.now();
+      const elapsed = Math.min(1, (now - last) / 1000);
+      last = now;
+      if (!document.hidden) setMinutes((t) => (t + elapsed * speed) % 1440);
+    }, 100);
+    return () => clearInterval(timer);
+  }, [playing, speed]);
   const [plan, setPlan] = useState<Choice[]>(loadPlan);
   const [selected, setSelected] = useState<DistrictId | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
@@ -73,6 +108,7 @@ export default function App() {
   };
   const open = (next: Panel) => {
     setToast("");
+    setResident(null);
     previousFocus.current = document.activeElement as HTMLElement;
     setPanel(next);
   };
@@ -117,6 +153,13 @@ export default function App() {
   return (
     <main className={`app ${panel ? "has-panel" : ""}`}>
       <CityMap
+        minutes={minutes}
+        residentId={resident?.id ?? null}
+        stayInside={stayInside}
+        onResident={(person) => {
+          setResident(person);
+          setSelected(person.districtId);
+        }}
         selected={selected}
         onSelect={(id) => {
           setSelected(id);
@@ -162,6 +205,57 @@ export default function App() {
           <Users size={19} />
         </div>
       </header>
+      <div className="simulation-controls glass" aria-label="Время симуляции">
+        <button
+          className="icon-button"
+          aria-label={playing ? "Пауза симуляции" : "Продолжить симуляцию"}
+          onClick={() => setPlaying((p) => !p)}
+        >
+          {playing ? <Pause size={15} /> : <Play size={15} />}
+        </button>
+        <time>{clock}</time>
+        <select
+          aria-label="Скорость симуляции"
+          value={speed}
+          onChange={(e) => setSpeed(Number(e.target.value))}
+        >
+          <option value={6}>×6</option>
+          <option value={30}>×30</option>
+          <option value={120}>×120</option>
+        </select>
+        <span>{counts.moving} в пути</span>
+        <button
+          className="icon-button"
+          aria-label="Познакомиться с жителем"
+          onClick={() => {
+            const person = population.find(
+              (p) => !selected || p.districtId === selected,
+            )!;
+            setResident(person);
+            setSelected(person.districtId);
+          }}
+        >
+          <Users size={15} />
+        </button>
+        <button
+          className="data-toggle"
+          onClick={() => (panel === "data" ? close() : open("data"))}
+          aria-label="Открыть реальные данные"
+        >
+          <Database size={14} />
+          {weather ? `${weather.temperature}°` : "Данные"}
+          {city?.air.data && <small>AQI {city.air.data.aqi}</small>}
+        </button>
+      </div>
+      {resident && !panel && (
+        <ResidentCard
+          resident={resident}
+          minutes={minutes}
+          poll={poll}
+          stayInside={stayInside}
+          onClose={() => setResident(null)}
+        />
+      )}
       {selected && (
         <button className="whole-city glass" onClick={() => setSelected(null)}>
           <ArrowLeft size={15} />
@@ -179,7 +273,7 @@ export default function App() {
             будете <em>вы?</em>
           </h1>
           <p>
-            Пять решений. Сто единиц бюджета.
+            Пять решений. {money(BUDGET_LIMIT)} млн ₸.
             <br />И целый город, который почувствует
             <br />
             каждый ваш выбор.
@@ -191,7 +285,7 @@ export default function App() {
             className="sample-link"
             onClick={() => {
               changePlan(samplePlan.map((c) => ({ ...c })));
-              setToast("Демо-план применён: 5 решений, 95 единиц.");
+              setToast("Сценарий применён: 5 решений, 20 700 млн ₸.");
             }}
           >
             Попробовать готовый сценарий <ChevronRight size={13} />
@@ -206,7 +300,7 @@ export default function App() {
           </div>
         </section>
       )}
-      {!panel && currentDistrict && (
+      {!panel && currentDistrict && !resident && (
         <section className="district-panel glass">
           <div className="district-title">
             <div>
@@ -356,6 +450,7 @@ export default function App() {
           initialQuestion={initialQuestion}
         />
       )}
+      {panel === "data" && <CityDataPanel onClose={close} />}
       {panel === "about" && (
         <section
           className="about-panel glass"
@@ -373,8 +468,8 @@ export default function App() {
             </button>
           </div>
           <p>
-            Вы — аким на пять решений. Соберите план до 100 единиц и посмотрите,
-            что изменится за 8 кварталов.
+            Вы — аким на пять решений. Соберите план до {money(BUDGET_LIMIT)}{" "}
+            млн ₸ и посмотрите, что изменится за 8 кварталов.
           </p>
           <div className="about-steps">
             <span>01 · Исследуйте районы</span>
@@ -398,11 +493,40 @@ export default function App() {
           <div className="tradeoff">
             <b>Честная демосимуляция</b>
             <p>
-              Все жители и показатели синтетические. Границы районов на карте
-              приблизительные. Ответы жителей и AI Акима рассчитываются
-              локально: это не реальный опрос и не работа LLM.
+              2 000 жителей имеют синтетические профили, дом, занятия и
+              маршруты. Карта из пяти игровых районов схематична: в реальном
+              реестре их шесть. Погода, воздух, население и ДТП загружаются из
+              открытых источников. Ответы GPT-6 Luna — прогнозы модели, а не
+              реальный опрос. Можно явно переключиться на локальную демомодель.
             </p>
           </div>
+          <p className="attribution">
+            Поведение вдохновлено{" "}
+            <a
+              href="https://github.com/tejasprabhune/simfrancisco"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Sim Francisco
+            </a>
+            . Спрайты:{" "}
+            <a
+              href="https://route1rodent.itch.io/16x16-rpg-character-sprite-sheet"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Route1Rodent
+            </a>
+            ,{" "}
+            <a
+              href="https://creativecommons.org/licenses/by-sa/3.0/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              CC BY-SA 3.0
+            </a>
+            , без изменений.
+          </p>
           <button className="dark wide" onClick={() => open("plan")}>
             Создать свой план <ArrowUpRight size={16} />
           </button>

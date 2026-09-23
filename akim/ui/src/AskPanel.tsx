@@ -1,3 +1,5 @@
+import { useServices, AiModeSwitch, askApi } from "./services";
+import { money } from "./money";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, LoaderCircle, MessageCircle, Send, X } from "lucide-react";
 import { districts, type Choice } from "./data";
@@ -17,6 +19,8 @@ export default function AskPanel({
   onClose,
   initialQuestion = "",
 }: Props) {
+  const { mode, health } = useServices();
+  const abort = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState(initialQuestion);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,21 +28,46 @@ export default function AskPanel({
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
+      abort.current?.abort();
     },
     [],
   );
-  const submit = (text = question) => {
+  useEffect(() => {
+    abort.current?.abort();
+    setBusy(false);
+    setError(null);
+    onPoll(null);
+  }, [mode, onPoll]);
+  const submit = async (text = question) => {
     if (!text.trim()) return;
     setQuestion(text);
     setError(null);
     setBusy(true);
     onPoll(null);
-    timer.current = setTimeout(() => {
-      const response = askCity(text, plan);
-      onPoll(response.poll);
-      setError(response.error);
-      setBusy(false);
-    }, 900);
+    abort.current?.abort();
+    const controller = new AbortController();
+    abort.current = controller;
+    try {
+      if (mode === "live") {
+        if (!health) throw Error("Сервер AI не подключён.");
+        onPoll(await askApi(text, plan, health.token, controller.signal));
+      } else {
+        await new Promise<void>((resolve) => {
+          timer.current = setTimeout(resolve, 500);
+        });
+        if (controller.signal.aborted) return;
+        const response = askCity(text, plan);
+        onPoll(response.poll ? { ...response.poll, mode: "local" } : null);
+        setError(response.error);
+      }
+    } catch (e) {
+      if (!controller.signal.aborted)
+        setError(
+          e instanceof Error ? e.message : "Не удалось опросить жителей.",
+        );
+    } finally {
+      if (!controller.signal.aborted) setBusy(false);
+    }
   };
   return (
     <section
@@ -59,6 +88,7 @@ export default function AskPanel({
           <X size={19} />
         </button>
       </div>
+      <AiModeSwitch />
       {busy ? (
         <div className="poll-loading" role="status">
           <LoaderCircle className="spin" size={28} />
@@ -68,7 +98,9 @@ export default function AskPanel({
             <i />
           </div>
           <small>
-            Считаем изменения и интересы шести профилей в каждом районе
+            {mode === "live"
+              ? "OpenAI оценивает интересы 30 профилей по сценарию и данным города"
+              : "Считаем изменения и интересы шести профилей в каждом районе"}
           </small>
         </div>
       ) : poll ? (
@@ -102,14 +134,14 @@ export default function AskPanel({
             <div className="comparison-note">
               <b>Сравнение двух отдельных предложений</b>
               <p>
-                Школа + поликлиника в Нуре: {fmt(poll.approval, 2)}% за ·{" "}
-                {poll.cost} ед.
+                {poll.primaryLabel || "Школа + поликлиника в Нуре"}:{" "}
+                {fmt(poll.approval, 2)}% за · {money(poll.cost)} млн ₸
                 <br />
                 {poll.comparison.title}: {fmt(poll.comparison.approval, 2)}% за
-                · 30 ед.
+                · {money(poll.comparison.cost ?? 0)} млн ₸
               </p>
               <small>
-                На карте — реакции на школу и поликлинику. Это не голосование
+                На карте — реакции на первое предложение. Это не голосование
                 между двумя вариантами.
               </small>
             </div>
@@ -140,7 +172,11 @@ export default function AskPanel({
               ))}
           </div>
           <div className="demo-note">
-            Синтетические жители · деморежим · не реальный опрос
+            Синтетические жители ·{" "}
+            {poll.mode === "live"
+              ? `OpenAI ${poll.model}${poll.cached ? " · из кеша" : ""}`
+              : "локальная модель"}{" "}
+            · не реальный опрос
           </div>
           <button
             className="dark wide"
@@ -173,6 +209,7 @@ export default function AskPanel({
                 id="question"
                 placeholder="Что изменится для жителей?"
                 rows={2}
+                maxLength={1000}
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 autoFocus
@@ -203,7 +240,10 @@ export default function AskPanel({
             ))}
           </div>
           <div className="demo-note">
-            Синтетические жители · деморежим · 3 доступных сценария
+            Синтетические жители ·{" "}
+            {mode === "live"
+              ? "свободные вопросы о мерах города"
+              : "3 доступных сценария"}
           </div>
         </>
       )}

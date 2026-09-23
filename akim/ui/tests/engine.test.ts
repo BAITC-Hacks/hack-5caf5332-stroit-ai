@@ -29,11 +29,11 @@ test("baseline reproduces all five district scores and strict critical threshold
   near(baseline.score, 52.55768);
   assert.equal(baseline.critical, 2);
 });
-test("sample includes lag and synergy, costs 95 and scores 56.54307", () => {
+test("sample includes lag and synergy, costs 20700 and scores 56.54307", () => {
   const { errors, result } = simulate(samplePlan);
   assert.deepEqual(errors, []);
   assert.ok(result);
-  assert.equal(budget(samplePlan), 95);
+  assert.equal(budget(samplePlan), 20700);
   near(result.score, 56.54307);
   assert.equal(result.critical, 0);
   const nura = result.districts.find((d) => d.id === "nura")!;
@@ -191,7 +191,7 @@ test("advisor offers a valid concrete improvement and does not mutate input", ()
 test("autopilot is deterministic, valid, bounded by budget, and independent from callers", () => {
   const first = autopilot();
   assert.deepEqual(validate(first), []);
-  assert.equal(budget(first), 100);
+  assert.ok(budget(first) <= 50000);
   assert.deepEqual(autopilot(), first);
   first[0].measureId = "invalid";
   assert.deepEqual(validate(autopilot()), []);

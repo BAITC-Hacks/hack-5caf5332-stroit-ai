@@ -2,51 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { districts, type DistrictId } from "./data";
 import { baseline, type Projection } from "./engine";
 import type { Poll } from "./residents";
-export function seeded(seed: number) {
-  return () => {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-function inside(x: number, y: number, points: [number, number][]) {
-  let yes = false;
-  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const [xi, yi] = points[i],
-      [xj, yj] = points[j];
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi)
-      yes = !yes;
-  }
-  return yes;
-}
-const random = seeded(711);
-const people = districts.flatMap((d) =>
-  Array.from({ length: Math.round(d.population * 2000) }, (_, i) => {
-    let x = 0,
-      y = 0;
-    do {
-      x = 220 + random() * 845;
-      y = 98 + random() * 612;
-    } while (!inside(x, y, d.polygon));
-    return {
-      x,
-      y,
-      district: d.id,
-      index: i,
-      color: [
-        "#f1dfb5",
-        "#e89a78",
-        "#cbe5db",
-        "#eee9d9",
-        "#dda5b7",
-        "#b2cbd6",
-        "#eac26c",
-      ][Math.floor(random() * 7)],
-    };
-  }),
-);
+import {
+  population,
+  seeded,
+  inside,
+  residentState,
+  type Resident,
+} from "./population";
 const districtPaths = districts.map((d) => {
   const p = new Path2D();
   d.polygon.forEach(([x, y], i) => (i ? p.lineTo(x, y) : p.moveTo(x, y)));
@@ -245,6 +207,10 @@ interface Props {
   after: boolean;
   poll: Poll | null;
   panelOpen: boolean;
+  minutes: number;
+  onResident: (resident: Resident) => void;
+  residentId: number | null;
+  stayInside: boolean;
 }
 export default function CityMap({
   selected,
@@ -253,6 +219,10 @@ export default function CityMap({
   after,
   poll,
   panelOpen,
+  minutes,
+  onResident,
+  residentId,
+  stayInside,
 }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const born = useRef(performance.now());
@@ -262,8 +232,26 @@ export default function CityMap({
   const camera = useRef({ x: 640, y: 410, zoom: 1 });
   const target = useRef(camera.current);
   const sizeRef = useRef(size);
-  const snapshot = useRef({ selected, result, after, poll, hover });
-  snapshot.current = { selected, result, after, poll, hover };
+  const snapshot = useRef({
+    selected,
+    result,
+    after,
+    poll,
+    hover,
+    minutes,
+    residentId,
+    stayInside,
+  });
+  snapshot.current = {
+    selected,
+    result,
+    after,
+    poll,
+    hover,
+    minutes,
+    residentId,
+    stayInside,
+  };
   const [labels, setLabels] = useState({ scale: 1, tx: 0, ty: 0 });
   useEffect(() => {
     const canvas = ref.current!;
@@ -298,6 +286,8 @@ export default function CityMap({
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    const sprites = new Image();
+    sprites.src = "/residents.png";
     let lastPaint = "";
     let lastResult: Projection | null | undefined;
     let lastPoll: Poll | null | undefined;
@@ -329,6 +319,10 @@ export default function CityMap({
         scene.selected,
         scene.after,
         scene.hover,
+        Math.floor(scene.minutes * 20),
+        scene.residentId,
+        scene.stayInside,
+        sprites.complete,
       ].join("|");
       if (
         time - started > 1150 &&
@@ -372,34 +366,51 @@ export default function CityMap({
         }
       });
       const reveal = reduced ? 1 : Math.min(1, (time - started) / 1100);
-      for (let i = 0; i < people.length; i++) {
-        if (((i * 7919) % people.length) / people.length > reveal) continue;
-        const p = people[i];
-        const districtIndex = districts.findIndex((d) => d.id === p.district);
-        const approval = s.poll?.districts[districtIndex];
-        const yes = approval ? p.index < approval.yes : false;
-        const delta = s.result
-          ? s.result.districts[districtIndex].score -
-            baseline.districts[districtIndex].score
-          : 0;
-        const color = approval
-          ? yes
-            ? "#86c466"
-            : "#df7762"
-          : s.result && s.after && delta > 0
-            ? "#b0d573"
-            : p.color;
-        ctx.globalAlpha = s.selected && s.selected !== p.district ? 0.48 : 1;
-        ctx.fillStyle = "#264a46a0";
-        ctx.fillRect(p.x - 1.1, p.y - 2, 2.9, 5.3);
-        ctx.fillStyle = color;
-        ctx.fillRect(p.x - 0.8, p.y - 0.6, 2.1, 3.1);
-        ctx.fillStyle = "#f4dfba";
-        ctx.fillRect(p.x - 0.5, p.y - 1.8, 1.4, 1.3);
-        if (c.zoom > 1.6) {
-          ctx.fillStyle = "#335657";
-          ctx.fillRect(p.x - 0.7, p.y + 2.2, 0.6, 0.9);
-          ctx.fillRect(p.x + 0.5, p.y + 2.2, 0.6, 0.9);
+      for (let i = 0; i < population.length; i++) {
+        if (((i * 7919) % population.length) / population.length > reveal)
+          continue;
+        const p = population[i],
+          state = residentState(p, s.minutes, s.stayInside),
+          [x, y] = state.point;
+        const approval = s.poll?.districts[p.districtIndex];
+        const cohort = s.poll?.cohorts?.find(
+          (c) => c.districtId === p.districtId && c.profileId === p.profileId,
+        );
+        const yes = cohort
+          ? p.cohortIndex < cohort.yes
+          : approval
+            ? p.index < approval.yes
+            : false;
+        ctx.globalAlpha = s.selected && s.selected !== p.districtId ? 0.48 : 1;
+        if (approval || s.residentId === p.id) {
+          ctx.fillStyle =
+            s.residentId === p.id ? "#fff7b3" : yes ? "#76c44b" : "#d5584d";
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        if (sprites.complete && sprites.naturalWidth) {
+          const next = residentState(p, s.minutes + 0.15, s.stayInside).point;
+          const dx = next[0] - x,
+            dy = next[1] - y;
+          const direction =
+            Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 1) : dy < 0 ? 3 : 0;
+          const frame = state.moving ? Math.floor(s.minutes * 4 + p.id) % 3 : 1;
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(
+            sprites,
+            (p.sprite % 5) * 48 + frame * 16,
+            Math.floor(p.sprite / 5) * 64 + direction * 16,
+            16,
+            16,
+            x - 3.5,
+            y - 6,
+            7,
+            7,
+          );
+        } else {
+          ctx.fillStyle = "#f4dfba";
+          ctx.fillRect(x - 1, y - 3, 2, 4);
         }
       }
       ctx.globalAlpha = 1;
@@ -434,6 +445,22 @@ export default function CityMap({
         onPointerMove={(e) => setHover(hit(e))}
         onPointerLeave={() => setHover(null)}
         onClick={(e) => {
+          const x = (e.clientX - labels.tx) / labels.scale,
+            y = (e.clientY - labels.ty) / labels.scale;
+          let nearest: Resident | undefined,
+            distance = 9 / labels.scale;
+          for (const person of population) {
+            const p = residentState(person, minutes, stayInside).point;
+            const d = Math.hypot(p[0] - x, p[1] - y);
+            if (d < distance) {
+              nearest = person;
+              distance = d;
+            }
+          }
+          if (nearest) {
+            onResident(nearest);
+            return;
+          }
           const id = hit(e);
           if (id) onSelect(id);
         }}

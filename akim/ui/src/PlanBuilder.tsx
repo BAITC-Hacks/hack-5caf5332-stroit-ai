@@ -1,3 +1,4 @@
+import { BUDGET_LIMIT, money, costs } from "./money";
 import { useState } from "react";
 import {
   ArrowUpRight,
@@ -124,13 +125,15 @@ export default function PlanBuilder({
         <div className="budget-line">
           <span>Бюджет</span>
           <strong>
-            {spent}
-            <span> / 100</span>
+            {money(spent)}
+            <span> / {money(BUDGET_LIMIT)} млн ₸</span>
           </strong>
-          <small>Осталось {100 - spent}</small>
+          <small>Осталось {money(BUDGET_LIMIT - spent)}</small>
         </div>
         <div className="budget-track">
-          <i style={{ width: `${spent}%` }} />
+          <i
+            style={{ width: `${Math.min(100, (spent / BUDGET_LIMIT) * 100)}%` }}
+          />
         </div>
         <div className="slots" aria-label={`${plan.length} из 5 решений`}>
           {Array.from({ length: 5 }, (_, i) => {
@@ -174,7 +177,10 @@ export default function PlanBuilder({
           >
             <span>
               <b>Начните с готового сценария</b>
-              <small>Школы, здоровье и безопасность · 95 ед.</small>
+              <small>
+                Школы, здоровье и безопасность · {money(budget(samplePlan))} млн
+                ₸
+              </small>
             </span>
             <ArrowUpRight size={20} />
           </button>
@@ -280,10 +286,27 @@ export default function PlanBuilder({
                           Старт: {m.lag} кв.
                         </span>
                         <strong>
-                          {m.cost} <small>ед.</small>
+                          {money(m.cost)} <small>млн ₸</small>
                         </strong>
                       </div>
                       <h4>{m.name}</h4>
+                      <details className="cost-basis">
+                        <summary>
+                          {costs[m.id].kind === "benchmark"
+                            ? "Цена по ориентиру"
+                            : "Оценка стоимости"}
+                        </summary>
+                        <p>{costs[m.id].basis}</p>
+                        {costs[m.id].source && (
+                          <a
+                            href={costs[m.id].source}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Официальный источник ↗
+                          </a>
+                        )}
+                      </details>
                       <p className="measure-effects">
                         {Object.entries(m.effects)
                           .map(

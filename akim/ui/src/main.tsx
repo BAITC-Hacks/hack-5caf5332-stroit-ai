@@ -1,3 +1,4 @@
+import { ServicesProvider } from "./services";
 import "@fontsource/golos-text/cyrillic-400.css";
 import "@fontsource/golos-text/cyrillic-500.css";
 import "@fontsource/golos-text/cyrillic-600.css";
@@ -9,6 +10,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <ServicesProvider>
+      <App />
+    </ServicesProvider>
   </React.StrictMode>,
 );

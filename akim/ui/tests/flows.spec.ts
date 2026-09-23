@@ -1,5 +1,16 @@
 import { test, expect } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/health", (route) =>
+    route.fulfill({
+      json: { configured: false, model: "gpt-6-luna", token: "test" },
+    }),
+  );
+  await page.route("**/api/city", (route) =>
+    route.fulfill({ status: 503, json: { error: "Offline test" } }),
+  );
+});
+
 test("explore, build five choices, poll, advisor swap, and autopilot", async ({
   page,
 }, info) => {
@@ -35,7 +46,7 @@ test("explore, build five choices, poll, advisor swap, and autopilot", async ({
     .getByLabel("Район для M5", { exact: true })
     .selectOption("saryarka");
   await page.getByRole("button", { name: "Добавить M5", exact: true }).click();
-  await expect(page.locator(".budget-line")).toContainText("95");
+  await expect(page.locator(".budget-line")).toContainText("20 700");
   await expect(page.locator(".plan-result")).toContainText("56,54");
   await expect(
     page.getByRole("button", { name: "Добавить M14", exact: true }),
@@ -79,9 +90,9 @@ test("explore, build five choices, poll, advisor swap, and autopilot", async ({
   await page
     .getByRole("button", { name: "Применить план", exact: true })
     .click();
-  await expect(page.locator(".score-value")).toContainText("57,21");
+  await expect(page.locator(".score-value")).toContainText("57,35");
   await page.reload();
-  await expect(page.locator(".score-value")).toContainText("57,21");
+  await expect(page.locator(".score-value")).toContainText("57,35");
   expect(errors).toEqual([]);
   expect(
     await page.evaluate(
@@ -99,12 +110,15 @@ test("demo path, real budget block, local conflict, unsupported question and com
     .click();
   await expect(page.locator(".score-value")).toContainText("56,54");
   await page.getByRole("button", { name: /Мой план/ }).click();
-  await page.getByRole("button", { name: "Убрать M10", exact: true }).click();
+  await page.getByRole("button", { name: "Сбросить", exact: true }).click();
+  await page.getByLabel("Район для M3", { exact: true }).selectOption("esil");
+  await page.getByRole("button", { name: "Добавить M3", exact: true }).click();
+  await page.getByLabel("Район для M13", { exact: true }).selectOption("nura");
   await expect(
-    page.getByRole("button", { name: "Добавить M2", exact: true }),
+    page.getByRole("button", { name: "Добавить M13", exact: true }),
   ).toBeDisabled();
-  await expect(page.getByTestId("measure-M2")).toContainText(
-    "Бюджет превышен на 5",
+  await expect(page.getByTestId("measure-M13")).toContainText(
+    "Бюджет превышен на 8 000",
   );
   await page.getByRole("button", { name: "Сбросить", exact: true }).click();
   await page.getByLabel("Район для M4", { exact: true }).selectOption("nura");

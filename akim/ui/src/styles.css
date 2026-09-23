@@ -2239,3 +2239,333 @@ blockquote cite {
     padding-top: 10px;
   }
 }
+
+/* Live city context and the residents' daily clock. */
+.simulation-controls {
+  position: absolute;
+  right: 28px;
+  top: 108px;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 13px;
+  font-size: 11px;
+  color: #32564f;
+}
+.simulation-controls time {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.simulation-controls select {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 4px;
+  cursor: pointer;
+}
+.simulation-controls .data-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-left: 1px solid #254e4825;
+  background: none;
+  padding: 4px 0 4px 10px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.data-toggle small {
+  color: #657c72;
+}
+.resident-card {
+  position: absolute;
+  right: 28px;
+  top: 173px;
+  width: 275px;
+  z-index: 13;
+  padding: 21px;
+  border-radius: 18px;
+  color: #284c46;
+}
+.resident-card > .icon-button {
+  float: right;
+}
+.resident-card h3 {
+  margin: 12px 0 5px;
+  font-size: 23px;
+}
+.resident-card p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 10px 0;
+}
+.resident-card small {
+  font-size: 10px;
+  color: #698076;
+}
+.resident-card .eyebrow {
+  font-size: 8px;
+}
+.resident-activity {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-transform: capitalize;
+  font-size: 13px;
+}
+.resident-card blockquote {
+  font-size: 12px;
+  margin: 16px 0 0;
+  padding: 10px;
+  background: #d8e6cf66;
+  border-radius: 8px;
+}
+.resident-card cite {
+  display: block;
+  font-size: 10px;
+  margin-top: 8px;
+}
+.ai-mode-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 23px;
+  background: #e5ecdf88;
+  border-block: 1px solid #254e4812;
+  font-size: 10px;
+  color: #537064;
+}
+.ai-mode-switch > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ai-mode-switch button {
+  border: 0;
+  background: none;
+  color: #31594b;
+  font-size: 10px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ai-mode-switch button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.model-caption {
+  font-size: 10px;
+  color: #698074 !important;
+}
+.inline-error {
+  background: #f8e7de;
+  color: #953f36;
+  border-radius: 9px;
+  padding: 13px;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 14px 0;
+}
+.inline-error button {
+  display: block;
+  margin-top: 8px;
+}
+.event-detail {
+  display: block !important;
+  font-size: 10px !important;
+  font-weight: 400;
+  color: #6d8278;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.activity > div {
+  align-items: flex-start;
+}
+.activity > div > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.live-narrative {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 18px 0;
+}
+.live-narrative > b {
+  font-weight: 600;
+}
+.live-narrative p {
+  margin-top: 5px;
+}
+.data-panel {
+  left: 24px;
+  top: 110px;
+  bottom: 112px;
+  width: 410px;
+  display: flex;
+  flex-direction: column;
+}
+.data-intro {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #61776d;
+  margin: 0 0 13px;
+}
+.data-panel .text-button {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.source-card {
+  padding: 18px 0;
+  border-top: 1px solid #34594b20;
+}
+.source-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.source-card h3 {
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+.source-state {
+  font-size: 8px;
+  white-space: nowrap;
+  color: #466851;
+  background: #d7e6cd;
+  padding: 4px 6px;
+  border-radius: 5px;
+}
+.source-state.cached {
+  background: #eae5cf;
+  color: #736645;
+}
+.source-state.unavailable {
+  background: #f2ded6;
+  color: #96554a;
+}
+.source-card > strong {
+  font-size: 27px;
+  display: block;
+  font-weight: 500;
+}
+.source-card strong small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #637b70;
+  margin: 5px 0 10px;
+}
+.source-card p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #64796d;
+  margin: 9px 0;
+}
+.source-date {
+  display: block;
+  font-size: 9px;
+  line-height: 1.6;
+  color: #7c8e81;
+}
+.source-card a {
+  display: inline-flex;
+  gap: 5px;
+  font-size: 10px;
+  color: #396c54;
+  margin-top: 9px;
+}
+.cost-basis {
+  font-size: 10px;
+  color: #688171;
+  margin: 10px 0;
+  line-height: 1.5;
+}
+.cost-basis summary {
+  cursor: pointer;
+}
+.cost-basis a {
+  color: #34664a;
+}
+.cost-basis p {
+  font-size: 10px;
+}
+.attribution {
+  font-size: 10px !important;
+}
+.attribution a {
+  color: inherit;
+  text-decoration: underline;
+}
+.about-panel {
+  overflow-y: auto;
+  max-height: calc(100dvh - 220px);
+}
+@media (max-width: 760px) {
+  .simulation-controls {
+    right: 12px;
+    top: 84px;
+    gap: 7px;
+    padding: 5px 7px;
+  }
+  .simulation-controls time {
+    font-size: 14px;
+  }
+  .simulation-controls > span,
+  .data-toggle small {
+    display: none;
+  }
+  .resident-card {
+    top: 132px;
+    right: 12px;
+    width: 245px;
+    padding: 16px;
+  }
+  .data-panel {
+    left: 12px;
+    right: 12px;
+    top: 133px;
+    bottom: 102px;
+    width: auto;
+  }
+  .data-panel .panel-scroll {
+    padding: 17px 20px;
+  }
+  .ai-mode-switch {
+    padding: 10px 17px;
+  }
+  .about-panel {
+    max-height: calc(100dvh - 210px);
+  }
+  .score-card {
+    top: 137px;
+  }
+  .resident-card ~ .score-card {
+    display: none;
+  }
+}
+
+.resident-card ~ .score-card {
+  display: none;
+}
+
+@media (min-width: 761px) {
+  .score-card {
+    top: 174px;
+  }
+}
+.akim-start p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #60786c;
+}
+.akim-start {
+  margin-bottom: 22px;
+}

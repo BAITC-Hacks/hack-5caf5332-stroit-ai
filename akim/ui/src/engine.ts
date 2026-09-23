@@ -1,3 +1,4 @@
+import { BUDGET_LIMIT, money } from "./money";
 import {
   districts,
   measures,
@@ -22,8 +23,10 @@ export function validate(plan: Choice[], draft = false): string[] {
     errors.push("Нужно ровно 5 решений.");
   if (new Set(plan.map((c) => c.measureId)).size !== plan.length)
     errors.push("Меры не должны повторяться.");
-  if (budget(plan) > 100)
-    errors.push(`Бюджет превышен на ${budget(plan) - 100} ед.`);
+  if (budget(plan) > BUDGET_LIMIT)
+    errors.push(
+      `Бюджет превышен на ${money(budget(plan) - BUDGET_LIMIT)} млн ₸.`,
+    );
   const counts: Record<string, number> = {};
   for (const c of plan) {
     const m = measures.find((m) => m.id === c.measureId);

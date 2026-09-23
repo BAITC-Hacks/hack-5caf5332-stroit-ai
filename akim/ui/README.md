@@ -1,61 +1,95 @@
 # Sim Astana · Аким на 5 часов
 
-A standalone, Russian-language city decision simulator. React + TypeScript + Vite; no backend or API keys.
+Russian-language city decision simulator: React, TypeScript, Canvas and a local Express API. Explore the city, choose five investments, ask simulated residents and compare AI Akim's proposals.
 
 ## Run
 
-From `akim/ui/`, with Node.js 22+:
+Node.js 22+; run from `akim/ui`:
 
 ```sh
-npm ci && npm run dev
+npm ci
+cp .env.example .env
+# Set OPENAI_API_KEY in .env. Never put it in VITE_* variables.
+npm run dev
 ```
 
-Open the localhost URL printed by Vite. The app bundles its fonts and draws its map locally; no external services are needed after installation. `npm run build` produces `dist/`; `npm run preview` serves that build.
+Open **http://127.0.0.1:5173**. Vite proxies `/api` to **127.0.0.1:8791**. To use another API port, update `.env` and the proxy in `vite.config.ts`. For a built app, `npm run build && npm start` serves both UI and API at **http://127.0.0.1:8791**. `npm run preview` is only a static preview; use `npm start` for live services.
 
-In one minute: click Нура → explore its needs → create a plan (or try the prepared scenario) → compare before/after → ask residents → ask AI Аким for a swap. Plans persist in local storage. Escape closes overlays; all district labels are keyboard buttons.
+The configured model is **`gpt-6-luna`**, using OpenAI Responses, structured outputs, function calls and low reasoning effort. The key stays on the server in an ignored `.env`; no key is returned to the browser. Without a key, explicitly labeled local resident/advisor modes remain available. Live failures show an error; they do not silently switch models.
 
-## Preview
+Choose a district → create a plan or load the example → compare before/after → ask residents → open AI Akim and press **Проверить план с AI**. Proposals require **Apply** to change your plan. Plans persist in local storage. Escape closes panels. Reduced-motion settings pause the city clock initially.
 
-![Desktop city view](docs/desktop.png)
+![City view](docs/desktop.png)
 
-[Mobile preview](docs/mobile.png)
+[Mobile](docs/mobile.png) · [Real data panel](docs/sources.png) · [Resident profile](docs/resident.png)
 
-## Exact model
+## Real city data
 
-`src/data.ts` transcribes the synthetic district values, population shares, 14 measures, effect weights, lags, conflicts, and synergies from the supplied `akim/file.md` brief. The names of a few measures are shortened for display (M2 adaptive traffic lights, M7 modular school/kindergarten, M10 Safe City lighting/cameras).
+`server/city-data.ts` calls the JSON endpoints documented in `akim/INVENTORY.md` / `akim/README.md` in the source workspace. `GET /api/city` exposes normalized records with source URL, attribution, observation date, retrieval date and **live / cached / unavailable** status.
 
-`src/engine.ts` validates exactly five unique decisions, budget ≤100, at most two per direction, district assignments, and all conflicts. A plan can cover only three directions. `simulate()` returns `result: null` with errors for invalid plans. `projectEffects()` also calculates isolated proposal effects for polls; the UI does not display a plan score for those proposals or incomplete drafts.
+| Source                                                                                                                                                                                                                                  | Usage                                                                | Limits                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [Open-Meteo weather](https://api.open-meteo.com/v1/forecast?latitude=51.1694&longitude=71.4491&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FAlmaty)                                                               | Temperature, wind, weather code; context for AI and evening routines | Forecast model at a city point, not a station measurement                                    |
+| [Open-Meteo / CAMS air](https://air-quality-api.open-meteo.com/v1/air-quality?latitude=51.1694&longitude=71.4491&current=pm2_5,pm10,european_aqi&timezone=Asia%2FAlmaty)                                                                | European AQI, PM2.5 and PM10; AI context                             | Modeled grid; no claim of district-level measurements                                        |
+| [KGP ArcGIS DTP](https://gis.kgp.kz/arcgis/rest/services/KPSSU/DTP/FeatureServer/0)                                                                                                                                                     | Count of 2026 accident records within 71.2–71.65°E, 51.0–51.3°N      | Bounding box differs from the administrative city; not an official Astana total              |
+| [Bureau of National Statistics, table 6584](https://stat.gov.kz/api/iblock/element/6584/json/file/ru/)                                                                                                                                  | Latest all-population Astana series; periods sorted by date          | Latest verified observation: 1,528,703 at 2025-12-31, not a live population counter          |
+| [National Geoportal WFS](https://map.gov.kz/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=geonode:border_districts&outputFormat=application/json&propertyName=kato,name_ru&CQL_FILTER=kato%20LIKE%20%2771%25%27) | Unique district KATO registry, deduplicating multipart entries       | Six real districts include Sarayshyk; the schematic game retains its five original districts |
 
-- Baseline: **52.55768** → **52.56**.
-- Example M7 Нура, M8 Нура, M10 Нура, M12, M5 Сарыарка: **95 units**, **56.54307**.
-- Fixed synergies are not reduced by lag. The critical penalty counts district × indicator values **strictly below 40**.
-- Advisor checks every valid single replacement, including changes of target district. It presents the highest-scoring alternative, even if a plan is already locally optimal; the comparison clearly shows the sign of the change.
-- Autopilot starts from the reference plan and follows at most eight improving replacements. Its deterministic result costs **100**, scores **57.20556**, and is not claimed to be globally optimal.
+Weather/air cache for 15 minutes; other sources for 24 hours. Timeouts, invalid/partial responses and upstream failures return an explicitly dated saved snapshot or `unavailable`, never invented readings. `npm run data:check` prints concise endpoint status. Cached JSON lives in ignored `.cache/sources`.
 
-## Demo boundaries
+Real data is supplied to the LLM as context. It does **not** overwrite the original synthetic quality-of-life indices, district weights or assumed policy effects. Refresh checks the server's cache policy; observation and retrieval times are shown separately.
 
-The map is original schematic artwork, with approximate shapes for five named districts, a stylized Esil river, streets, green spaces, and landmarks. These are **not authoritative district boundaries**. The city has 2,000 fixed-seed synthetic residents, distributed according to the supplied population shares. All dots remain in world coordinates during zoom.
+## Million tenge, with price provenance
 
-`src/residents.ts` supports the three displayed example questions and “мой план”, with case, whitespace, punctuation, and ё normalization. Unsupported text returns guidance. No live LLM parses arbitrary questions.
+All costs and limits are **million KZT (млн ₸)**. The game uses a **50,000 million ₸ investment envelope**, an explicit scenario assumption. It is not the city's whole budget or uncommitted cash.
 
-Each district has six concern profiles. Each indicator starts with weight 1, receives +3 for a district priority and +4 for a profile priority; weights are normalized. For each profile:
+- Published 2026 city costs: **1,286,453.4108 million ₸**. [Astana budget decision](https://old.adilet.zan.kz/rus/docs/G25AAZ3524M) states 1,286,453,410.8 **thousand** ₸; this app divides by 1,000. Source snapshot verified 2026-09-23, not refreshed automatically.
+- M7: **8,400 million ₸**. [Government school benchmark](https://primeminister.kz/ru/news/asset_recovery/novaya-shkola-na-1200-uchenicheskih-mest-budet-postroena-v-astane-na-sredstva-iz-vozvrashchennyh-aktivov-31773): 7,000 million for a 1,200-place school, plus an explicitly assumed 1,400 million for kindergarten/reserve.
+- M8: **7,200 million ₸**, a historical mean from [the 2024–2028 forecast](https://www.gov.kz/memleket/entities/astana/documents/details/533548?lang=ru): five clinics for 36,000 million. Not a current tender estimate.
+- Other prices are scoped scenario estimates, including a limited LRT phase, **not actual awarded contract amounts**. Each measure's expandable price basis and `src/money.ts` explain its scope.
+
+## Resident simulation
+
+`src/population.ts` creates **2,000 reproducible synthetic people**, with names, ages, six concern profiles per district, homes, work/study destinations and leisure destinations. These are fictional profiles, unrelated to personal records.
+
+Residents follow daily schedules and connected, bounded grid routes: home → work/study/errands → leisure → home. Travel uses individual departure offsets. The clock supports pause and 6/30/120 simulated minutes per second. Click a person or the resident button to inspect their profile and current activity. Rain, temperature below −10°C or wind above 40 km/h sends them home after work instead of leisure; this simple behavioral rule is a scenario assumption, using the latest available weather snapshot. Routes and district shapes are schematic, not GPS tracks or an actual street network.
+
+The routine / persona / batched-opinion design is inspired by [Sim Francisco](https://github.com/tejasprabhune/simfrancisco). Implementation is original. Character artwork is attributed and licensed separately in [ATTRIBUTION.md](docs/ATTRIBUTION.md).
+
+### Resident opinions
+
+In OpenAI mode, an arbitrary question is parsed into one or two proposals using only the 14 measures and five modeled districts. Invalid, ambiguous or unsupported proposals return a clarification error. The LLM receives actual indicator deltas, budget, profile priorities and dated city context. It returns **30 cohort probabilities and quotes**; the server validates every district/profile combination and computes counts for the exact resident cohorts. Green/red markers correspond to those computed votes. Comparisons show independent approval of two proposals.
+
+These are **model estimates of synthetic opinion**, never actual public polling. They are cached for 24 hours for the same model, proposal and city context. No LLM request runs on animation frames or for each individual resident.
+
+Local mode supports the three examples and “мой план”. Its six concern profiles average this rule, then round district votes:
 
 ```text
-p(approval) = clamp(0.50 + 0.075 × weighted indicator gain − 0.00065 × proposal cost, 0.08, 0.94)
+p(approval) = clamp(0.50 + 0.075 × weighted indicator gain
+                   − 0.065 × (proposal cost / 50,000), 0.08, 0.94)
 ```
 
-The district probability averages the six profiles, then rounds the district's approving resident count. City approval is the exact population-weighted total of those counts. Map green/red counts match the poll counts. This is a documented client approximation, **not measured public opinion**. Quotes are fixed templates tied to positive changes, negative changes, or absence of local benefit. The trade-off example compares independent approval of school + clinic in Нура against LRT in Есиль; the map explicitly shows the first proposal.
+Indicator concern starts at 1, adds 3 for district priorities and 4 for profile priorities, then normalizes. Quotes are local templates. This mode is labeled in the UI.
 
-AI Аким uses local search and template explanations. Its short activity timeline records budget checks, simulations, demo polls, and alternative comparisons, with presentation delays; it is not model reasoning. Changes require an explicit Apply action. Before/after numbers always come from the engine.
+## AI Akim and the scoring engine
 
-## Future API connections
+`src/data.ts` / `src/engine.ts` preserve the brief's synthetic values, effects, lags, synergies and conflicts. A valid plan has exactly five unique decisions, cost ≤50,000 million ₸, at most two per direction and correct district assignments. Invalid plans have no displayed score.
 
-Keep the typed data boundaries in these modules when replacing local functions with async adapters:
+- Baseline **52.55768**.
+- Example M7 Nura, M8 Nura, M10 Nura, M12, M5 Saryarka: **20,700 million ₸**, score **56.54307**.
+- Fixed synergy is not reduced by lag. Each district/indicator strictly below 40 incurs a penalty.
+- Local advisor checks every valid single replacement; local autopilot follows at most eight improving replacements. It does not claim a global optimum.
 
-- `engine.ts`: `simulate(plan)` → future `POST /simulate` or `/score`; returns validation errors and a district projection.
-- `residents.ts`: `askCity(question, plan)` → future `POST /ask_city`; returns a supported poll or an explanatory error.
-- `engine.ts`: `advise(plan)` and `autopilot()` → future advisor endpoints, returning proposed choices and calculated comparisons.
-- `AkimPanel.tsx`: consumes these outputs and displays activity; `App.tsx` alone applies proposed choices.
+In live mode, Luna chooses through a bounded loop of `simulate`, `ask_residents` and `submit_plan` function calls. `ask_residents` here is an explicitly described **local analytic approximation** to compare candidates; the separate resident polling UI uses the LLM cohort survey. Submission requires both simulation and consultation for that exact plan. Advisor must replace exactly one decision. The server recalculates all scores and costs, then asks Luna for a qualitative explanation. Activity rows report tool actions, not hidden model reasoning. Cached runs are labeled.
+
+API routes:
+
+- `GET /api/health`: model, configured flag, local session token; never the API key.
+- `GET /api/city`: dated source records.
+- `POST /api/ask`: `{ question, plan }` → `{ poll }`.
+- `POST /api/akim`: `{ mode: "advisor" | "autopilot", plan }` → NDJSON activity/result/error events.
+
+POSTs require the session token and an allowed local origin. Requests have schema/body limits, cancellation/timeouts, a two-request concurrency limit and 30 requests per 15 minutes. This is a localhost prototype. Add deployment authentication and per-user quotas before public hosting. Responses API calls use `store: false`.
 
 ## Verify
 
@@ -64,6 +98,9 @@ npm test
 npx playwright install chromium
 npm run test:browser
 npm run build
+npm run data:check
 ```
 
-Engine tests cover the reference scores, lag and all synergies, budget and conflict rules, district assignment, direction cap, invalid score behavior, negative effects/critical threshold, order invariance, repeatable polls, and advisor/autopilot validity. Browser tests exercise desktop and mobile flows, manual five-decision construction, budget/conflict blocks, asking, applying and dismissing advice, autopilot, persistence, keyboard focus, and a 360px layout. Screenshots and failure traces are written to ignored `test-results/`.
+20 unit tests cover calculations, prices, validity, resident paths/schedules, population parsing, district deduplication, malformed cohort rejection and safe errors. 12 browser cases cover desktop/mobile plan flows, clock and profiles, source display, real-mode API contracts, streaming proposals, explicit application, failure handling, persistence and keyboard access. Browser API fixtures make tests deterministic and avoid paid calls. Screenshots/traces go to ignored `test-results/`.
+
+Live verification on 2026-09-23: all five city endpoints responded; `gpt-6-luna` returned valid 30-cohort school and free-text park polls and tool-based advisor/autopilot plans. Secrets are excluded from source, artifacts and browser bundles.
