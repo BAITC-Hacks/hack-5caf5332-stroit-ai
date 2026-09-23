@@ -1,8 +1,8 @@
 {
   "mode": "organizer_mock",
-  "run_id": "3aadc4e6590040eb86ab9adef2f996f2",
+  "run_id": "ea6c84e40f744c3983d66ee587d89158",
   "seed": 42,
-  "created_at": 1790159025.8237429,
+  "created_at": 1790159423.045557,
   "data_hashes": {
     "customer_profile.csv": "a85e9badf4cb51b1ba8c43a868498b6fa8075509f3cd8e19ef72e1c25a6dc815",
     "data/change_tariff.csv": "c52d7dad11fccc7425afe6d36a44a1fa03c8cc148be2039ce264d0c5c100f230",
@@ -1760,7 +1760,7 @@
       "pilots": 0
     },
     "stop_reason": "Pilot allowance or time limit reached",
-    "elapsed_seconds": 0.111727833
+    "elapsed_seconds": 0.112190125
   },
   "evaluation": {
     "team_id": "local",

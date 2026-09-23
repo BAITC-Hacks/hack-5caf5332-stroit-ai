@@ -63,6 +63,12 @@ class Agent:
                                   "missing_values": int(profile.isna().sum().sum())}
         if self.audit["quality"]["duplicate_ids"]:
             raise ValueError("Duplicate customer IDs: resolve input quality before planning")
+        eligible_cell = profile.current_tariff.isin(tariffs) & profile.arpu_segment.isin(["LOW", "MID", "HIGH"])
+        if ((~valid) & eligible_cell).any():
+            # The submission contract has segment filters, not per-row exclusions.
+            # Unknown ARPU/tariff cells are excluded by the same final filters;
+            # corrupt ID/baseline inside a selected cell cannot be excluded safely.
+            raise ValueError("Invalid required customer fields: resolve input quality before planning")
         profile = profile.loc[valid].copy()
         profile["predicted_arpu"] = predicted[valid]
         profile = profile.sort_values("ID_NUMBER")

@@ -91,6 +91,17 @@ class Contract(unittest.TestCase):
         e=FakeEnv();e.customer_profile.loc[1,"ID_NUMBER"]=0
         with self.assertRaisesRegex(ValueError,"Duplicate"):self.agent().act(e)
 
+    def test_invalid_required_rows_fail_explicitly(self):
+        e=FakeEnv();e.customer_profile.loc[1,"predicted_arpu"]=float("nan")
+        with self.assertRaisesRegex(ValueError,"Invalid required"):self.agent().act(e)
+
+    def test_missing_segment_is_excluded_by_final_filters(self):
+        e=FakeEnv();e.customer_profile.loc[1,"arpu_segment"]=None
+        a=self.agent();plan=a.act(e)
+        self.assertEqual(a.audit["quality"]["invalid_rows"],1)
+        self.assertEqual(a.audit["audience"]["rows"],len(e.customer_profile)-1)
+        self.assertTrue(all(p["filter_arpu_segment"]=="HIGH" for p in plan))
+
     def test_source_uses_only_public_env(self):
         tree=ast.parse((ROOT/"engine/agent.py").read_text())
         allowed={"customer_profile","tariffs","channels","remaining_budget","remaining_contacts","pilots_left","pilot_history","run_pilot"}

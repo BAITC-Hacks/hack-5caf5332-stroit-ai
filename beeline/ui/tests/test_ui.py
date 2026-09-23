@@ -1,4 +1,9 @@
-"""End-to-end UI checks. Run against npm start; uses isolated Chrome, not a personal profile."""
+"""Historical fixture-UI suite (v1), not valid for the connected v2 workspace.
+
+Kept for reference only. Current verification: tests/test_agent.py,
+tests/test_server.py and the browser checks recorded in AUDIT-CONNECTED.md.
+"""
+raise SystemExit("Legacy fixture UI suite: see AUDIT-CONNECTED.md for current checks")
 import csv
 import io
 import json
