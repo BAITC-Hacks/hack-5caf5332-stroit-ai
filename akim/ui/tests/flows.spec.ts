@@ -46,7 +46,7 @@ test("one path: intro, brief, five decisions from the district panel, report, sw
     await expect(page.locator(".toast")).toContainText(name);
   }
   await expect(page.locator(".tray-slots li.filled")).toHaveCount(3);
-  await expect(page.locator(".map-markers")).toContainText("Школа и детсад");
+  await expect(page.locator(".map-markers li", { hasText: "Школа и детсад" })).toBeVisible();
   await expect(page.locator(".tray-score strong")).toContainText("55,86");
 
   // A city-wide measure and a district measure elsewhere complete the plan.
@@ -87,7 +87,7 @@ test("one path: intro, brief, five decisions from the district panel, report, sw
   // Applying the swap changes the plan on the map and the score.
   await page.getByRole("button", { name: "Применить замену", exact: true }).click();
   await expect(page.locator(".tray-score strong")).toContainText("57,21");
-  await expect(page.locator(".map-markers")).toContainText("ЛРТ");
+  await expect(page.locator(".map-markers li", { hasText: "ЛРТ" })).toBeVisible();
 
   // The scenario link reproduces the plan after a reload.
   await page.reload();
